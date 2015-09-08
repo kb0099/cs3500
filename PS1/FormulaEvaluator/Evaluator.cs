@@ -41,7 +41,7 @@ namespace FormulaEvaluator
             Stack<char> opStack = new Stack<char>();
 
             if (String.IsNullOrEmpty(exp))
-                ArgEx();
+                throw ArgEx();
 
             string[] tokens = Regex.Split(exp, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
             Console.WriteLine(String.Join(", ", tokens));
@@ -94,7 +94,7 @@ Otherwise, push t onto the value stack.
                             */
                         }
                         else
-                            ArgEx();
+                            throw ArgEx();
 
                         break;
                 }
@@ -110,9 +110,12 @@ Otherwise, push t onto the value stack.
             exactly two values on the value stack. Apply the operator to the two 
             values and report the result as the value of the expression.
             */
-                            if (opStack.Count == 0)
+            if (opStack.Count == 0)
             {
-                return (int)valueStack.Pop();
+                if (valueStack.Count == 1)
+                    return (int)valueStack.Pop();
+                else
+                    throw ArgEx();
             }
             else
             {
@@ -139,17 +142,16 @@ Otherwise, push t onto the value stack.
                 case '/':
                     return v1/v2;
                 default:
-                    ArgEx();
-                    return Double.NaN;
+                    throw ArgEx();
             }
         }
 
         /// <summary>
         /// Throws the prevalent ArgumentException.
         /// </summary>
-        private static void ArgEx()
+        private static ArgumentException ArgEx()
         {
-            throw new ArgumentException("Expression contains invalid token or operation.");
+            return new ArgumentException("Expression contains invalid token or operation.");
         }
 
         /// <summary>
