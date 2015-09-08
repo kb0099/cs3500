@@ -14,6 +14,7 @@ namespace FormulaEvaluator
     {
         /// <summary>
         /// Represents a valid pattern for variable name or identifier.
+        /// <para>PS1 Requirement: Variable name consists of one or more letters followed by one or more digits.</para>
         /// </summary>
         const String VALID_VAR_PATTERN = @"^[a-zA-Z]+[0-9]+$";
 
@@ -44,5 +45,7 @@ namespace FormulaEvaluator
         {
             return Regex.IsMatch(varName, VALID_VAR_PATTERN);
         }
+
+
     }
 }
