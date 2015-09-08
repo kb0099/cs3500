@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace FormulaEvaluator
 {
     /// <summary>
-    /// 
+    /// Represents a static class that acts as a container for static members.
     /// </summary>
     public static class Evaluator
     {
