@@ -47,7 +47,7 @@ namespace FormulaEvaluator
             Console.WriteLine(String.Join(", ", tokens));
 
             //process each token
-            for(int i = 0; i < tokens.Length; i++)
+            for (int i = 0; i < tokens.Length; i++)
             {
                 tokens[i] = tokens[i].Trim();
                 switch (tokens[i])
@@ -57,7 +57,9 @@ namespace FormulaEvaluator
                     case "+":
                     case "-":
                         /*
-                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack. Next, push t onto the operator stack
+                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                        Apply the popped operator to the popped numbers. Push the result onto the value stack. 
+                        Next, push t onto the operator stack
                         */
                         break;
                     case "*":
@@ -70,22 +72,23 @@ namespace FormulaEvaluator
                         break;
                     case ")":
                         /*
-                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
-
-Next, the top of the operator stack should be a (. Pop it.
-
-Finally, if * or / is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
-*/
+                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                        Apply the popped operator to the popped numbers. Push the result onto the value stack. 
+                        Next, the top of the operator stack should be a (. Pop it. Finally, if * or / is at the top of the 
+                        operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. 
+                        Push the result onto the value stack.
+                        */
                         break;
                     default:
                         if (Regex.IsMatch(tokens[i], @"^\d+$"))
                         {
                             // integer
-                            /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, and apply the popped operator to t and the popped number. Push the result onto the value stack.
-
-Otherwise, push t onto the value stack.
+                            /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, 
+                            and apply the popped operator to t and the popped number. Push the result onto the value stack.
+                            Otherwise, push t onto the value stack.
                             */
-                }
+
+                        }
                         else if (IsValidVar(tokens[i]))
                         {
                             // variable
@@ -95,7 +98,6 @@ Otherwise, push t onto the value stack.
                         }
                         else
                             throw ArgEx();
-
                         break;
                 }
             }
@@ -119,28 +121,32 @@ Otherwise, push t onto the value stack.
             }
             else
             {
-                return (int)Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+                if (!(valueStack.Count == 1 && opStack.Count == 2))
+                    throw ArgEx();
+                else
+                    return (int)Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
             }
         }
         /// <summary>
         /// Represents a helper method for arithmetic operations.
+        /// Example: Calc(1, 2, '+') would return the value of 1+2 which is 3.
         /// </summary>
         /// <param name="v1">Left Operand</param>
         /// <param name="v2">Right Operand</param>
-        /// <param name="v3">Operator: +, -, *, or /</param>
+        /// <param name="op">Operator: +, -, *, or /</param>
         /// <returns>The result of applying the operator to the operands.</returns>
-        private static double Calc(double v1, double v2, char v3)
+        private static double Calc(double v1, double v2, char op)
         {
-            switch (v3)
+            switch (op)
             {
                 case '+':
-                    return v1+v2;
+                    return v1 + v2;
                 case '-':
-                    return v1-v2;
+                    return v1 - v2;
                 case '*':
-                    return v1*v2;
+                    return v1 * v2;
                 case '/':
-                    return v1/v2;
+                    return v1 / v2;
                 default:
                     throw ArgEx();
             }
