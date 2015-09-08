@@ -19,18 +19,22 @@ namespace FormulaEvaluator
         const String VALID_VAR_PATTERN = @"^[a-zA-Z]+[0-9]+$";
 
         /// <summary>
-        /// 
+        /// A delegate that can be used to look up the value of a variable. 
+        /// <para>Given a variable as its parameter, the delegate will either return 
+        /// an int (the value of the variable) or throw an ArgumentException 
+        /// (if the variable has no value).</para>
         /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
+        /// <param name="v">Variable of <see cref="System.String"/> type.</param>
+        /// <returns>The value represented by the <paramref name="v"/>.</returns>
         public delegate int Lookup(String v);
 
         /// <summary>
-        /// 
+        /// The method evaluates the expression, using the algorithm provided. 
         /// </summary>
-        /// <param name="exp"></param>
-        /// <param name="variableEvaluator"></param>
-        /// <returns></returns>
+        /// <exception cref="ArgumentException">Thrown if one of the possible errors from the algorithm occurs.</exception>
+        /// <param name="exp">The expression to be evaluated. </param>
+        /// <param name="variableEvaluator">A delegate that can be used to look up the value of a variable.</param>
+        /// <returns>It returns the value of the expression (if it has a value). </returns>
         public static int Evaluate(String exp, Lookup variableEvaluator)
         {
             return 0;
