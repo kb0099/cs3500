@@ -56,22 +56,42 @@ namespace FormulaEvaluator
                         break;
                     case "+":
                     case "-":
+                        /*
+                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack. Next, push t onto the operator stack
+                        */
                         break;
                     case "*":
                     case "/":
+                        /*
+                        Push t onto the operator stack
+                        */
                         break;
                     case "(":
                         break;
                     case ")":
+                        /*
+                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
+
+Next, the top of the operator stack should be a (. Pop it.
+
+Finally, if * or / is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
+*/
                         break;
                     default:
                         if (Regex.IsMatch(tokens[i], @"^\d+$"))
                         {
                             // integer
-                        }
+                            /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, and apply the popped operator to t and the popped number. Push the result onto the value stack.
+
+Otherwise, push t onto the value stack.
+                            */
+                }
                         else if (IsValidVar(tokens[i]))
                         {
                             // variable
+                            /*
+                            Proceed as above, using the looked-up value of t instead of t
+                            */
                         }
                         else
                             ArgEx();
@@ -90,7 +110,7 @@ namespace FormulaEvaluator
             exactly two values on the value stack. Apply the operator to the two 
             values and report the result as the value of the expression.
             */
-            if (opStack.Count == 0)
+                            if (opStack.Count == 0)
             {
                 return (int)valueStack.Pop();
             }
