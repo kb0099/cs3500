@@ -37,7 +37,99 @@ namespace FormulaEvaluator
         /// <returns>It returns the value of the expression (if it has a value). </returns>
         public static int Evaluate(String exp, Lookup variableEvaluator)
         {
-            return 0;
+            Stack<double> valueStack = new Stack<double>();
+            Stack<char> opStack = new Stack<char>();
+
+            if (String.IsNullOrEmpty(exp))
+                ArgEx();
+
+            string[] tokens = Regex.Split(exp, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+            Console.WriteLine(String.Join(", ", tokens));
+
+            //process each token
+            for(int i = 0; i < tokens.Length; i++)
+            {
+                tokens[i] = tokens[i].Trim();
+                switch (tokens[i])
+                {
+                    case "":
+                        break;
+                    case "+":
+                    case "-":
+                        break;
+                    case "*":
+                    case "/":
+                        break;
+                    case "(":
+                        break;
+                    case ")":
+                        break;
+                    default:
+                        if (Regex.IsMatch(tokens[i], @"^\d+$"))
+                        {
+                            // integer
+                        }
+                        else if (IsValidVar(tokens[i]))
+                        {
+                            // variable
+                        }
+                        else
+                            ArgEx();
+
+                        break;
+                }
+            }
+            // after all the tokens has been processed
+            /*
+            If Operator stack is empty	
+            Value stack should contain a single number
+            Pop it and report as the value of the expression
+
+            Else, There should be exactly one operator on 
+            the operator stack, and it should be either + or -. There should be 
+            exactly two values on the value stack. Apply the operator to the two 
+            values and report the result as the value of the expression.
+            */
+            if (opStack.Count == 0)
+            {
+                return (int)valueStack.Pop();
+            }
+            else
+            {
+                return (int)Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+            }
+        }
+        /// <summary>
+        /// Represents a helper method for arithmetic operations.
+        /// </summary>
+        /// <param name="v1">Left Operand</param>
+        /// <param name="v2">Right Operand</param>
+        /// <param name="v3">Operator: +, -, *, or /</param>
+        /// <returns>The result of applying the operator to the operands.</returns>
+        private static double Calc(double v1, double v2, char v3)
+        {
+            switch (v3)
+            {
+                case '+':
+                    return v1+v2;
+                case '-':
+                    return v1-v2;
+                case '*':
+                    return v1*v2;
+                case '/':
+                    return v1/v2;
+                default:
+                    ArgEx();
+                    return Double.NaN;
+            }
+        }
+
+        /// <summary>
+        /// Throws the prevalent ArgumentException.
+        /// </summary>
+        private static void ArgEx()
+        {
+            throw new ArgumentException("Expression contains invalid token or operation.");
         }
 
         /// <summary>
@@ -49,7 +141,5 @@ namespace FormulaEvaluator
         {
             return Regex.IsMatch(varName, VALID_VAR_PATTERN);
         }
-
-
     }
 }
