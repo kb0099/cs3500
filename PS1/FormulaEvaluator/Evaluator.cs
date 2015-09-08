@@ -87,6 +87,8 @@ namespace FormulaEvaluator
                             and apply the popped operator to t and the popped number. Push the result onto the value stack.
                             Otherwise, push t onto the value stack.
                             */
+                            int t = Int32.Parse(tokens[i]);
+                            valueStack.Push(t);
 
                         }
                         else if (IsValidVar(tokens[i]))
