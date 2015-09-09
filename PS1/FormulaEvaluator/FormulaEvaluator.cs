@@ -31,6 +31,7 @@ namespace FormulaEvaluator
         /// Parses an infix expression and returns the solution. The legal elements for the expression are +, -, *, /, (, ),
         /// non-negative integers, whitespace, and variables of one or more letters followed by one or more digits. Variable
         /// values are found by using variableEvaluator, which should take in the string of the variable and return the value.
+        /// If the solution could not be found, throws an ArgumentException.
         /// </summary>
         /// <param name="expression">
         /// The expression to parse and solve.
@@ -38,17 +39,19 @@ namespace FormulaEvaluator
         /// <param name="variableEvaluator">
         /// Method that can take in a String variable and return the variable's value.
         /// </param>
-        /// <returns></returns>
+        /// <returns>
+        /// The solution to the expression.
+        /// </returns>
+        /// <exception cref="ArgumentException"></exception>
         public static int Evaluate(String expression, Lookup variableEvaluator)
         {
             // Split string into an array of readable elements
             String[] substrings = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+            // TODO need to make sure whitespace is cleared!
 
             // Make stacks for the values and operators
             Stack<int> values = new Stack<int>();
             Stack<String> operators = new Stack<String>();
-
-            int output;
 
             // Loop through elements of substrings
             for (int i = 0; i < substrings.Length; i++)
@@ -82,33 +85,29 @@ namespace FormulaEvaluator
                 // Check if the element is )
                 if (")" == substrings[i])
                 {
-                    // Apply the operation for finding + or -, pop what should be ( from the operators stack and the value from values, operate on that value as an integer read, then move on to next element
+                    // Apply the operation for finding + or -, pop ( from the operators stack and the value from values, operate on that value as an integer read, then move on to next element
                     ReadAddOrSub(operators, values);
+                    // Error check that operators had (, throw ArgumentException otherwise
                     String op = operators.Pop();
-                    if ("(" != op)
-                    {
-                        // Error
-                    }
+                    if ("(" != op) throw new ArgumentException();
                     int val = values.Pop();
                     ReadInteger(val, operators, values);
                 }
 
-                // Try to check if the element is a variable. If so, take the result and operate on it like an integer
-                try
-                {
-                    result = variableEvaluator(substrings[i]);
-                    ReadInteger(result, operators, values);
-                }
-                catch (ArgumentException e)
-                {
-                    // The element was not a variable
-                }
+                // As the last possible task, try to check if the element is a variable. If so, take the result and operate on it like an integer
+                result = variableEvaluator(substrings[i]); // If it is an invalid variable, the method should throw an ArgumentException
+                ReadInteger(result, operators, values);
             }
+
+            // Declare the variable to store the output
+            int output;
 
             // Check if operators is not empty
             if (operators.Count > 0)
             {
                 // There should be one more operation (+ or -) and two values, Finish the calculation and save to output
+                // Error check that operators has 1 string and values has 2 values, throw ArgumentException otherwise
+                if (operators.Count != 1 || values.Count != 2) throw new ArgumentException();
                 String op = operators.Pop();
                 int current = values.Pop();
                 int last = values.Pop();
@@ -124,6 +123,8 @@ namespace FormulaEvaluator
             else
             {
                 // Values has the output value
+                // Error check that values has one value, throw ArgumentException otherwise
+                if (values.Count != 1) throw new ArgumentException();
                 output = values.Pop();
             }
 
@@ -134,7 +135,7 @@ namespace FormulaEvaluator
         /// <summary>
         /// Method that will run necessary operations when an integer is read from the expressions' elements. It will
         /// multiply or divide the previous value with the given value if it can be done, then push the final value to vals.
-        /// If vals is empty when trying to multiply or divide, an InvalidOperationException is thrown
+        /// If vals is empty when trying to multiply or divide, an ArgumentException is thrown.
         /// </summary>
         /// <param name="value">
         /// The integer read.
@@ -145,12 +146,16 @@ namespace FormulaEvaluator
         /// <param name="vals">
         /// The values stack.
         /// </param>
+        /// <exception cref="ArgumentException"></exception>
         private static void ReadInteger(int value, Stack<String> ops, Stack<int> vals)
         {
             int current;
             // Check if * or / is currently in the operator stack, then apply the operation to the last and current values
             if ("*" == ops.Peek() || "/" == ops.Peek())
             {
+                // Error check that vals is not empty, throw ArgumentException otherwise
+                if (vals.Count < 1) throw new ArgumentException();
+
                 String op = ops.Pop();
                 int last = vals.Pop();
                 if ("*" == op)
@@ -176,6 +181,7 @@ namespace FormulaEvaluator
         /// <summary>
         /// Method that will run necessary operations when +, -, or ) is read from the expressions' elements. If the previous
         /// operation was a + or -, it will apply the operation on the last two values and put the result in vals.
+        /// If vals has less than two values when trying to add or subtract, an ArgumentException is thrown.
         /// </summary>
         /// <param name="ops"></param>
         /// <param name="vals"></param>
@@ -184,6 +190,9 @@ namespace FormulaEvaluator
             // Check if + or - are on the ops stack, then apply the operation to the last and current values
             if ("+" == ops.Peek() || "-" == ops.Peek())
             {
+                // Error check that vals has enough values, throw ArgumentException otherwise
+                if (vals.Count < 2) throw new ArgumentException();
+
                 String sign = ops.Pop();
                 int current = vals.Pop();
                 int last = vals.Pop();
