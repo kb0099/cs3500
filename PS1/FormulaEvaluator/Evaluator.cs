@@ -79,6 +79,7 @@ namespace FormulaEvaluator
                         /*
                         Push t onto the operator stack
                         */
+                        opStack.Push(tokens[i][0]);              
                         break;
                     case "(":
                         opStack.Push('(');
