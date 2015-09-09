@@ -81,6 +81,7 @@ namespace FormulaEvaluator
                         */
                         break;
                     case "(":
+                        opStack.Push('(');
                         break;
                     case ")":
                         /*
