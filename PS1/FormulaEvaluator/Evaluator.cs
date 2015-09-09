@@ -54,7 +54,6 @@ namespace FormulaEvaluator
                 throw ArgEx();
 
             string[] tokens = Regex.Split(exp, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
-            Console.WriteLine(String.Join(", ", tokens));
 
             //process each token
             for (int i = 0; i < tokens.Length; i++)
