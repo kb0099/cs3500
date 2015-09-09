@@ -46,8 +46,8 @@ namespace FormulaEvaluator
         public static int Evaluate(String expression, Lookup variableEvaluator)
         {
             // Split string into an array of readable elements
-            String[] substrings = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
-            // TODO need to make sure whitespace is cleared!
+            String noWhitespace = Regex.Replace(expression, "\\s", "");
+            String[] substrings = Regex.Split(noWhitespace, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
 
             // Make stacks for the values and operators
             Stack<int> values = new Stack<int>();
@@ -56,6 +56,9 @@ namespace FormulaEvaluator
             // Loop through elements of substrings
             for (int i = 0; i < substrings.Length; i++)
             {
+                // Check if the element is an empty string and skip the element, Regex.Split is doing this before ( and after )
+                if ("" == substrings[i]) continue;
+
                 // Check if the element is *, /, or (
                 if ("*" == substrings[i] || "/" == substrings[i] || "(" == substrings[i])
                 {
