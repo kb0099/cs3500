@@ -130,6 +130,23 @@ namespace FormulaEvaluator
             }
         }
         /// <summary>
+        /// Checks if top of the stack has any of the array values.
+        /// </summary>
+        /// <typeparam name="T">The underlying type of values.</typeparam>
+        /// <param name="stack">Represents stack.</param>
+        /// <param name="values">An array of T.</param>
+        /// <returns></returns>
+        public static bool HasOnTop<T>(this Stack<T> stack, T[] values)
+        {
+            foreach(T v in values)
+            {
+                if (stack.Peek().Equals(v))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Represents a helper method for arithmetic operations.
         /// Example: Calc(1, 2, '+') would return the value of 1+2 which is 3.
         /// </summary>
