@@ -92,6 +92,14 @@ namespace FormulaEvaluator
                         operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. 
                         Push the result onto the value stack.
                         */
+                        if (opStack.HasOnTop(plusMinus) || opStack.HasOnTop(mulDiv))
+                        {
+                            if (valueStack.Count < 2)
+                                throw ArgEx();
+                            valueStack.Push((int)Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
+                        }
+                        if (opStack.Count < 1 || !opStack.Pop().Equals('('))
+                            throw ArgEx();
                         break;
                     default:
                         if (Regex.IsMatch(tokens[i], @"^\d+$"))
