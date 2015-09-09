@@ -9,6 +9,12 @@ namespace FormulaEvaluator
 {
     /// <summary>
     /// Represents a static class that acts as a container for static members.
+    /// <para>
+    /// Created as Part of:
+    /// University of Utah
+    /// CS 3500 Fall 2015, Assignment 1
+    /// by Kedar Bastakoti
+    /// </para>
     /// </summary>
     public static class Evaluator
     {
@@ -218,7 +224,7 @@ namespace FormulaEvaluator
         /// Throws the prevalent ArgumentException.
         /// </summary>
         private static ArgumentException ArgEx()
-        {
+        {            
             return new ArgumentException("Expression contains invalid token or operation.");
         }
 
