@@ -39,6 +39,8 @@ namespace FormulaEvaluator
         {
             Stack<double> valueStack = new Stack<double>();
             Stack<char> opStack = new Stack<char>();
+            char[] plusMinus = new char[] { '+', '-' };
+            char[] mulDiv = new char[] { '*', '/' };
 
             if (String.IsNullOrEmpty(exp))
                 throw ArgEx();
@@ -80,26 +82,37 @@ namespace FormulaEvaluator
                         */
                         break;
                     default:
+                        int t = 0;
                         if (Regex.IsMatch(tokens[i], @"^\d+$"))
                         {
-                            // integer
+                            // token is integer
                             /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, 
                             and apply the popped operator to t and the popped number. Push the result onto the value stack.
                             Otherwise, push t onto the value stack.
                             */
-                            int t = Int32.Parse(tokens[i]);
-                            valueStack.Push(t);
-
+                            t = Int32.Parse(tokens[i]);
                         }
                         else if (IsValidVar(tokens[i]))
                         {
-                            // variable
+                            // token is a variable
                             /*
                             Proceed as above, using the looked-up value of t instead of t
                             */
+                            t = variableEvaluator(tokens[i]);
                         }
                         else
+                        {
                             throw ArgEx();
+                        }
+                        // at this point t has a value assigned to it
+                        if (opStack.HasOnTop(mulDiv))
+                        {
+                            if (valueStack.Count == 0 || t == 0)
+                                throw ArgEx();
+                            t = (int)Calc(valueStack.Pop(), t, opStack.Pop());
+                        }
+                        valueStack.Push(t);
+
                         break;
                 }
             }
@@ -138,11 +151,12 @@ namespace FormulaEvaluator
         /// <returns></returns>
         public static bool HasOnTop<T>(this Stack<T> stack, T[] values)
         {
-            foreach(T v in values)
-            {
-                if (stack.Peek().Equals(v))
-                    return true;
-            }
+            if(stack.Count > 0)
+                foreach(T v in values)
+                {
+                    if (stack.Peek().Equals(v))
+                        return true;
+                }
             return false;
         }
 
