@@ -42,6 +42,8 @@ namespace FormulaEvaluator
             char[] plusMinus = new char[] { '+', '-' };
             char[] mulDiv = new char[] { '*', '/' };
 
+            int t = 0;  //temporary variable
+
             if (String.IsNullOrEmpty(exp))
                 throw ArgEx();
 
@@ -63,6 +65,14 @@ namespace FormulaEvaluator
                         Apply the popped operator to the popped numbers. Push the result onto the value stack. 
                         Next, push t onto the operator stack
                         */
+                        if (opStack.HasOnTop(plusMinus))
+                        {
+                            if (valueStack.Count < 2)
+                                throw ArgEx();
+                            t = (int)Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+                            valueStack.Push(t);
+                        }
+                        opStack.Push(tokens[i][0]);
                         break;
                     case "*":
                     case "/":
@@ -82,7 +92,6 @@ namespace FormulaEvaluator
                         */
                         break;
                     default:
-                        int t = 0;
                         if (Regex.IsMatch(tokens[i], @"^\d+$"))
                         {
                             // token is integer
@@ -109,7 +118,7 @@ namespace FormulaEvaluator
                         {
                             if (valueStack.Count == 0 || t == 0)
                                 throw ArgEx();
-                            t = (int)Calc(valueStack.Pop(), t, opStack.Pop());
+                            t = (int)Calc(t, valueStack.Pop(), opStack.Pop());
                         }
                         valueStack.Push(t);
 
@@ -136,7 +145,7 @@ namespace FormulaEvaluator
             }
             else
             {
-                if (!(valueStack.Count == 1 && opStack.Count == 2))
+                if (!(valueStack.Count == 2 && opStack.Count == 1))
                     throw ArgEx();
                 else
                     return (int)Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
@@ -161,25 +170,26 @@ namespace FormulaEvaluator
         }
 
         /// <summary>
-        /// Represents a helper method for arithmetic operations.
-        /// Example: Calc(1, 2, '+') would return the value of 1+2 which is 3.
+        /// Represents a helper method for arithmetic operations based on stack pop order.
+        /// The order of operation is reversed: v2 op v1
+        /// Example: Calc(1, 2, '-') would return the value of 2-1 which is 1.
         /// </summary>
-        /// <param name="v1">Left Operand</param>
-        /// <param name="v2">Right Operand</param>
+        /// <param name="v1">First popped item</param>
+        /// <param name="v2">Last popped item</param>
         /// <param name="op">Operator: +, -, *, or /</param>
-        /// <returns>The result of applying the operator to the operands.</returns>
+        /// <returns>The result of applying the operator to the operands in reverse order</returns>
         private static double Calc(double v1, double v2, char op)
         {
             switch (op)
             {
                 case '+':
-                    return v1 + v2;
+                    return v2 + v1;
                 case '-':
-                    return v1 - v2;
+                    return v2 - v1;
                 case '*':
-                    return v1 * v2;
+                    return v2 * v1;
                 case '/':
-                    return v1 / v2;
+                    return v2 / v1;
                 default:
                     throw ArgEx();
             }
