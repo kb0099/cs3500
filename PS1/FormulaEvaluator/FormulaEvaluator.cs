@@ -95,6 +95,7 @@ namespace FormulaEvaluator
                     if ("(" != op) throw new ArgumentException();
                     int val = values.Pop();
                     ReadInteger(val, operators, values);
+                    continue;
                 }
 
                 // As the last possible task, try to check if the element is a variable. If so, take the result and operate on it like an integer
@@ -154,22 +155,30 @@ namespace FormulaEvaluator
         {
             int current;
             // Check if * or / is currently in the operator stack, then apply the operation to the last and current values
-            if ("*" == ops.Peek() || "/" == ops.Peek())
+            if (ops.Count > 0)
             {
-                // Error check that vals is not empty, throw ArgumentException otherwise
-                if (vals.Count < 1) throw new ArgumentException();
-
-                String op = ops.Pop();
-                int last = vals.Pop();
-                if ("*" == op)
+                if ("*" == ops.Peek() || "/" == ops.Peek())
                 {
-                    current = last * value;
+                    // Error check that vals is not empty, throw ArgumentException otherwise
+                    if (vals.Count < 1) throw new ArgumentException();
+
+                    String op = ops.Pop();
+                    int last = vals.Pop();
+                    if ("*" == op)
+                    {
+                        current = last * value;
+                    }
+                    else
+                    {
+                        // Use double to round the final value
+                        double temp = (double)last / value;
+                        current = (int)Math.Round(temp);
+                    }
                 }
                 else
                 {
-                    // Use double to round the final value
-                    double temp = (double)last / value;
-                    current = (int)Math.Round(temp);
+                    // Put the value in current
+                    current = value;
                 }
             }
             else
@@ -191,27 +200,28 @@ namespace FormulaEvaluator
         private static void ReadAddOrSub(Stack<String> ops, Stack<int> vals)
         {
             // Check if + or - are on the ops stack, then apply the operation to the last and current values
-            if ("+" == ops.Peek() || "-" == ops.Peek())
-            {
-                // Error check that vals has enough values, throw ArgumentException otherwise
-                if (vals.Count < 2) throw new ArgumentException();
+            if (ops.Count > 0)
+                if ("+" == ops.Peek() || "-" == ops.Peek())
+                {
+                    // Error check that vals has enough values, throw ArgumentException otherwise
+                    if (vals.Count < 2) throw new ArgumentException();
 
-                String sign = ops.Pop();
-                int current = vals.Pop();
-                int last = vals.Pop();
-                int result;
-                // Check which sign is present and apply operation
-                if ("+" == sign)
-                {
-                    result = last + current;
+                    String sign = ops.Pop();
+                    int current = vals.Pop();
+                    int last = vals.Pop();
+                    int result;
+                    // Check which sign is present and apply operation
+                    if ("+" == sign)
+                    {
+                        result = last + current;
+                    }
+                    else
+                    {
+                        result = last - current;
+                    }
+                    // Add result to vals
+                    vals.Push(result);
                 }
-                else
-                {
-                    result = last - current;
-                }
-                // Add result to vals
-                vals.Push(result);
-            }
         }
     }
 }
