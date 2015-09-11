@@ -22,7 +22,7 @@ namespace FormulaEvaluator
         /// Represents a valid pattern for variable name or identifier.
         /// <para>PS1 Requirement: Variable name consists of one or more letters followed by one or more digits.</para>
         /// </summary>
-        const String VALID_VAR_PATTERN = @"^[a-zA-Z]+[0-9]+$";
+        private const String VALID_VAR_PATTERN = @"^[a-zA-Z]+[0-9]+$";
 
         /// <summary>
         /// A delegate that can be used to look up the value of a variable. 
@@ -182,7 +182,7 @@ namespace FormulaEvaluator
         /// <param name="stack">Represents stack.</param>
         /// <param name="values">An array of T.</param>
         /// <returns></returns>
-        public static bool HasOnTop<T>(this Stack<T> stack, T[] values)
+        private static bool HasOnTop<T>(this Stack<T> stack, T[] values)
         {
             if(stack.Count > 0)
                 foreach(T v in values)
@@ -232,7 +232,7 @@ namespace FormulaEvaluator
         /// </summary>
         /// <param name="varName">Variable name to check</param>
         /// <returns>True if valid else False</returns>
-        public static bool IsValidVar(String varName)
+        private static bool IsValidVar(String varName)
         {
             return Regex.IsMatch(varName, VALID_VAR_PATTERN);
         }
