@@ -49,6 +49,7 @@ namespace FormulaEvaluator
             char[] mulDiv = new char[] { '*', '/' };
 
             int t = 0;  //temporary variable
+            double d = 0; // temporary variable to hold parsed value
 
             if (String.IsNullOrEmpty(exp))
                 throw ArgEx();
@@ -116,14 +117,14 @@ namespace FormulaEvaluator
                         }
                         break;
                     default:
-                        if (Regex.IsMatch(tokens[i], @"^\d+$"))
+                        if (Double.TryParse(tokens[i], out d))
                         {
-                            // token is integer
+                            // token is integer(or double)
                             /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, 
                             and apply the popped operator to t and the popped number. Push the result onto the value stack.
                             Otherwise, push t onto the value stack.
                             */
-                            t = Int32.Parse(tokens[i]);
+                            t = (int)d;
                         }
                         else if (IsValidVar(tokens[i]))
                         {
