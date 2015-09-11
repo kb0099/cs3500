@@ -16,7 +16,7 @@ namespace FormulaEvaluator
         /// Delegate for an Evaluate() parameter. The method is expected to take a string that represents some variable used
         /// in the expression string given to Evaluate(), then return the integer that variable contains. The method will be
         /// storing a table of the variables and values so it can return the values for all variables in the expression.
-        /// If the given string is not a valid variable, the method should throw an ArgumentException.
+        /// If the given string is not a specified variable, the method should throw an ArgumentException.
         /// </summary>
         /// <param name="v">
         /// The string representing a variable.
@@ -99,7 +99,8 @@ namespace FormulaEvaluator
                 }
 
                 // As the last possible task, try to check if the element is a variable. If so, take the result and operate on it like an integer
-                result = variableEvaluator(substrings[i]); // If it is an invalid variable, the method should throw an ArgumentException
+                if (!char.IsLetter(substrings[i][0]) || !char.IsDigit(substrings[i][substrings[i].Length - 1])) throw new ArgumentException();
+                result = variableEvaluator(substrings[i]); // If it is an unspecified variable, the method should throw an ArgumentException
                 ReadInteger(result, operators, values);
             }
 
@@ -170,6 +171,8 @@ namespace FormulaEvaluator
                     }
                     else
                     {
+                        // Error check that division by zero does not happen, throw ArgumentException otherwise
+                        if (value == 0) throw new ArgumentException();
                         // Use double to round the final value
                         double temp = (double)last / value;
                         current = (int)Math.Round(temp);
