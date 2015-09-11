@@ -14,6 +14,7 @@ namespace FormulaEvaluator
     /// University of Utah
     /// CS 3500 Fall 2015, Assignment 1
     /// by Kedar Bastakoti
+    /// Completed: 09/10/2015
     /// </para>
     /// </summary>
     public static class Evaluator
