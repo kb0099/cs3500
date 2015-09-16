@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtilities", "SpreadsheetUtilities\SpreadsheetUtilities.csproj", "{B9D55381-B87E-41E7-997E-D5AF770EC721}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyGraphTests", "DependencyGraphTests\DependencyGraphTests.csproj", "{FCB117BE-492F-4373-8DE3-A614CB04478F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{B9D55381-B87E-41E7-997E-D5AF770EC721}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9D55381-B87E-41E7-997E-D5AF770EC721}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9D55381-B87E-41E7-997E-D5AF770EC721}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCB117BE-492F-4373-8DE3-A614CB04478F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCB117BE-492F-4373-8DE3-A614CB04478F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCB117BE-492F-4373-8DE3-A614CB04478F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCB117BE-492F-4373-8DE3-A614CB04478F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

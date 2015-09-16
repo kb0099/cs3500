@@ -33,12 +33,20 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class DependencyGraph
     {
+        ///<summary>
+        /// The implementation uses two lists to store the dependents and dependees, or the s and t of (s,t)
+        /// respectively. Their pairs are defined by the index in both lists, so a pair would be
+        /// (dents.Get(i), dees.Get(i))
+        ///</summary>
+        private List<String> dents, dees;
+
         /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
         public DependencyGraph()
         {
-
+            dents = new List<String>();
+            dees = new List<String>();
         }
 
         /// <summary>
@@ -70,9 +78,9 @@ namespace SpreadsheetUtilities
         }
 
         /// <summary>
-        /// Reports wheter dependees(s) is non-empty.
+        /// Reports whether dependees(s) is non-empty.
         /// </summary>
-        public bool HadDependees(String s)
+        public bool HasDependees(String s)
         {
             return false;
         }
