@@ -34,9 +34,9 @@ namespace SpreadsheetUtilities
     public class DependencyGraph
     {
         ///<summary>
-        /// The implementation uses two lists to store the dependents and dependees, or the s and t of (s,t)
-        /// respectively. Their pairs are defined by the index in both lists, so a pair would be
-        /// (dents.Get(i), dees.Get(i))
+        /// The implementation uses two lists to store the dependents and dependees (dents,dees), or the
+        /// s and t of (s,t) respectively. Their pairs are defined by the index in both lists, so a pair
+        /// would be (dents[i], dees[i]).
         ///</summary>
         private List<String> dents, dees;
 
@@ -54,7 +54,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int Size
         {
-            get { return 0; }
+            get { return dents.Count; }
         }
 
         /// <summary>
@@ -62,11 +62,11 @@ namespace SpreadsheetUtilities
         /// This property is an example of an indexer. If dg is a DependencyGraph, you would
         /// invoke it like this:
         /// dg["a"]
-        /// It should return the size of dependees("a")
+        /// It should return the size of dependees("a").
         /// </summary>
         public int this[String s]
         {
-            get { return 0; }
+            get { return this.GetDependees(s).Count<String>(); }
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependents(String s)
         {
-            return false;
+            return dents.Contains(s);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependees(String s)
         {
-            return false;
+            return dees.Contains(s);
         }
 
         /// <summary>
@@ -90,7 +90,16 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetDependents(String s)
         {
-            return null;
+            HashSet<String> output = new HashSet<String>();
+            // Loop through the dents list; when dents[i] matches s, store the dependent (in dees) into output
+            for (int i = 0; i < dents.Count; i++)
+            {
+                if (dents[i] == s)
+                {
+                    output.Add(dees[i]);
+                }
+            }
+            return output;
         }
 
         /// <summary>
@@ -98,12 +107,21 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetDependees(String s)
         {
-            return null;
+            HashSet<String> output = new HashSet<String>();
+            // Loop through the dees list; when dees[i] matches s, store the dependee (in dents) into output
+            for (int i = 0; i < dees.Count; i++)
+            {
+                if (dees[i] == s)
+                {
+                    output.Add(dents[i]);
+                }
+            }
+            return output;
         }
 
         /// <summary>
         /// <para>
-        /// Adds the ordered pair (s,t), if it doesn't exist
+        /// Adds the ordered pair (s,t), if it doesn't exist.
         /// </para>
         /// <para>
         /// This should be thought of as:
@@ -114,17 +132,33 @@ namespace SpreadsheetUtilities
         /// <param name="t"> t must be evaluated first. s depends on t</param>
         public void AddDependency(String s, String t)
         {
-
+            // Get the dependees of t
+            IEnumerable<String> tDees = this.GetDependees(t);
+            // If t doesn't have s as a dependee yet, add the pair
+            if (!tDees.Contains<String>(s))
+            {
+                dents.Add(s);
+                dees.Add(t);
+            }
         }
 
         /// <summary>
-        /// Removes the ordered pair (s,t), if it exists
+        /// Removes the ordered pair (s,t), if it exists.
         /// </summary>
         /// <param name="s"></param>
         /// <param name="t"></param>
         public void RemoveDependency(String s, String t)
         {
-
+            // Loop through the dents list; if the pair is found, remove it and end the function
+            for (int i = 0; i < dents.Count; i++)
+            {
+                if (dents[i] == s && dees[i] == t)
+                {
+                    dents.RemoveAt(i);
+                    dees.RemoveAt(i);
+                    return;
+                }
+            }
         }
 
         /// <summary>
@@ -133,7 +167,16 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(String s, IEnumerable<String> newDependents)
         {
-
+            // Remove the pairs (s,r)
+            foreach (String r in this.GetDependents(s))
+            {
+                this.RemoveDependency(s, r);
+            }
+            // Add the pairs (s,t)
+            foreach (String t in newDependents)
+            {
+                this.AddDependency(s, t);
+            }
         }
 
         /// <summary>
@@ -142,7 +185,16 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependees(String s, IEnumerable<String> newDependees)
         {
-
+            // Remove the pairs (r,s)
+            foreach (String r in this.GetDependees(s))
+            {
+                this.RemoveDependency(r, s);
+            }
+            // Add the pairs (s,t)
+            foreach (String t in newDependees)
+            {
+                this.AddDependency(t, s);
+            }
         }
     }
 }
