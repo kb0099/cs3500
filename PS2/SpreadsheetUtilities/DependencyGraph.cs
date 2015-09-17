@@ -37,10 +37,21 @@ namespace SpreadsheetUtilities
     public class DependencyGraph
     {
         /// <summary>
+        /// Holds dependees as required by specification using key-value pair.
+        /// </summary>
+        private Dictionary<string, HashSet<string>> dependees;
+        /// <summary>
+        /// Holds key-value pair of dependents. dependents and dependees will have reverse entries.
+        /// </summary>
+        private Dictionary<string, HashSet<string>> dependents;
+
+        /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
         public DependencyGraph()
         {
+            dependees = new Dictionary<string, HashSet<string>>();
+            dependents = new Dictionary<string, HashSet<string>>();
         }
 
 
@@ -49,7 +60,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int Size
         {
-            get { return 0; }
+            get { return dependents.Count; }
         }
 
 
@@ -62,7 +73,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int this[string s]
         {
-            get { return 0; }
+            get {
+                if (dependees.ContainsKey(s))       // if dependees has the key s
+                    return dependees[s].Count;      // return the Count belonging to that key
+                return 0;                           // else return 0
+            }
         }
 
 
