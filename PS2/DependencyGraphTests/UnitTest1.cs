@@ -200,7 +200,7 @@ namespace DependencyGraphTests
         }
 
         /// <summary>
-        ///Nonempty graph should contain something; the indexer should behave like dependees(s)
+        ///Nonempty graph should contain something; the indexer should behave like dependees(s).Count
         ///</summary>
         [TestMethod()]
         public void NonEmptyTest5()
@@ -477,6 +477,104 @@ namespace DependencyGraphTests
                 Assert.IsTrue(dents[i].SetEquals(new HashSet<string>(t.GetDependents(letters[i]))));
                 Assert.IsTrue(dees[i].SetEquals(new HashSet<string>(t.GetDependees(letters[i]))));
             }
+        }
+
+        //******************Replace Tests**************//
+        /// <summary>
+        /// Replace dependents should not affect other pairs
+        /// </summary>
+        [TestMethod()]
+        public void ReplaceTest1()
+        {
+            DependencyGraph m = new DependencyGraph();
+            m.AddDependency("a", "b");
+            m.AddDependency("a", "c");
+            m.AddDependency("a", "e");
+            m.AddDependency("b", "a");
+            m.AddDependency("d", "c");
+            m.AddDependency("d", "e");
+            m.ReplaceDependents("a", new HashSet<String>() { "d" });
+            Assert.AreEqual(4, m.Size);
+            HashSet<String> bDents = new HashSet<String>(m.GetDependents("b"));
+            Assert.IsTrue(bDents.SetEquals(new HashSet<String>() { "a" }));
+            HashSet<String> dDents = new HashSet<String>(m.GetDependents("d"));
+            Assert.IsTrue(dDents.SetEquals(new HashSet<String>() { "c", "e" }));
+        }
+
+        /// <summary>
+        /// Replace dependees should not affect other pairs
+        /// </summary>
+        [TestMethod()]
+        public void ReplaceTest2()
+        {
+            DependencyGraph m = new DependencyGraph();
+            m.AddDependency("a", "e");
+            m.AddDependency("b", "e");
+            m.AddDependency("d", "e");
+            m.AddDependency("a", "c");
+            m.AddDependency("e", "b");
+            m.AddDependency("c", "b");
+            m.ReplaceDependees("e", new HashSet<String>() { "c" });
+            Assert.AreEqual(4, m.Size);
+            HashSet<String> cDees = new HashSet<String>(m.GetDependees("c"));
+            Assert.IsTrue(cDees.SetEquals(new HashSet<String>() { "a" }));
+            HashSet<String> bDees = new HashSet<String>(m.GetDependees("b"));
+            Assert.IsTrue(bDees.SetEquals(new HashSet<String>() { "e", "c" }));
+        }
+
+        //********************Has Tests************************//
+        /// <summary>
+        /// Thorough test of HasDependents()
+        /// </summary>
+        [TestMethod()]
+        public void HasTest1()
+        {
+            DependencyGraph m = new DependencyGraph();
+            m.AddDependency("a", "b");
+            m.AddDependency("a", "c");
+            m.AddDependency("b", "c");
+            m.AddDependency("d", "e");
+            m.AddDependency("d", "d");
+            Assert.IsTrue(m.HasDependents("a"));
+            Assert.IsTrue(m.HasDependents("b"));
+            Assert.IsFalse(m.HasDependents("c"));
+            Assert.IsTrue(m.HasDependents("d"));
+            Assert.IsFalse(m.HasDependents("e"));
+            Assert.IsFalse(m.HasDependents("f"));
+            m.AddDependency("c", "b");
+            Assert.IsTrue(m.HasDependents("c"));
+            m.RemoveDependency("a", "b");
+            Assert.IsTrue(m.HasDependents("a"));
+            m.RemoveDependency("a", "c");
+            Assert.IsFalse(m.HasDependents("a"));
+            Assert.IsFalse(m.HasDependents("f"));
+        }
+
+        /// <summary>
+        /// Thorough test of HasDependees()
+        /// </summary>
+        [TestMethod()]
+        public void HasTest2()
+        {
+            DependencyGraph m = new DependencyGraph();
+            m.AddDependency("a", "b");
+            m.AddDependency("a", "c");
+            m.AddDependency("b", "c");
+            m.AddDependency("d", "e");
+            m.AddDependency("d", "d");
+            Assert.IsFalse(m.HasDependees("a"));
+            Assert.IsTrue(m.HasDependees("b"));
+            Assert.IsTrue(m.HasDependees("c"));
+            Assert.IsTrue(m.HasDependees("d"));
+            Assert.IsTrue(m.HasDependees("e"));
+            Assert.IsFalse(m.HasDependees("f"));
+            m.AddDependency("c", "a");
+            Assert.IsTrue(m.HasDependees("a"));
+            m.RemoveDependency("a", "c");
+            Assert.IsTrue(m.HasDependees("c"));
+            m.RemoveDependency("b", "c");
+            Assert.IsFalse(m.HasDependees("c"));
+            Assert.IsFalse(m.HasDependees("f"));
         }
     }
 }

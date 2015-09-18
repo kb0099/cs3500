@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Coded by Mitchell Terry
+// Holds class for creating objects to store dependency graphs
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -156,7 +159,7 @@ namespace SpreadsheetUtilities
                 {
                     dents.RemoveAt(i);
                     dees.RemoveAt(i);
-                    return;
+                    break;
                 }
             }
         }
@@ -168,7 +171,8 @@ namespace SpreadsheetUtilities
         public void ReplaceDependents(String s, IEnumerable<String> newDependents)
         {
             // Remove the pairs (s,r)
-            foreach (String r in this.GetDependents(s))
+            IEnumerable<String> remove = this.GetDependents(s);
+            foreach (String r in remove)
             {
                 this.RemoveDependency(s, r);
             }
@@ -186,7 +190,8 @@ namespace SpreadsheetUtilities
         public void ReplaceDependees(String s, IEnumerable<String> newDependees)
         {
             // Remove the pairs (r,s)
-            foreach (String r in this.GetDependees(s))
+            IEnumerable<String> remove = this.GetDependees(s);
+            foreach (String r in remove)
             {
                 this.RemoveDependency(r, s);
             }
