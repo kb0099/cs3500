@@ -1,6 +1,8 @@
-﻿// Skeleton implementation written by Joe Zachary for CS 3500, September 2013.
-// Version 1.1 (Fixed error in comment for RemoveDependency.)
-
+﻿// Kedar Bastakoti
+// CS3500, Fall 2015
+// University of Utah
+// Assignment 3 
+// Prepared using provided skeletons
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +59,7 @@ namespace SpreadsheetUtilities
         {
             dependees = new Dictionary<string, HashSet<string>>();
             dependents = new Dictionary<string, HashSet<string>>();
+            size = 0;
         }
 
 
@@ -204,11 +207,15 @@ namespace SpreadsheetUtilities
             if (!dependents.ContainsKey(s))
                 dependents.Add(s, new HashSet<string>());
             size = size - dependents[s].Count + newDependents.Count<string>();
+            
+            // remove dependees
             foreach(string t in dependents[s])
             {
                 RemoveDependency(dependees, t, s);
             }
             dependents[s] = new HashSet<string>(newDependents); // effectively remove the old set of dependents
+
+            // add dependees
             foreach (string t in newDependents)
             {
                 AddDependency(dependees, t, s);
@@ -224,11 +231,15 @@ namespace SpreadsheetUtilities
             if (!dependees.ContainsKey(t))
                 dependees.Add(t, new HashSet<string>());
             size = size - dependees[t].Count + newDependees.Count<string>();
+            
+            // remove old dependents
             foreach(string s in dependees[t])
             {
                 RemoveDependency(dependents, s, t);
             }
             dependees[t] = new HashSet<string>(newDependees);
+            
+            //add new dependents
             foreach (string s in newDependees)
             {
                 AddDependency(dependents, s, t);
