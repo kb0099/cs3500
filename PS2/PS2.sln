@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtilities", "Spr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetUtilitiesTests", "SpreadsheetUtilitiesTests\SpreadsheetUtilitiesTests.csproj", "{5BF08D11-1C21-45E6-A051-07B64F30B1CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS2Client", "PS2Client\PS2Client.csproj", "{82EFF263-345D-450F-8368-DD429FFC4AC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5BF08D11-1C21-45E6-A051-07B64F30B1CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BF08D11-1C21-45E6-A051-07B64F30B1CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BF08D11-1C21-45E6-A051-07B64F30B1CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82EFF263-345D-450F-8368-DD429FFC4AC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82EFF263-345D-450F-8368-DD429FFC4AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82EFF263-345D-450F-8368-DD429FFC4AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82EFF263-345D-450F-8368-DD429FFC4AC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

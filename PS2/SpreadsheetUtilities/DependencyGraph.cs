@@ -46,6 +46,11 @@ namespace SpreadsheetUtilities
         private Dictionary<string, HashSet<string>> dependents;
 
         /// <summary>
+        /// represents the size
+        /// </summary>
+        private int size;   
+
+        /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
         public DependencyGraph()
@@ -60,7 +65,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int Size
         {
-            get { return dependents.Count; }
+            get { return size; }
         }
 
 
@@ -86,6 +91,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependents(string s)
         {
+            if (dependents.ContainsKey(s))
+                return dependents[s].Count > 0;
             return false;
         }
 
@@ -95,6 +102,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependees(string s)
         {
+            if (dependees.ContainsKey(s))
+                return dependees[s].Count > 0;
             return false;
         }
 
@@ -104,7 +113,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return null;
+            return dependents.Keys;
         }
 
         /// <summary>
@@ -112,7 +121,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return null;
+            return dependees.Keys;
         }
 
 
@@ -128,6 +137,19 @@ namespace SpreadsheetUtilities
         /// <param name="t"> t must be evaluated first.  S depends on T</param>
         public void AddDependency(string s, string t)
         {
+            if (!dependents.ContainsKey(s))
+                dependents.Add(s, new HashSet<string>());
+            if(!dependents[s].Contains(t))
+            {
+                dependents[s].Add(t);
+                ++size;
+            }
+            if (!dependees.ContainsKey(t))
+                dependees.Add(t, new HashSet<string>());
+            if (!dependees[t].Contains(s))
+            {
+                dependees[t].Add(s);
+            }
         }
 
 

@@ -10,6 +10,7 @@
 FormulaEvaluatorTests/
 PS1Client/
 PS2.kig/
+PS2Client/
 
 # User-specific files
 *.suo
