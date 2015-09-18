@@ -48,7 +48,7 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// represents the size
         /// </summary>
-        private int size;   
+        private int size;
 
         /// <summary>
         /// Creates an empty DependencyGraph.
@@ -78,7 +78,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int this[string s]
         {
-            get {
+            get
+            {
                 if (dependees.ContainsKey(s))       // if dependees has the key s
                     return dependees[s].Count;      // return the Count belonging to that key
                 return 0;                           // else return 0
@@ -113,7 +114,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return dependents.Keys;
+            if (!dependents.ContainsKey(s))
+                return new HashSet<string>();
+            return dependents[s];
         }
 
         /// <summary>
@@ -121,7 +124,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return dependees.Keys;
+            if (!dependees.ContainsKey(s))
+                return new HashSet<string>();
+            return dependees[s];
         }
 
 
@@ -137,19 +142,27 @@ namespace SpreadsheetUtilities
         /// <param name="t"> t must be evaluated first.  S depends on T</param>
         public void AddDependency(string s, string t)
         {
-            if (!dependents.ContainsKey(s))
-                dependents.Add(s, new HashSet<string>());
-            if(!dependents[s].Contains(t))
-            {
-                dependents[s].Add(t);
+            if (AddDependency(dependents, s, t))
                 ++size;
-            }
-            if (!dependees.ContainsKey(t))
-                dependees.Add(t, new HashSet<string>());
-            if (!dependees[t].Contains(s))
+            AddDependency(dependees, t, s);
+        }
+
+        /// <summary>
+        /// Represents a helper for AddDependency method.
+        /// </summary>
+        /// <param name="d">The dictionary object.</param>
+        /// <param name="s">The key</param>
+        /// <param name="t">The value in HashSet.</param>
+        private bool AddDependency(Dictionary<string, HashSet<String>> d, string s, string t)
+        {
+            if (!d.ContainsKey(s))
+                d.Add(s, new HashSet<string>());
+            if (!d[s].Contains(t))
             {
-                dependees[t].Add(s);
+                d[s].Add(t);
+                return true;
             }
+            return false;
         }
 
 
@@ -161,7 +174,7 @@ namespace SpreadsheetUtilities
         public void RemoveDependency(string s, string t)
         {
             if (RemoveDependency(dependents, s, t))
-                --size; 
+                --size;
             RemoveDependency(dependees, t, s);
         }
         /// <summary>
@@ -175,7 +188,7 @@ namespace SpreadsheetUtilities
         {
             if (d.ContainsKey(k))
             {
-                dependents[k].Remove(v);
+                d[k].Remove(v);
                 return true;
             }
             return false;
@@ -188,15 +201,38 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            if (!dependents.ContainsKey(s))
+                dependents.Add(s, new HashSet<string>());
+            size = size - dependents[s].Count + newDependents.Count<string>();
+            foreach(string t in dependents[s])
+            {
+                RemoveDependency(dependees, t, s);
+            }
+            dependents[s] = new HashSet<string>(newDependents); // effectively remove the old set of dependents
+            foreach (string t in newDependents)
+            {
+                AddDependency(dependees, t, s);
+            }
         }
-
 
         /// <summary>
         /// Removes all existing ordered pairs of the form (r,s).  Then, for each 
         /// t in newDependees, adds the ordered pair (t,s).
         /// </summary>
-        public void ReplaceDependees(string s, IEnumerable<string> newDependees)
+        public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
+            if (!dependees.ContainsKey(t))
+                dependees.Add(t, new HashSet<string>());
+            size = size - dependees[t].Count + newDependees.Count<string>();
+            foreach(string s in dependees[t])
+            {
+                RemoveDependency(dependents, s, t);
+            }
+            dependees[t] = new HashSet<string>(newDependees);
+            foreach (string s in newDependees)
+            {
+                AddDependency(dependents, s, t);
+            }
         }
 
     }
