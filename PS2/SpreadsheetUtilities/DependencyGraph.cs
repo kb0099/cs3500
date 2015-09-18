@@ -160,6 +160,25 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t)
         {
+            if (RemoveDependency(dependents, s, t))
+                --size; 
+            RemoveDependency(dependees, t, s);
+        }
+        /// <summary>
+        /// Represents a helper for RemoveDependency
+        /// </summary>
+        /// <param name="d">The dictionary that contains the key.</param>
+        /// <param name="k">The key</param>
+        /// <param name="v">The value</param>
+        /// <returns></returns>
+        private bool RemoveDependency(Dictionary<string, HashSet<string>> d, string k, string v)
+        {
+            if (d.ContainsKey(k))
+            {
+                dependents[k].Remove(v);
+                return true;
+            }
+            return false;
         }
 
 
