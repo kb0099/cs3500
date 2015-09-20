@@ -15,7 +15,7 @@ namespace FormulaEvaluatorTester
         static void Main(string[] args)
         {
             // Method to test behavior of Regex.Split
-            // TestRegexSplit();
+            //TestRegexSplit();
             // Method to test FormulaEvaluator.Evaluate
             TestEvaluate();
             // Method to test FormulaEvaluator.Evaluate's exceptions
@@ -24,13 +24,14 @@ namespace FormulaEvaluatorTester
 
         static void TestRegexSplit()
         {
-            String testStart = "(15-12)* (57)\n+ s\tb3/f";
+            String testStart = "46me";
             Console.WriteLine("Original expression: " + testStart);
             // Remove whitespace
             testStart = Regex.Replace(testStart, "\\s", "");
             Console.WriteLine("Removed spaces: " + testStart);
             // Split string
-            String[] testSplit = Regex.Split(testStart, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+            // Evaluator's split is (\\()|(\\))|(-)|(\\+)|(\\*)|(/)
+            String[] testSplit = Regex.Split(testStart, "(\\d+)");
             for (int i = 0; i < testSplit.Length; i++)
             {
                 Console.WriteLine("element " + i + ": [" + testSplit[i] + "]");
@@ -65,9 +66,9 @@ namespace FormulaEvaluatorTester
                 "x7",
                 "x7+3",
                 "14/x7",
-                "3+ms3*2",
-                "25-6*ms3",
-                "F55/ms3 +x7"
+                "3+Ms3*2",
+                "25-6*Ms3",
+                "F55/Ms3 +x7"
             };
             String[] solutions = new String[]{
                 "2",
@@ -102,7 +103,7 @@ namespace FormulaEvaluatorTester
             // Construct the dictionary
             dict = new Dictionary<string, int>();
             dict.Add("x7", 7);
-            dict.Add("ms3", 4);
+            dict.Add("Ms3", 4);
             dict.Add("F55", 12);
 
             // Loop through test strings; print the string, the expected solution, and the calculated solution
@@ -121,10 +122,13 @@ namespace FormulaEvaluatorTester
                 "3F",
                 "5m3",
                 "Pt",
+                "33mason9",
+                "14+2-3*Pt-12",
                 "undefinedVar7",
                 "7++3",
                 "9+-4",
                 "((14/2)",
+                "2*7)+3",
                 "9+4*3-",
                 "4/0"
             };
@@ -136,6 +140,7 @@ namespace FormulaEvaluatorTester
             dict.Add("3F", 7);
             dict.Add("5m3", 4);
             dict.Add("Pt", 12);
+            dict.Add("33mason9", -9);
 
             bool passed = true;
             // Loop through test strings; print strings that don't cause exceptions

@@ -91,6 +91,7 @@ namespace FormulaEvaluator
                     // Apply the operation for finding + or -, pop ( from the operators stack and the value from values, operate on that value as an integer read, then move on to next element
                     ReadAddOrSub(operators, values);
                     // Error check that operators had (, throw ArgumentException otherwise
+                    if (operators.Count == 0) throw new ArgumentException();
                     String op = operators.Pop();
                     if ("(" != op) throw new ArgumentException();
                     int val = values.Pop();
@@ -99,7 +100,9 @@ namespace FormulaEvaluator
                 }
 
                 // As the last possible task, try to check if the element is a variable. If so, take the result and operate on it like an integer
-                if (!char.IsLetter(substrings[i][0]) || !char.IsDigit(substrings[i][substrings[i].Length - 1])) throw new ArgumentException();
+                String[] var = Regex.Split(substrings[i], "(\\d+)");
+                if (var.Length != 3) throw new ArgumentException();
+                if (!(char.IsLetter(var[0], 0) && int.TryParse(var[1], out result) && var[2] == "")) throw new ArgumentException();
                 result = variableEvaluator(substrings[i]); // If it is an unspecified variable, the method should throw an ArgumentException
                 ReadInteger(result, operators, values);
             }

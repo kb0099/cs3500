@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormulaEvaluator", "Formula
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormulaEvaluatorTester", "FormulaEvaluatorTester\FormulaEvaluatorTester.csproj", "{436A7DB3-910F-400A-A6FF-60DF7D407B39}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS1GradingTests", "PS1GradingTests\PS1GradingTests.csproj", "{48613FD5-8E32-44A3-A26F-50860A00088B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{436A7DB3-910F-400A-A6FF-60DF7D407B39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{436A7DB3-910F-400A-A6FF-60DF7D407B39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{436A7DB3-910F-400A-A6FF-60DF7D407B39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48613FD5-8E32-44A3-A26F-50860A00088B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48613FD5-8E32-44A3-A26F-50860A00088B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48613FD5-8E32-44A3-A26F-50860A00088B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48613FD5-8E32-44A3-A26F-50860A00088B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
