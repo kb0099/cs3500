@@ -181,7 +181,131 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return null;
+            // Create stacks for values and operators
+            Stack<double> values = new Stack<double>();
+            Stack<string> operators = new Stack<string>();
+            // Loop through tokens
+            foreach (String t in tokens)
+            {
+                // Check if t is *, /, or (; push symbol to operators if so
+                if (t == "*" || t == "/" || t == "(")
+                {
+                    operators.Push(t);
+                    continue;
+                }
+                // Check if t is a double; have ReadDouble() operate on it
+                double result;
+                if (double.TryParse(t, out result))
+                {
+                    if (ReadDouble(result, operators, values))
+                    {
+                        // This will run if division by 0 occurs, so return a FormulaError
+                        return new FormulaError("Division by 0 occured");
+                    }
+                    continue;
+                }
+                // Check if t is + or -; have ReadAddOrSub() operate on it and push t to operators
+                if (t == "+" || t == "-")
+                {
+                    ReadAddOrSub(operators, values);
+                    operators.Push(t);
+                    continue;
+                }
+                // Check if t is ); have ReadAddOrSub() operate on it, pop ( from operators and the double from values, and have ReadDouble() operate on it
+                if (t == ")")
+                {
+                    ReadAddOrSub(operators, values);
+                    operators.Pop();
+                    double val = values.Pop();
+                    if (ReadDouble(val, operators, values))
+                    {
+                        // This will run if division by 0 occurs, so return a FormulaError
+                        return new FormulaError("Division by 0 occured");
+                    }
+                    continue;
+                }
+                // Anything that reaches this point will be a variable, so try to get the varaiables value through lookup() and repeat the code used for checking a double
+                try
+                {
+                    result = lookup(t);
+                    if (ReadDouble(result, operators, values))
+                    {
+                        // This will run if division by 0 occurs, so return a FormulaError
+                        return new FormulaError("Division by 0 occured");
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    return new FormulaError("Undefined variable: " + t);
+                }
+            }
+            // One more operator can be left, so ReadAddOrSub() can be used to finish the evaluation
+            ReadAddOrSub(operators, values);
+            // The solution is now the only value in values
+            return values.Pop();
+        }
+
+        /// <summary>
+        /// Method that will run necessary operations when a double is read from the expressions' elements. It will
+        /// multiply or divide the previous value with the given value if the previous operation is * or /, then push the
+        /// final value (value, lastVal*value, or lastVal/value) to vals.
+        /// If a division by 0 occurs, it will return true to signal failure to evaluate.
+        /// </summary>
+        /// <param name="value">
+        /// The double read.
+        /// </param>
+        /// <param name="ops">
+        /// The operator stack.
+        /// </param>
+        /// <param name="vals">
+        /// The values stack.
+        /// </param>
+        private bool ReadDouble(double value, Stack<string> ops, Stack<double> vals)
+        {
+            double current;
+            // Check if * or / is currently in the operator stack, then apply the operation to the last and current values
+            if (ops.Count > 0)
+            {
+                if (ops.Peek() == "*" || ops.Peek() == "/")
+                {
+                    string op = ops.Pop();
+                    double last = vals.Pop();
+                    if (op == "*") current = last * value;
+                    else
+                    {
+                        // If the division is by zero, return false for a failure to evaluate
+                        if (value == 0) return true;
+                        current = last / value;
+                    }
+                }
+                else current = value;
+            }
+            else current = value;
+            vals.Push(current);
+            // return false to show there were no issues evaluating the value
+            return false;
+        }
+
+        /// <summary>
+        /// Method that will run necessary operations when +, -, or ) is read from the expressions' elements. If the previous
+        /// operation was a + or -, it will apply the operation on the last two values and put the result in vals.
+        /// </summary>
+        /// <param name="ops"></param>
+        /// <param name="vals"></param>
+        private void ReadAddOrSub(Stack<string> ops, Stack<double> vals)
+        {
+            // Check if + or - are on the ops stack, then apply the operation to the last and current values
+            if (ops.Count > 0)
+                if (ops.Peek() == "+" || ops.Peek() == "-")
+                {
+                    String sign = ops.Pop();
+                    double current = vals.Pop();
+                    double last = vals.Pop();
+                    double result;
+                    if (sign == "+") result = last + current;
+                    else result = last - current;
+                    vals.Push(result);
+                }
         }
 
         /// <summary>
