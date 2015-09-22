@@ -3,17 +3,127 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 
+
 namespace SpreadsheetUtilitiesTests
 {
     /// <summary>
     ///  This is a test class for DependencyGraphTest
     /// 
     /// Most of the template test methods where provided as part assignment.
-    /// 
+    /// Only few primitive tests were added to ease the process,
+    /// since, the tests provided with assignment already had suite of exhaustive tests.
     ///</summary>
+
     [TestClass()]
     public class DependencyGraphTests
     {
+        /// <summary>
+        /// Tests the constructor.
+        /// </summary>
+        [TestMethod()]
+        public void DependencyGraphTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            Assert.AreEqual(t.Size, 0);
+        }
+
+        /// <summary>
+        /// Tests for HasDependents() method.
+        /// </summary>
+        [TestMethod()]
+        public void HasDependentsTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            Assert.IsFalse(t.HasDependents("a"));
+            t.AddDependency("a", "b");
+            Assert.IsTrue(t.HasDependents("a"));
+        }
+
+        /// <summary>
+        /// Tests for HasDependees()
+        /// </summary>
+        [TestMethod()]
+        public void HasDependeesTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            Assert.IsFalse(t.HasDependees("z"));
+            t.AddDependency("a", "b");
+            Assert.IsTrue(t.HasDependees("b"));
+        }
+        
+        /// <summary>
+        /// Tests GetDependents() method
+        /// </summary>
+        [TestMethod()]
+        public void GetDependentsTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            Assert.IsTrue(t.Size == 1);
+            Assert.IsTrue(new HashSet<string>(t.GetDependents("a")).Contains("b"));
+        }
+
+        /// <summary>
+        /// Tests the method GetDependees()
+        /// </summary>
+        [TestMethod()]
+        public void GetDependeesTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            Assert.IsTrue(new HashSet<string>(t.GetDependees("b")).Contains("a"));
+        }
+
+        /// <summary>
+        /// Tests the AddDependency() method
+        /// </summary>
+        [TestMethod()]
+        public void AddDependencyTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            Assert.IsTrue(t.Size == 1);
+            t.RemoveDependency("a", "b");
+            Assert.IsTrue(t.Size == 0);
+        }
+
+        /// <summary>
+        /// Tests RemoveDependency() method
+        /// </summary>
+        [TestMethod()]
+        public void RemoveDependencyTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            Assert.IsTrue(new HashSet<string>(t.GetDependents("a")).Count == 1);
+            Assert.IsTrue(new HashSet<string>(t.GetDependees("b")).Count == 1);
+            t.RemoveDependency("a", "b");
+            Assert.IsTrue(new HashSet<string>(t.GetDependents("a")).Count == 0);
+            Assert.IsTrue(new HashSet<string>(t.GetDependees("b")).Count == 0);
+        }
+
+        /// <summary>
+        /// Tests for ReplaceDependents() method
+        /// </summary>
+        [TestMethod()]
+        public void ReplaceDependentsTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.ReplaceDependents("a", new HashSet<string>(new string[] {"b", "c", "d"}));
+            Assert.IsTrue(t.Size == 3);
+           // Exhaustive tests were executed from the provided skeleton
+        }
+
+        /// <summary>
+        /// Tests for ReplaceDependees() method
+        /// </summary>
+        [TestMethod()]
+        public void ReplaceDependeesTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.ReplaceDependees("a", new HashSet<string>(new string[] { "b", "c", "d" }));
+            Assert.IsTrue(t.Size == 3);
+        }
         // ************************** TESTS ON EMPTY DGs ************************* //
 
         /// <summary>
