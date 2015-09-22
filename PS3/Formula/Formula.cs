@@ -38,6 +38,15 @@ namespace SpreadsheetUtilities
     public class Formula
     {
         /// <summary>
+        /// The normalizer function given.
+        /// </summary>
+        private Func<string, string> normalizer;
+        /// <summary>
+        /// The tokens of the formula given.
+        /// </summary>
+        private List<string> tokens;
+
+        /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
         /// described in the class comment.  If the expression is syntactically invalid,
         /// throws a FormulaFormatException with an explanatory Message.
@@ -45,6 +54,7 @@ namespace SpreadsheetUtilities
         /// The associated normalizer is the identity function, and the associated validator
         /// maps every string to true.  
         /// </summary>
+        /// <exception cref="FormulaFormatException"></exception>
         public Formula(String formula) :
             this(formula, s => s, s => true)
         {
@@ -72,8 +82,80 @@ namespace SpreadsheetUtilities
         /// new Formula("x+y3", N, V) should throw an exception, since V(N("x")) is false
         /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
         /// </summary>
+        /// <exception cref="FormulaFormatException"></exception>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            // Store the normalizer function
+            normalizer = normalize;
+            // Get the tokens of the formula
+            tokens = new List<string>(GetTokens(formula));
+            // Check that syntax is correct, and that no invalid tokens are given
+            // If there are no tokens, throw FormulaFormatException
+            if (tokens.Count == 0) throw new FormulaFormatException("There must be at least one token to the formula");
+            // First token must be a number, variable, or opening parentheses
+            if (!isNumber(tokens[0]) && !isPossibleVariable(tokens[0]) && tokens[0] != "(") throw new FormulaFormatException("First token must be a number, variable, or opening parentheses");
+            // Last token must be a number, variable, or closing parentheses
+            if (!isNumber(tokens[tokens.Count - 1]) && !isPossibleVariable(tokens[tokens.Count - 1]) && tokens[tokens.Count - 1] != ")") throw new FormulaFormatException("Last token must be a number, variable, or closing parentheses");
+            int parenthesesCount = 0;
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                string t = tokens[i];
+                // If t is able to be a variable, check that normalize(t) is valid and isValid(normalize(t)) is true
+                if (isPossibleVariable(t))
+                {
+                    if (!isValidVariable(normalize(t))) throw new FormulaFormatException("Formula had an illegal vairable: " + t);
+                    if (!isValid(normalize(t))) throw new FormulaFormatException("Formula had an illegal variable according to isValid: " + t);
+                }
+                // If t is an opening parentheses, it can only have:
+                // - an operator, opening parentheses, or nothing before it
+                // - a number, variable, or opening parentheses after it
+                if (t == "(")
+                {
+                    // parentheses count
+                    parenthesesCount++;
+                    if (i > 0)
+                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("An opening parentheses was used improperly at token: " + (i + 1));
+                    // The last token would already be confirmed not to be an opening parentheses, so no risk of IndexOutOfBounds for tokens[i + 1]
+                    if (!isNumber(tokens[i + 1]) && !isPossibleVariable(tokens[i + 1]) && tokens[i + 1] != "(") throw new FormulaFormatException("An opening parentheses was used improperly at token: " + (i + 1));
+                    continue;
+                }
+                // If t is a closing parentheses, it can only have:
+                // - a number, variable, or closing parentheses before it
+                // - an operator, closing parentheses, or nothing after it
+                if (t == ")")
+                {
+                    // parentheses count
+                    parenthesesCount--;
+                    // The first token would already be confirmed not to be a closing parentheses, so no risk of IndexOutOfBounds for tokens[i - 1]
+                    if (!isNumber(tokens[i - 1]) && !isPossibleVariable(tokens[i - 1]) && tokens[i - 1] != ")") throw new FormulaFormatException("A closing parentheses was used improperly at token: " + (i + 1));
+                    if (i < tokens.Count - 1)
+                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("A closing parentheses was used improperly at token: " + (i + 1));
+                    continue;
+                }
+                // If t is an operator, it can only have:
+                // - a number, variable, or closing parentheses before it
+                // - a number, variable, or opening parentheses after it
+                if (isOperatorSymbol(t))
+                {
+                    // The first and last token would already be confirmed not to be an operator, so no risk of IndexOutOfBounds for tokens[i + 1] and tokens[i - 1]
+                    if (!isNumber(tokens[i - 1]) && !isPossibleVariable(tokens[i - 1]) && tokens[i - 1] != ")") throw new FormulaFormatException("An operator was used improperly at token: " + (i + 1));
+                    if (!isNumber(tokens[i + 1]) && !isPossibleVariable(tokens[i + 1]) && tokens[i + 1] != "(") throw new FormulaFormatException("An operator was used improperly at token: " + (i + 1));
+                    continue;
+                }
+                // If t is a number or variable, it can only have:
+                // - an operator, opening parentheses, or nothing before it
+                // - an operator, closing parentheses, or nothing after it
+                if (isNumber(t) || isPossibleVariable(t))
+                {
+                    if (i > 0)
+                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("A number or variable was used improperly at token: " + (i + 1));
+                    if (i < tokens.Count - 1)
+                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("A number or variable was used improperly at token: " + (i + 1));
+                    continue;
+                }
+            }
+            // If  parenthesesCount isn't 0, there were too many or too few parentheses
+            if (parenthesesCount != 0) throw new FormulaFormatException("The number of opening parentheses did not match the number of closing parentheses");
         }
 
         /// <summary>
@@ -213,6 +295,53 @@ namespace SpreadsheetUtilities
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Checks that the string is an operator symbol (+, -, *, or /).
+        /// </summary>
+        private bool isOperatorSymbol(string s)
+        {
+            return s == "+" || s == "-" || s == "*" || s == "/";
+        }
+
+        /// <summary>
+        /// Checks that the string is a double number.
+        /// </summary>
+        private bool isNumber(string s)
+        {
+            double value;
+            return double.TryParse(s, out value);
+        }
+
+        /// <summary>
+        /// Checks that the string is a possible variable.
+        /// It does not check that the string is a variable in format, but rather that it isn't any other acceptable token.
+        /// </summary>
+        private bool isPossibleVariable(string s)
+        {
+            return !isOperatorSymbol(s) && !isNumber(s) && s != "(" && s != ")";
+        }
+
+        /// <summary>
+        /// Checks that the string s is a valid vairable; it is valid if it consists of of a letter or underscore
+        /// followed by zero or more letters, underscores, and/or digits.
+        /// </summary>
+        private bool isValidVariable(string s)
+        {
+            // Check that the first character is a letter or underscore
+            if (!char.IsLetter(s[0]) && s[0] != '_') return false;
+            // Get substring of rest of variable
+            string sub = s.Substring(1);
+            // Check if sub is zero length
+            if (sub.Length == 0) return true;
+            // Check if sub consists of letters, numbers, and/or digits
+            foreach (char c in sub)
+            {
+                if (!char.IsLetterOrDigit(c) && c != '_') return false;
+            }
+            // The string did not fail checks, so return true
+            return true;
         }
     }
 
