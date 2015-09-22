@@ -227,7 +227,7 @@ namespace SpreadsheetUtilities
                 // Anything that reaches this point will be a variable, so try to get the varaiables value through lookup() and repeat the code used for checking a double
                 try
                 {
-                    result = lookup(t);
+                    result = lookup(normalizer(t));
                     if (ReadDouble(result, operators, values))
                     {
                         // This will run if division by 0 occurs, so return a FormulaError
