@@ -114,9 +114,9 @@ namespace SpreadsheetUtilities
                     // parentheses count
                     parenthesesCount++;
                     if (i > 0)
-                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("An opening parentheses was used improperly at token: " + (i + 1));
+                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("An opening parentheses was used improperly at token " + (i + 1) + "; expected an operator, opening parentheses, or nothing before it");
                     // The last token would already be confirmed not to be an opening parentheses, so no risk of IndexOutOfBounds for tokens[i + 1]
-                    if (!isNumber(tokens[i + 1]) && !isPossibleVariable(tokens[i + 1]) && tokens[i + 1] != "(") throw new FormulaFormatException("An opening parentheses was used improperly at token: " + (i + 1));
+                    if (!isNumber(tokens[i + 1]) && !isPossibleVariable(tokens[i + 1]) && tokens[i + 1] != "(") throw new FormulaFormatException("An opening parentheses was used improperly at token " + (i + 1) + "; expected a number, variable, or opening parentheses after it");
                     continue;
                 }
                 // If t is a closing parentheses, it can only have:
@@ -127,9 +127,9 @@ namespace SpreadsheetUtilities
                     // parentheses count
                     parenthesesCount--;
                     // The first token would already be confirmed not to be a closing parentheses, so no risk of IndexOutOfBounds for tokens[i - 1]
-                    if (!isNumber(tokens[i - 1]) && !isPossibleVariable(tokens[i - 1]) && tokens[i - 1] != ")") throw new FormulaFormatException("A closing parentheses was used improperly at token: " + (i + 1));
+                    if (!isNumber(tokens[i - 1]) && !isPossibleVariable(tokens[i - 1]) && tokens[i - 1] != ")") throw new FormulaFormatException("A closing parentheses was used improperly at token " + (i + 1) + "; expected a number, variable, or closing parentheses before it");
                     if (i < tokens.Count - 1)
-                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("A closing parentheses was used improperly at token: " + (i + 1));
+                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("A closing parentheses was used improperly at token " + (i + 1) + "; expected an operator, opening parentheses, or nothing after it");
                     continue;
                 }
                 // If t is an operator, it can only have:
@@ -138,8 +138,8 @@ namespace SpreadsheetUtilities
                 if (isOperatorSymbol(t))
                 {
                     // The first and last token would already be confirmed not to be an operator, so no risk of IndexOutOfBounds for tokens[i + 1] and tokens[i - 1]
-                    if (!isNumber(tokens[i - 1]) && !isPossibleVariable(tokens[i - 1]) && tokens[i - 1] != ")") throw new FormulaFormatException("An operator was used improperly at token: " + (i + 1));
-                    if (!isNumber(tokens[i + 1]) && !isPossibleVariable(tokens[i + 1]) && tokens[i + 1] != "(") throw new FormulaFormatException("An operator was used improperly at token: " + (i + 1));
+                    if (!isNumber(tokens[i - 1]) && !isPossibleVariable(tokens[i - 1]) && tokens[i - 1] != ")") throw new FormulaFormatException("An operator was used improperly at token " + (i + 1) + "; expected a number, variable, or closing parentheses before it");
+                    if (!isNumber(tokens[i + 1]) && !isPossibleVariable(tokens[i + 1]) && tokens[i + 1] != "(") throw new FormulaFormatException("An operator was used improperly at token " + (i + 1) + "; expected a number, variable, or opening parentheses after it");
                     continue;
                 }
                 // If t is a number or variable, it can only have:
@@ -148,9 +148,9 @@ namespace SpreadsheetUtilities
                 if (isNumber(t) || isPossibleVariable(t))
                 {
                     if (i > 0)
-                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("A number or variable was used improperly at token: " + (i + 1));
+                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("A number or variable was used improperly at token " + (i + 1) + "; expected an operator, opening parentheses, or nothing before it");
                     if (i < tokens.Count - 1)
-                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("A number or variable was used improperly at token: " + (i + 1));
+                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("A number or variable was used improperly at token " + (i + 1) + "; expected an operator, closing parentheses, or nothing after it");
                     continue;
                 }
             }
