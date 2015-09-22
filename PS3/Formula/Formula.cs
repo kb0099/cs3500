@@ -321,7 +321,13 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
-            return null;
+            HashSet<string> vars = new HashSet<string>();
+            // Loop through tokens; add a normalised token if it is a variable
+            foreach (string t in tokens)
+            {
+                if (isPossibleVariable(t)) vars.Add(normalizer(t));
+            }
+            return vars;
         }
 
         /// <summary>
@@ -336,7 +342,18 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override string ToString()
         {
-            return null;
+            string output = "";
+            // Loop through tokens; add tokens to the end of output
+            foreach (string t in tokens)
+            {
+                // normalize variables before adding
+                if (isPossibleVariable(t)) output = output + normalizer(t);
+                // Get the double value of numbers before adding
+                double value;
+                if (double.TryParse(t, out value)) output = output + value;
+                else output = output + t;
+            }
+            return output;
         }
 
         /// <summary>
@@ -357,7 +374,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object obj)
         {
-            return false;
+            if (obj == null) return false;
+            if (!(obj is Formula)) return false;
+            return this.ToString() == obj.ToString();
         }
 
         /// <summary>
@@ -367,7 +386,12 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            return false;
+            if (f1 == null)
+            {
+                if (f2 == null) return true;
+                else return false;
+            }
+            return f1.Equals(f2);
         }
 
         /// <summary>
@@ -377,7 +401,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            return false;
+            return !(f1 == f2);
         }
 
         /// <summary>
@@ -387,7 +411,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override int GetHashCode()
         {
-            return 0;
+            return this.ToString().GetHashCode();
         }
 
         /// <summary>
@@ -448,7 +472,7 @@ namespace SpreadsheetUtilities
         }
 
         /// <summary>
-        /// Checks that the string s is a valid vairable; it is valid if it consists of of a letter or underscore
+        /// Checks that the string s is a valid vairable; it is valid if it consists of a letter or underscore
         /// followed by zero or more letters, underscores, and/or digits.
         /// </summary>
         private bool isValidVariable(string s)
