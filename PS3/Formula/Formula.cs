@@ -26,7 +26,7 @@ namespace SpreadsheetUtilities
     /// symbols +, -, *, and /.  
     /// 
     /// Spaces are significant only insofar that they delimit tokens.  For example, "xy" is
-    /// a single variable, "x y" consists of two variables "x" and y; "x23" is a single variable; 
+    /// a single variable, "x y" consists of two variables "x" and "y"; "x23" is a single variable; 
     /// and "x 23" consists of a variable "x" and a number "23".
     /// 
     /// Associated with every formula are two delegates:  a normalizer and a validator.  The
@@ -92,6 +92,16 @@ namespace SpreadsheetUtilities
             // Check that syntax is correct, and that no invalid tokens are given
             // If there are no tokens, throw FormulaFormatException
             if (tokens.Count == 0) throw new FormulaFormatException("There must be at least one token to the formula");
+            // Loop through tokens to check if invalid variables are given
+            foreach (string t in tokens)
+            {
+                // If t is able to be a variable, check that normalize(t) is valid and isValid(normalize(t)) is true
+                if (isPossibleVariable(t))
+                {
+                    if (!isValidVariable(normalize(t))) throw new FormulaFormatException("Formula had an illegal vairable {" + t + "} which normalized to {" + normalize(t) + "}");
+                    if (!isValid(normalize(t))) throw new FormulaFormatException("Formula had an illegal variable according to isValid {" + t + "} which normalized to {" + normalize(t) + "}");
+                }
+            }
             // First token must be a number, variable, or opening parentheses
             if (!isNumber(tokens[0]) && !isPossibleVariable(tokens[0]) && tokens[0] != "(") throw new FormulaFormatException("First token must be a number, variable, or opening parentheses");
             // Last token must be a number, variable, or closing parentheses
@@ -100,12 +110,6 @@ namespace SpreadsheetUtilities
             for (int i = 0; i < tokens.Count; i++)
             {
                 string t = tokens[i];
-                // If t is able to be a variable, check that normalize(t) is valid and isValid(normalize(t)) is true
-                if (isPossibleVariable(t))
-                {
-                    if (!isValidVariable(normalize(t))) throw new FormulaFormatException("Formula had an illegal vairable: " + t);
-                    if (!isValid(normalize(t))) throw new FormulaFormatException("Formula had an illegal variable according to isValid: " + t);
-                }
                 // If t is an opening parentheses, it can only have:
                 // - an operator, opening parentheses, or nothing before it
                 // - a number, variable, or opening parentheses after it
@@ -148,9 +152,9 @@ namespace SpreadsheetUtilities
                 if (isNumber(t) || isPossibleVariable(t))
                 {
                     if (i > 0)
-                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("A number or variable was used improperly at token " + (i + 1) + "; expected an operator, opening parentheses, or nothing before it");
+                        if (!isOperatorSymbol(tokens[i - 1]) && tokens[i - 1] != "(") throw new FormulaFormatException("Number or variable {" + t + "} was used improperly at token " + (i + 1) + "; expected an operator, opening parentheses, or nothing before it");
                     if (i < tokens.Count - 1)
-                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("A number or variable was used improperly at token " + (i + 1) + "; expected an operator, closing parentheses, or nothing after it");
+                        if (!isOperatorSymbol(tokens[i + 1]) && tokens[i + 1] != ")") throw new FormulaFormatException("Number or variable {" + t + "} was used improperly at token " + (i + 1) + "; expected an operator, closing parentheses, or nothing after it");
                     continue;
                 }
             }
@@ -236,7 +240,7 @@ namespace SpreadsheetUtilities
                 }
                 catch (ArgumentException)
                 {
-                    return new FormulaError("Undefined variable: " + t);
+                    return new FormulaError("Undefined variable {" + t + "}");
                 }
             }
             // One more operator can be left, so ReadAddOrSub() can be used to finish the evaluation
@@ -477,6 +481,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         private bool isValidVariable(string s)
         {
+            // Check in case of empty string given
+            if (s == string.Empty) return false;
             // Check that the first character is a letter or underscore
             if (!char.IsLetter(s[0]) && s[0] != '_') return false;
             // Get substring of rest of variable
