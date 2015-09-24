@@ -987,30 +987,115 @@ namespace FormulaTester
         }
 
         /// <summary>
-        /// 
+        /// Equals() should have formulas with the same tokens be equal.
         /// </summary>
         [TestMethod]
         public void publicTestEquals1()
         {
-
+            // 1st test uses Formula(string) with normal formulas.
+            Assert.IsTrue(new Formula("15-4.3*(13.07-4+3)/7").Equals(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ")));
+            Assert.IsTrue(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ").Equals(new Formula("15-4.3*(13.07-4+3)/7")));
+            Assert.IsTrue(new Formula("15-4.3*(13.07-4+3)/7").Equals(new Formula("15-4.3*(13.07-4+3)/7")));
+            Assert.IsTrue(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ").Equals(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ")));
+            // 2nd test uses Formula(string, N(), V()) with formulas using variables.
+            Func<string, string> N = s =>
+            {
+                string t = "";
+                foreach (char c in s)
+                {
+                    t = t + char.ToUpper(c);
+                }
+                return t;
+            };
+            Assert.IsTrue(new Formula("  jerrY -  4.3*(  Tom -4 + 3) / 7 ", N, s => true).Equals(new Formula("Jerry -4.3*( TOM-4+ 3)/ 7.0", N, s => true)));
         }
 
         /// <summary>
-        /// 
+        /// Equals() should have formulas with different tokens, or random objects, or null pointers not be equal.
+        /// </summary>
+        [TestMethod]
+        public void publicTestEqualsException1()
+        {
+            // 1st test uses Formula(string) with varied formulas.
+            Assert.IsFalse(new Formula("9").Equals(new Formula("8")));
+            Assert.IsFalse(new Formula("9+8").Equals(new Formula("8+9")));
+            // 2nd test uses random objects.
+            Assert.IsFalse(new Formula("9").Equals("bob"));
+            Assert.IsFalse(new Formula("9").Equals(new HashSet<double>()));
+            // 3rd test uses null pointers.
+            Assert.IsFalse(new Formula("9").Equals(null));
+        }
+
+        /// <summary>
+        /// == should behave like Equals() but include ability to have null pointers be equal.
         /// </summary>
         [TestMethod]
         public void publicTestEqualToOperator1()
         {
-
+            //---True statements
+            // 1st test uses Formula(string) with normal formulas.
+            Assert.IsTrue(new Formula("15-4.3*(13.07-4+3)/7") == new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 "));
+            Assert.IsTrue(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ") == new Formula("15-4.3*(13.07-4+3)/7"));
+            Assert.IsTrue(new Formula("15-4.3*(13.07-4+3)/7") == new Formula("15-4.3*(13.07-4+3)/7"));
+            Assert.IsTrue(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ") == new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 "));
+            // 2nd test uses Formula(string, N(), V()) with formulas using variables.
+            Func<string, string> N = s =>
+            {
+                string t = "";
+                foreach (char c in s)
+                {
+                    t = t + char.ToUpper(c);
+                }
+                return t;
+            };
+            Assert.IsTrue(new Formula("  jerrY -  4.3*(  Tom -4 + 3) / 7 ", N, s => true) == new Formula("Jerry -4.3*( TOM-4+ 3)/ 7.0", N, s => true));
+            // 3rd test uses null pointers
+            Formula f1 = null;
+            Formula f2 = null;
+            Assert.IsTrue(f1 == f2);
+            //---False statements
+            // 1st test uses Formula(string) with varied formulas.
+            Assert.IsFalse(new Formula("9") == new Formula("8"));
+            Assert.IsFalse(new Formula("9+8") == new Formula("8+9"));
+            // 2rd test uses null pointers.
+            Assert.IsFalse(new Formula("9") == f1);
+            Assert.IsFalse(f1 == new Formula("9"));
         }
 
         /// <summary>
-        /// 
+        /// != should behave opposite ==.
         /// </summary>
         [TestMethod]
         public void publicTestNotEqualToOperator1()
         {
-
+            //---False statements
+            // 1st test uses Formula(string) with normal formulas.
+            Assert.IsFalse(new Formula("15-4.3*(13.07-4+3)/7") != new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 "));
+            Assert.IsFalse(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ") != new Formula("15-4.3*(13.07-4+3)/7"));
+            Assert.IsFalse(new Formula("15-4.3*(13.07-4+3)/7") != new Formula("15-4.3*(13.07-4+3)/7"));
+            Assert.IsFalse(new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ") != new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 "));
+            // 2nd test uses Formula(string, N(), V()) with formulas using variables.
+            Func<string, string> N = s =>
+            {
+                string t = "";
+                foreach (char c in s)
+                {
+                    t = t + char.ToUpper(c);
+                }
+                return t;
+            };
+            Assert.IsFalse(new Formula("  jerrY -  4.3*(  Tom -4 + 3) / 7 ", N, s => true) != new Formula("Jerry -4.3*( TOM-4+ 3)/ 7.0", N, s => true));
+            // 3rd test uses null pointers
+            Formula f1 = null;
+            Formula f2 = null;
+            Assert.IsFalse(f1 != f2);
+            //---True statements
+            // 1st test uses Formula(string) with varied formulas.
+            Assert.IsTrue(new Formula("9") != new Formula("8"));
+            Assert.IsTrue(new Formula("9+8") != new Formula("8+9"));
+            // 2rd test uses null pointers.
+            Assert.IsTrue(new Formula("9") != f1);
+            Assert.IsTrue(f1 != new Formula("9"));
         }
 
         /// <summary>
