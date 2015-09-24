@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Implementation by Mitchell Terry
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetUtilities;
 using System.Collections.Generic;
@@ -909,6 +911,115 @@ namespace FormulaTester
             {
                 if (new Formula(f).Evaluate(L) is double) Assert.Fail("Didn't get FormulaError from {" + f + "}");
             }
+        }
+
+        /// <summary>
+        /// GetVariables() should return all the variables in a formula. Check that all given variables are contained in the IEnumerable.
+        /// </summary>
+        [TestMethod]
+        public void publicTestGetVariables1()
+        {
+            // 1st test will be for Formula(string) and a normal equation
+            IEnumerable<string> vars1 = new Formula("bill+3-(tom+4.7)-brady*sam/(mike+2)+tom*2-sam").GetVariables();
+            HashSet<string> set1 = new HashSet<string>();
+            set1.Add("bill");
+            set1.Add("brady");
+            set1.Add("mike");
+            set1.Add("sam");
+            set1.Add("tom");
+            int i1 = 0;
+            foreach (string v in vars1)
+            {
+                Assert.IsTrue(set1.Contains(v));
+                i1++;
+            }
+            Assert.AreEqual(5, i1);
+            // 2nd test will be for Formula(string, N(), V()) and a normal equation; vars will be capitalized by N()
+            Func<string, string> N2 = s =>
+            {
+                string t = "";
+                foreach (char c in s)
+                {
+                    t = t + char.ToUpper(c);
+                }
+                return t;
+            };
+            IEnumerable<string> vars2 = new Formula("Bill+3-(Tom+4.7)-brady*SAM/(mIke+2)+tOM*2-sam", N2, s => true).GetVariables();
+            HashSet<string> set2 = new HashSet<string>();
+            set2.Add("BILL");
+            set2.Add("BRADY");
+            set2.Add("MIKE");
+            set2.Add("SAM");
+            set2.Add("TOM");
+            int i2 = 0;
+            foreach (string v in vars2)
+            {
+                Assert.IsTrue(set2.Contains(v));
+                i2++;
+            }
+            Assert.AreEqual(5, i2);
+            // 3rd test will be for Formula(string) and an equation without varables
+            IEnumerable<string> vars3 = new Formula("19-4*(35-3)/42", N2, s => true).GetVariables();
+            Assert.IsFalse(vars3.GetEnumerator().MoveNext());
+        }
+
+        /// <summary>
+        /// ToString() should return the formula modified without whitespace and normalized variables.
+        /// </summary>
+        [TestMethod]
+        public void publicTestToString1()
+        {
+            // 1st test is on Formula(string) and a formula without variables.
+            Assert.AreEqual("15-4.3*(13.07-4+3)/7", new Formula("  15.00 -  4.3*(  13.07 -4 + 3) / 7.0 ").ToString());
+            // 2nd test is on Formula(string) and a formula with variables.
+            Assert.AreEqual("Matt+sidNEY/OddBallBruce4", new Formula("Matt +sidNEY/  OddBallBruce4 ").ToString());
+            // 3nd test is on Formula(string, N(), V()) and a formula with variables. N() will capitalize variables.
+            Func<string, string> N3 = s =>
+            {
+                string t = "";
+                foreach (char c in s)
+                {
+                    t = t + char.ToUpper(c);
+                }
+                return t;
+            };
+            Assert.AreEqual("MATT+SIDNEY/ODDBALLBRUCE4", new Formula("Matt +sidNEY/  OddBallBruce4 ", N3, s => true).ToString());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void publicTestEquals1()
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void publicTestEqualToOperator1()
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void publicTestNotEqualToOperator1()
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void publicTestGetHashCode1()
+        {
+
         }
 
         //****************Private Tests********************//

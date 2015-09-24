@@ -350,11 +350,11 @@ namespace SpreadsheetUtilities
             // Loop through tokens; add tokens to the end of output
             foreach (string t in tokens)
             {
+                double value;
                 // normalize variables before adding
                 if (isPossibleVariable(t)) output = output + normalizer(t);
                 // Get the double value of numbers before adding
-                double value;
-                if (double.TryParse(t, out value)) output = output + value;
+                else if (double.TryParse(t, out value)) output = output + value;
                 else output = output + t;
             }
             return output;
