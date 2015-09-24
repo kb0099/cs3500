@@ -71,7 +71,7 @@ namespace SpreadsheetUtilities
         /// new Formula("x+y3", N, V) should throw an exception, since V(N("x")) is false
         /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
         /// </summary>
-        public Formula(String formula, Func<string,string> normalize, Func<string,bool> isValid)
+        public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
         }
 
@@ -213,8 +213,95 @@ namespace SpreadsheetUtilities
             }
 
         }
-    }
+        /// <summary>
+        /// Represents an immutable Token object.
+        /// </summary>
+        private class Token
+        {
+            private object value;                           // value of token
+            private TokenType type;                         // type of token
+            /// <summary>
+            /// Returns the current value of the token as object.
+            /// Note: it simply returns the token as it is. 
+            /// For example: if token = "x1", it doesn't evaluate the value of "x1".
+            /// It is simply returns the token itself which is "x1".
+            /// </summary>            
+            public object Value { get { return value; } }
 
+            /// <summary>
+            /// Returns the type of the token.
+            /// </summary>
+            public TokenType Type { get; private set; }
+
+            /// <summary>
+            /// Creates a token object representing the given argument.
+            /// </summary>
+            /// <param name="token">String representing a token.</param>
+            public Token(string token)
+            {
+                value = token;
+                switch (token)
+                {
+                    case "(":
+                        type = TokenType.LEFT_PAREN;
+                        break;
+                    case ")":
+                        type = TokenType.RIGHT_PAREN;
+                        break;
+                    case "+":
+                        type = TokenType.OP_PLUS;
+                        break;
+                    case "-":
+                        type = TokenType.OP_MINUS;
+                        break;
+                    case "*":
+                        type = TokenType.OP_MULT;
+                        break;
+                    case "/":
+                        type = TokenType.OP_DIV;
+                        break;
+                    default:
+                        if (Regex.IsMatch(token, DOUBLE_PATTERN)) {                // double                                                       
+                            type = TokenType.NUMBER;
+                        }
+                        else if (Regex.IsMatch(token, VAR_PATTERN)) {               // variables
+                            type = TokenType.VARIABLE;
+                        }
+                        else
+                        {                                                           // undefined/illegal symbol
+                            type = TokenType.UNDEFINED;
+                        }
+                        break;
+                }
+            }
+        }
+
+      
+        /// <summary>
+        /// Represents a type of the token object.
+        /// </summary>
+        private enum TokenType
+        {
+            NUMBER,         // non-negative numbers written using double-precision floating point syntax
+            VARIABLE,       // variables that consist of a letter or underscore followed by 
+                            // zero or more letters, underscores, or digits
+            LEFT_PAREN,
+            RIGHT_PAREN,
+            OP_PLUS,        // +
+            OP_MINUS,       // -
+            OP_MULT,        // * (Multiplication)
+            OP_DIV,         // / (Division)  
+            UNDEFINED       // Represents an undefined/invalid token given the current specification          
+        }
+
+        // private members
+
+        // pattern for double as per assignment specs
+        private static string DOUBLE_PATTERN = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
+
+        // pattern for a variable as per assignment specs
+        private static string VAR_PATTERN = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
+    }
     /// <summary>
     /// Used to report syntactic errors in the argument to the Formula constructor.
     /// </summary>
@@ -249,5 +336,6 @@ namespace SpreadsheetUtilities
         /// </summary>
         public string Reason { get; private set; }
     }
+
 }
 
