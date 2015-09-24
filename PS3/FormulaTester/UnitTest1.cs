@@ -1099,19 +1099,80 @@ namespace FormulaTester
         }
 
         /// <summary>
-        /// 
+        /// GetHashCode() should have codes unique enough that they could only match another code if the Formula objects are equal.
         /// </summary>
         [TestMethod]
         public void publicTestGetHashCode1()
         {
-
+            // Create string array of formulas
+            string[] formulas = new string[]{
+                "30",
+                "0.9400",
+                "12.03",
+                "0",
+                "0.0",
+                " 73  ",
+                "  0.36 ",
+                " 5.4  ",
+                "  0 ",
+                " 0.00  ",
+                "9.02+3.7",
+                "12.7 +  4.33",
+                "7.3-3.0",
+                "15.8 -  2.9",
+                "7.2*1.3",
+                "9.3 *  12.4",
+                "60.5/1.25",
+                "7.6 /  22.3",
+                "(3.2)",
+                "  ( 7.5  ) ",
+                "((42.3))",
+                " ((  84.9 )  )  ",
+                "(7.1+6)",
+                "( 94.45  + 16  )",
+                "(12.2-8)",
+                "(  22.3  - 17 )",
+                "(27*0.3)",
+                "( 15  *  4)",
+                "(9/3.0)",
+                "(12.7  / 6  )",
+                "9+(7.3)",
+                "(12.9)+3",
+                "17.3 +  ( 7.2  ) + 3",
+                "8.2-(12)",
+                "(0.6)-5.3",
+                "82 - (  4.3)  -12",
+                "7*(8.2)",
+                "(5.3)*4",
+                "7 *(0.2  ) *  3",
+                "9/(3.0)",
+                "(42.3)/7",
+                "18/  ( 9.7 )/ 4.3",
+                "15.84-(9+3.7)",
+                "(83-4)+12.3",
+                "6*(42.3/7.9)",
+                "(9*10.2)/4",
+                "(42+(19/4))",
+                "((4-1.3)*7.4)"
+            };
+            // Use two loops to compare each formula with each other
+            for (int i = 0; i < formulas.Length; i++)
+            {
+                Formula fi = new Formula(formulas[i]);
+                for (int j = 0; j < formulas.Length; j++)
+                {
+                    Formula fj = new Formula(formulas[j]);
+                    if (fi == fj) Assert.AreEqual(fi.GetHashCode(), fj.GetHashCode());
+                    else Assert.AreNotEqual(fi.GetHashCode(), fj.GetHashCode());
+                }
+            }
         }
 
         //****************Private Tests********************//
         [TestMethod]
         public void privateTestMethod1()
         {
-
+            // TODO what internal behaviour can be checked on that hasn't been done with the public tests?
         }
     }
 }
