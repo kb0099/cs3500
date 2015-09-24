@@ -1,4 +1,9 @@
-﻿// Skeleton written by Joe Zachary for CS 3500, September 2013
+﻿// Kedar Bastakoti
+// CS3500, Assignment 03
+// Fall 2015, University of Utah
+// Created using provided Skeleton/API
+
+// Skeleton written by Joe Zachary for CS 3500, September 2013
 // Read the entire skeleton carefully and completely before you
 // do anything else!
 
@@ -36,6 +41,13 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class Formula
     {
+        // Represents the formula/expression as a list of normalized validated tokens
+        private List<Token> tokens;
+        
+        private Func<string, string> normalize; // Represents normalizer 
+        private Func<string, bool> isValid;     // Represents validator
+        private string formula;                 // Represents the raw formula expression
+
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
         /// described in the class comment.  If the expression is syntactically invalid,
@@ -44,9 +56,9 @@ namespace SpreadsheetUtilities
         /// The associated normalizer is the identity function, and the associated validator
         /// maps every string to true.  
         /// </summary>
-        public Formula(String formula) :
-            this(formula, s => s, s => true)
+        public Formula(String formula) : this(formula, s => s, s => true)
         {
+            // Everything done in another constructor call
         }
 
         /// <summary>
@@ -73,6 +85,28 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            tokens = new List<Token>();
+            this.formula = formula;
+            this.normalize = normalize;
+            this.isValid = isValid;
+            ProcessTokens();
+        }
+
+        /// <summary>
+        /// Represents a helper for constructor(s) to process tokens.
+        /// </summary>
+        private void ProcessTokens()
+        {
+            Token currToken;        // represents the current token
+            foreach (string token in GetTokens(formula))
+            {
+                currToken = new Token(token, normalize, isValid);  // normalized and validity checked
+                if (currToken.Type == TokenType.UNDEFINED)
+                    throw new FormulaFormatException("Error parsing the formula. Check your formula near the token: " + token);
+
+                // Else add the token as a valid token
+                tokens.Add(currToken);
+            }
         }
 
         /// <summary>
@@ -150,6 +184,17 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object obj)
         {
+            if(!(obj == null && typeof(Formula) != obj.GetType()))
+            {
+                Formula fObj = (Formula)obj;
+                for(int i = 0; i < tokens.Count; i++)
+                {
+                    if (!tokens.ElementAt(i).Equals(fObj.tokens.ElementAt(i)))
+                        return false;
+                        
+                }
+                return true;
+            }
             return false;
         }
 
@@ -218,7 +263,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         private class Token
         {
-            private object value;                           // value of token
+            private string value;                           // string value of token
             private TokenType type;                         // type of token
             /// <summary>
             /// Returns the current value of the token as object.
@@ -226,18 +271,20 @@ namespace SpreadsheetUtilities
             /// For example: if token = "x1", it doesn't evaluate the value of "x1".
             /// It is simply returns the token itself which is "x1".
             /// </summary>            
-            public object Value { get { return value; } }
+            public string Value { get { return value; } }
 
             /// <summary>
             /// Returns the type of the token.
             /// </summary>
-            public TokenType Type { get; private set; }
+            public TokenType Type { get { return type; } }
 
             /// <summary>
             /// Creates a token object representing the given argument.
             /// </summary>
             /// <param name="token">String representing a token.</param>
-            public Token(string token)
+            /// <param name="normalizer">Delegate normalizer used to normalize the token.</param>
+            /// <param name="validator">Delegate that validates a variable token</param>
+            public Token(string token, Func<string, string> normalizer, Func<string, bool> validator)
             {
                 value = token;
                 switch (token)
@@ -264,7 +311,8 @@ namespace SpreadsheetUtilities
                         if (Regex.IsMatch(token, DOUBLE_PATTERN)) {                // double                                                       
                             type = TokenType.NUMBER;
                         }
-                        else if (Regex.IsMatch(token, VAR_PATTERN)) {               // variables
+                        else if (Regex.IsMatch(token, VAR_PATTERN) && validator(token)) {               // variables
+                            value = normalizer(token);
                             type = TokenType.VARIABLE;
                         }
                         else
@@ -273,6 +321,27 @@ namespace SpreadsheetUtilities
                         }
                         break;
                 }
+            }
+
+            /// <summary>
+            /// Tests equality based upon the string representaiton of token.
+            /// </summary>
+            /// <param name="obj">The obj to test equaltity with.</param>
+            /// <returns>True if represent the same string token.</returns>
+            public override bool Equals(object obj)
+            {
+                if (obj != null && obj.GetType() == typeof(Token) && value.Equals(((Token)obj).value))
+                    return true;                
+                return false;
+            }
+
+            /// <summary>
+            /// It basically calls the GetHashCode() on the string representation of the hashcode.
+            /// </summary>
+            /// <returns></returns>
+            public override int GetHashCode()
+            {
+                return value.GetHashCode();
             }
         }
 
@@ -297,11 +366,13 @@ namespace SpreadsheetUtilities
         // private members
 
         // pattern for double as per assignment specs
-        private static string DOUBLE_PATTERN = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
+        private static string DOUBLE_PATTERN = @"^(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?$";
 
         // pattern for a variable as per assignment specs
-        private static string VAR_PATTERN = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
+        private static string VAR_PATTERN = @"^[a-zA-Z_](?: [a-zA-Z_]|\d)*$";
     }
+
+
     /// <summary>
     /// Used to report syntactic errors in the argument to the Formula constructor.
     /// </summary>
