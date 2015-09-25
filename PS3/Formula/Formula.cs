@@ -121,11 +121,13 @@ namespace SpreadsheetUtilities
                 tokens.Add(currToken);
 
                 // validate parenthesis following rule
-                ValidateParenthesisFollowingRuleAt(tokens.IndexOf(currToken));
+                ValidateParenthesisFollowingRuleAt(tokens.Count - 1);
 
+                // validate extra following rule
+                ValidateExtraFollowingRuleAt(tokens.Count - 1);
+            }
 
-            }// cannot be empty
-
+            // cannot be empty
             if (tokens.Count < 1)
                 throw new FormulaFormatException("The formula must contain at least at least one token. Spaces don't count as token. Check your formula.");
 
@@ -146,7 +148,7 @@ namespace SpreadsheetUtilities
         /// Any token that immediately follows an opening parenthesis or 
         /// an operator must be either a number, a variable, or an opening parenthesis.
         /// </summary>
-        /// <param name="i">The index of token to check at. </param>
+        /// <param name="i">The index of token to validate at. </param>
         private void ValidateParenthesisFollowingRuleAt(int i)
         {
             TokenType[] preTokens = new TokenType[] { TokenType.LEFT_PAREN, TokenType.OP_DIV, TokenType.OP_MINUS, TokenType.OP_MULT, TokenType.OP_PLUS };
@@ -154,10 +156,31 @@ namespace SpreadsheetUtilities
 
             if (i > 0)
             {
-                if (preTokens.Contains(tokens[i - 1].Type))  // if previous token was lef paren or an op 
+                if (preTokens.Contains(tokens[i - 1].Type))  // if previous token was left paren or an op 
                 {
                     if (!validPostTokens.Contains(tokens[i].Type))
                         throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
+                }
+            }
+        }
+
+
+        /// <summary> 
+        /// Extra Following Rule
+        /// Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis
+        /// </summary>
+        /// <param name="i">The index of token to validate at.</param>
+        private void ValidateExtraFollowingRuleAt(int i)
+        {
+            TokenType[] preTokens = new TokenType[] { TokenType.NUMBER, TokenType.VARIABLE, TokenType.RIGHT_PAREN };
+            TokenType[] validPostTokens = new TokenType[] { TokenType.OP_DIV, TokenType.OP_MINUS, TokenType.OP_MULT, TokenType.OP_PLUS, TokenType.RIGHT_PAREN };
+            if (i > 0)
+            {
+                if (preTokens.Contains(tokens[i - 1].Type))  // if previous token was  number, variable, or closing paren
+                {
+                    if (!validPostTokens.Contains(tokens[i].Type))
+                        throw new FormulaFormatException("Any token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis");
+
                 }
             }
         }
@@ -287,7 +310,7 @@ namespace SpreadsheetUtilities
         public override int GetHashCode()
         {
             // returns hashcode on the normalized string representation of the formula
-            return ToString().GetHashCode();       
+            return ToString().GetHashCode();
         }
 
         /// <summary>
