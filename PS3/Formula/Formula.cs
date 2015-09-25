@@ -221,9 +221,8 @@ namespace SpreadsheetUtilities
         /// new Formula("x + Y").ToString() should return "x+Y"
         /// </summary>
         public override string ToString()
-        { 
-            String.Join("", tokens)       
-                return null;
+        {
+            return String.Join("", tokens); 
         }
 
         /// <summary>
