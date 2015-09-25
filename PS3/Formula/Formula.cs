@@ -271,6 +271,9 @@ namespace SpreadsheetUtilities
                 Formula fObj = (Formula)obj;
                 for (int i = 0; i < tokens.Count; i++)
                 {
+                    if (tokens[i].Type == TokenType.NUMBER && fObj.tokens[i].Type == TokenType.NUMBER)  // if number compare the actual values
+                        return Double.Parse(tokens[i].Value) == Double.Parse(fObj.tokens[i].Value);
+
                     if (!tokens.ElementAt(i).Equals(fObj.tokens.ElementAt(i)))
                         return false;
                 }
