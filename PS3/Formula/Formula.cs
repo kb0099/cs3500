@@ -116,14 +116,14 @@ namespace SpreadsheetUtilities
                 // # fo right paren can't be greater than # of left paren
                 if (tokenCounts[TokenType.LEFT_PAREN] < tokenCounts[TokenType.RIGHT_PAREN])
                     throw new FormulaFormatException("Error parsing the formula. When reading tokens from left to right, at no point should the number of closing parentheses seen so far be greater than the number of opening parentheses seen so far.");
-                               
+
                 // Add the token
                 tokens.Add(currToken);
 
                 // validate parenthesis following rule
                 ValidateParenthesisFollowingRuleAt(tokens.IndexOf(currToken));
 
-                
+
             }// cannot be empty
 
             if (tokens.Count < 1)
@@ -156,7 +156,7 @@ namespace SpreadsheetUtilities
             {
                 if (preTokens.Contains(tokens[i - 1].Type))  // if previous token was lef paren or an op 
                 {
-                    if (! validPostTokens.Contains(tokens[i].Type))
+                    if (!validPostTokens.Contains(tokens[i].Type))
                         throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
                 }
             }
@@ -207,7 +207,7 @@ namespace SpreadsheetUtilities
             foreach (Token token in variables)
             {
                 yield return token.Value;
-            }           
+            }
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override string ToString()
         {
-            return String.Join("", tokens); 
+            return String.Join("", tokens);
         }
 
         /// <summary>
@@ -263,7 +263,10 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            return false;
+            if (f1 != null)                 // if f1 is not null we can use Equals
+                return f1.Equals(f2);
+            else
+                return f2 == null;          // else if f2 is null then they are both equal to null.
         }
 
         /// <summary>
@@ -273,7 +276,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            return false;
+            return !(f1 == f2);
         }
 
         /// <summary>
@@ -283,7 +286,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override int GetHashCode()
         {
-            return 0;
+            // returns hashcode on the normalized string representation of the formula
+            return ToString().GetHashCode();       
         }
 
         /// <summary>
