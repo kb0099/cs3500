@@ -124,7 +124,7 @@ namespace SpreadsheetUtilities
         [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestRightParenRule()
         {
-            Formula f1 = new Formula("(((1+2)-3)*2)))");            
+            Formula f1 = new Formula("(((1+2)-3)*2)))");
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace SpreadsheetUtilities
         [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestEndingTokenRule1()
         {
-            Formula f1 = new Formula("(x1 + x2 + ("); 
+            Formula f1 = new Formula("(x1 + x2 + (");
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace SpreadsheetUtilities
         public void PublicFormulaTestParenthesisFollowingRule1()
         {
             Formula f1 = new Formula("()");
-                        
+
         }/// <summary>
          /// Any token that immediately follows an opening parenthesis or
          /// an operator must be either a number,
@@ -265,7 +265,7 @@ namespace SpreadsheetUtilities
         {
             Formula f7 = new Formula("x1 / ) + 3.0");
         }
-        
+
         /// <summary>
         /// Any token that immediately follows a number, a variable, or a closing 
         /// parenthesis must be either an operator or a closing parenthesis.
@@ -285,7 +285,7 @@ namespace SpreadsheetUtilities
         [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestExtraFollowingRule2()
         {
-            Formula f2= new Formula("(x1+y1)(x1-y1)");
+            Formula f2 = new Formula("(x1+y1)(x1-y1)");
         }
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace SpreadsheetUtilities
 
             // without normalization
             Formula f3 = new Formula("a1 * b1 - c1 * A1 /C1 + 99.99e-99");
-            Assert.IsTrue(new HashSet<string>(f3.GetVariables()).SetEquals(new HashSet<string>() { "a1", "b1", "c1", "A1",  "C1" }));
+            Assert.IsTrue(new HashSet<string>(f3.GetVariables()).SetEquals(new HashSet<string>() { "a1", "b1", "c1", "A1", "C1" }));
         }
 
         /// <summary>
@@ -350,7 +350,7 @@ namespace SpreadsheetUtilities
 
             Formula f3 = new Formula("a1 * b1 - c1 * A1 /C1 + 99.99e-99");
             Assert.AreEqual("a1*b1-c1*A1/C1+99.99e-99", f3.ToString());
-            
+
         }
 
         /// <summary>
@@ -377,5 +377,65 @@ namespace SpreadsheetUtilities
             Assert.IsTrue(f1.GetHashCode() == f2.GetHashCode());
         }
 
+        // Below are comprehensive tests which will try to cover the parts that could have been missed in individual tests.
+
+        /// <summary>
+        /// Comprehensive Test2
+        /// Maximal coverage test to expect FormulaFError
+        /// </summary>
+        [TestMethod()]
+        public void PublicComprehensiveTest0()
+        {
+            Formula f = new Formula("a1+c1+2");
+            Assert.IsInstanceOfType(f.Evaluate(s => { throw new ArgumentException("Lookup failed"); }), typeof(FormulaError));
+        }
+
+        /// <summary>
+        /// Comprehensive Test2: Tries to cover maximum possible different kinds of tests
+        /// Maximal coverage test Assert
+        /// </summary>
+        [TestMethod()]
+        public void PublicComprehensiveTest1()
+        {
+            Formula f = new Formula("(x1+y1)/(x1-x2)");
+            Assert.IsInstanceOfType(f.Evaluate(s => 99), typeof(FormulaError));
+            Assert.IsInstanceOfType(new Formula("99/00").Evaluate(s=>0), typeof(FormulaError));
+            f = new Formula("9.99 * x3/10.0 -11e-27");
+            Assert.IsTrue(f.Equals(new Formula(" 999e-2 *    x3/10 - 11.00e027")));
+            Assert.IsFalse(f.Equals(null));
+            Assert.IsFalse(f.Equals("99"));
+
+            Formula f2 = new Formula("a1+b2");
+
+            Assert.IsFalse(f2 == null);
+            Assert.IsFalse(f == f2);
+            Assert.IsTrue(f2 != null);
+            Assert.IsFalse(f == null);
+
+            //Should not fail
+            Formula stress = new Formula("(((0.0000001e-1+(2-x1)+3.0e+33)*45-z)/10.00-a1)+67*z1 - 90+z2/y1-m3+0.00000000334");
+            Assert.IsFalse(new Formula("99").GetVariables().GetEnumerator().MoveNext());
+
+            Formula f3 = new Formula("100+x1+y2+z3");
+            Formula f4 = new Formula("500-300");
+            Assert.IsFalse(f3 == f4);
+            Assert.IsTrue(f3.ToString().IndexOf("100") >= 0);
+            Assert.IsTrue(f3.ToString().IndexOf("x1") > 0);
+            Assert.IsTrue(f3.ToString().IndexOf("y2") > 0);
+            Assert.IsTrue(f3.ToString().IndexOf("z3") > 0);
+        }
+
+        /// <summary>
+        /// Comprehensive Test3
+        /// Maximal coverage test expected formula format exception
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicComprehensiveTest2()
+        {
+            Formula f = new Formula("(((((x1+y1)/(x1-x2)");
+            f = new Formula("**/sldfj99023982034-=02023503850");
+            f = new Formula("x1+-222282-234+334-(((--2234-234343eee-982*e2-z3*39847293+xx2234@");
+        }
     }
 }

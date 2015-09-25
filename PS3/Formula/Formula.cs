@@ -471,10 +471,20 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            if (f1 != null)                 // if f1 is not null we can use Equals
-                return f1.Equals(f2);
-            else
-                return f2 == null;          // else if f2 is null then they are both equal to null.
+            // If both are null, or both are same instance, return true.
+            if (System.Object.ReferenceEquals(f1, f2))
+            {
+                return true;
+            }
+
+            // If one is null, but not both, return false.
+            if (((object)f1 == null) || ((object)f2 == null))
+            {
+                return false;
+            }
+
+            // else return according to equals
+           return  f1.Equals(f2);
         }
 
         /// <summary>
@@ -484,6 +494,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
+            if (f1 == null && f2 == null)
+                return false;
+                        
             return !(f1 == f2);
         }
 
