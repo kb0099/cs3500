@@ -201,6 +201,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
+            // Get only those tokens which are variables
             HashSet<Token> variables = new HashSet<Token>(tokens.Where(t => t.Type == TokenType.VARIABLE));
 
             foreach (Token token in variables)
@@ -220,8 +221,9 @@ namespace SpreadsheetUtilities
         /// new Formula("x + Y").ToString() should return "x+Y"
         /// </summary>
         public override string ToString()
-        {
-            return null;
+        { 
+            String.Join("", tokens)       
+                return null;
         }
 
         /// <summary>
@@ -401,6 +403,15 @@ namespace SpreadsheetUtilities
             public override int GetHashCode()
             {
                 return value.GetHashCode();
+            }
+
+            /// <summary>
+            /// Overrides ToString() to return the value of the token as string.
+            /// </summary>
+            /// <returns>String representation</returns>
+            public override string ToString()
+            {
+                return value;
             }
         }
 
