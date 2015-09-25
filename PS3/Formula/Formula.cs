@@ -103,7 +103,7 @@ namespace SpreadsheetUtilities
                 currToken = new Token(token, normalize, isValid);  // normalized and validity checked
                 if (currToken.Type == TokenType.UNDEFINED)
                     throw new FormulaFormatException("Error parsing the formula. Check your formula near the token: " + token);
-
+ 
                 // Else add the token as a valid token
                 tokens.Add(currToken);
             }
@@ -190,8 +190,7 @@ namespace SpreadsheetUtilities
                 for(int i = 0; i < tokens.Count; i++)
                 {
                     if (!tokens.ElementAt(i).Equals(fObj.tokens.ElementAt(i)))
-                        return false;
-                        
+                        return false;                        
                 }
                 return true;
             }
@@ -240,12 +239,12 @@ namespace SpreadsheetUtilities
             String lpPattern = @"\(";
             String rpPattern = @"\)";
             String opPattern = @"[\+\-*/]";
-            String varPattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
-            String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
+            String varPattern = @"[a-zA-Z_](?:[a-zA-Z_]|\d)*";
+            String doublePattern = @"^(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+-]?\d+)?$";
             String spacePattern = @"\s+";
 
             // Overall pattern
-            String pattern = String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4}) | ({5})",
+            String pattern = String.Format("({0})|({1})|({2})|({3})|({4})|({5})",
                                             lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern);
 
             // Enumerate matching tokens that don't consist solely of white space.
@@ -366,10 +365,10 @@ namespace SpreadsheetUtilities
         // private members
 
         // pattern for double as per assignment specs
-        private static string DOUBLE_PATTERN = @"^(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?$";
+        private static string DOUBLE_PATTERN = @"^(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+-]?\d+)?$";
 
         // pattern for a variable as per assignment specs
-        private static string VAR_PATTERN = @"^[a-zA-Z_](?: [a-zA-Z_]|\d)*$";
+        private static string VAR_PATTERN = @"^[a-zA-Z_](?:[a-zA-Z_]|\d)*$";
     }
 
 
