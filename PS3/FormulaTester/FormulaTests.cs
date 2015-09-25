@@ -18,8 +18,8 @@ namespace SpreadsheetUtilities
         [TestMethod()]
         public void PublicFormulaTestParsing()
         {
-            Formula f1 = new Formula("x");
-            f1 = new Formula(" ");
+            Formula f1 = new Formula("x");      // should not fail
+            f1 = new Formula(" ");              // should not fail
         }
 
         /// <summary>
