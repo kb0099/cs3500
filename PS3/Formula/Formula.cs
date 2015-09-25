@@ -113,7 +113,7 @@ namespace SpreadsheetUtilities
                     throw new FormulaFormatException("Error parsing the formula. Check your formula near the token: " + token);
 
                 tokenCounts[currToken.Type] += 1;
-                // # fo right paren can't be greater than # of left paren
+                // # of right paren can't be greater than # of left paren
                 if (tokenCounts[TokenType.LEFT_PAREN] < tokenCounts[TokenType.RIGHT_PAREN])
                     throw new FormulaFormatException("Error parsing the formula. When reading tokens from left to right, at no point should the number of closing parentheses seen so far be greater than the number of opening parentheses seen so far.");
 
@@ -141,6 +141,10 @@ namespace SpreadsheetUtilities
             TokenType[] lastValidTokens = new TokenType[] { TokenType.NUMBER, TokenType.VARIABLE, TokenType.RIGHT_PAREN };
             if (!lastValidTokens.Contains(tokens[tokens.Count - 1].Type))
                 throw new FormulaFormatException("The last token of an expression must be a number, a variable, or a closing parenthesis.");
+
+            // balanced paren rule
+            if (tokenCounts[TokenType.LEFT_PAREN] != tokenCounts[TokenType.RIGHT_PAREN])
+                throw new FormulaFormatException("The total number of opening parentheses must equal the total number of closing parentheses.");
         }
 
         /// <summary>
@@ -302,7 +306,11 @@ namespace SpreadsheetUtilities
                 catch (DivideByZeroException ex)
                 {
                     return new FormulaError("Cannot divide by zero. Please fix division by zero in formula: " + formula + ".\nError details: " + ex.Message);
+                }catch(ArgumentException ae)
+                {
+                    return new FormulaError("Variable lookup failed in formula: " + formula + " for variable: " + tokens[i].Value  + ".\nError details: " + ae.Message );
                 }
+
 
             }
             // after all the tokens has been processed
@@ -371,6 +379,8 @@ namespace SpreadsheetUtilities
                 case '*':
                     return v2 * v1;
                 case '/':
+                    if (v1 == 0)
+                        throw new DivideByZeroException("Division by zero in: " + v2 + "/" + v1);
                     return v2 / v1;
                 default:
                     return 0;   
@@ -438,7 +448,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object obj)
         {
-            if (!(obj == null && typeof(Formula) != obj.GetType()))
+            if (obj != null && typeof(Formula) == obj.GetType())
             {
                 Formula fObj = (Formula)obj;
                 for (int i = 0; i < tokens.Count; i++)

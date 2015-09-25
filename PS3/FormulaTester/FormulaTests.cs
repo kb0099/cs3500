@@ -121,9 +121,10 @@ namespace SpreadsheetUtilities
         /// seen so far.
         /// </summary>
         [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestRightParenRule()
         {
-            Assert.Fail();
+            Formula f1 = new Formula("(((1+2)-3)*2)))");            
         }
 
         /// <summary>
@@ -133,7 +134,8 @@ namespace SpreadsheetUtilities
         [TestMethod()]
         public void PublicFormulaTestBalancedParenRule()
         {
-            Assert.Fail();
+            // should pass
+            Formula f1 = new Formula("(1+3)*(4+5)-(((6+10)*2)*2)");
         }
 
         /// <summary>
@@ -269,6 +271,7 @@ namespace SpreadsheetUtilities
         /// parenthesis must be either an operator or a closing parenthesis.
         /// </summary>
         [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestExtraFollowingRule1()
         {
             Formula f1 = new Formula("9.0 (2 + b2) * 9");
@@ -279,6 +282,7 @@ namespace SpreadsheetUtilities
         /// parenthesis must be either an operator or a closing parenthesis.
         /// </summary>
         [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestExtraFollowingRule2()
         {
             Formula f2= new Formula("(x1+y1)(x1-y1)");
@@ -289,6 +293,7 @@ namespace SpreadsheetUtilities
         /// parenthesis must be either an operator or a closing parenthesis.
         /// </summary>
         [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestExtraFollowingRule3()
         {
             Formula f3 = new Formula("1.11e-34 3.14 - x1");
@@ -299,6 +304,7 @@ namespace SpreadsheetUtilities
         /// parenthesis must be either an operator or a closing parenthesis.
         /// </summary>
         [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestExtraFollowingRule4()
         {
             Formula f4 = new Formula("3.14 * (r1 r1)");
@@ -310,7 +316,7 @@ namespace SpreadsheetUtilities
         [TestMethod()]
         public void PublicEvaluateTest()
         {
-            Assert.Fail();
+            Assert.AreEqual(new Formula("1.2 + 3.4").Evaluate(s => 0), 4.6);
         }
 
         /// <summary>
