@@ -43,7 +43,7 @@ namespace SpreadsheetUtilities
     {
         // Represents the formula/expression as a list of normalized validated tokens
         private List<Token> tokens;
-        
+
         private Func<string, string> normalize; // Represents normalizer 
         private Func<string, bool> isValid;     // Represents validator
         private string formula;                 // Represents the raw formula expression
@@ -101,7 +101,7 @@ namespace SpreadsheetUtilities
             // track # of tokens processed
             Dictionary<TokenType, int> tokenCounts = new Dictionary<TokenType, int>();
             //initialize token counts for each token type
-            foreach(TokenType tt in Enum.GetValues(typeof(TokenType)))
+            foreach (TokenType tt in Enum.GetValues(typeof(TokenType)))
             {
                 tokenCounts[tt] = 0;
             }
@@ -111,20 +111,25 @@ namespace SpreadsheetUtilities
                 currToken = new Token(token, normalize, isValid);  // normalized and validity checked
                 if (currToken.Type == TokenType.UNDEFINED)
                     throw new FormulaFormatException("Error parsing the formula. Check your formula near the token: " + token);
-                
+
                 tokenCounts[currToken.Type] += 1;
                 // # fo right paren can't be greater than # of left paren
                 if (tokenCounts[TokenType.LEFT_PAREN] < tokenCounts[TokenType.RIGHT_PAREN])
                     throw new FormulaFormatException("Error parsing the formula. When reading tokens from left to right, at no point should the number of closing parentheses seen so far be greater than the number of opening parentheses seen so far.");
-
-                // Else add the token as a valid token
+                               
+                // Add the token
                 tokens.Add(currToken);
+
+                // validate parenthesis following rule
+                ValidateParenthesisFollowingRuleAt(tokens.IndexOf(currToken));
+
+                
             }// cannot be empty
 
             if (tokens.Count < 1)
                 throw new FormulaFormatException("The formula must contain at least at least one token. Spaces don't count as token. Check your formula.");
 
-            
+
             // The first token of an expression must be a number, a variable, or an opening parenthesis.
             TokenType[] firstValidTokens = new TokenType[] { TokenType.NUMBER, TokenType.VARIABLE, TokenType.LEFT_PAREN };
             if (!firstValidTokens.Contains(tokens[0].Type))
@@ -134,6 +139,27 @@ namespace SpreadsheetUtilities
             TokenType[] lastValidTokens = new TokenType[] { TokenType.NUMBER, TokenType.VARIABLE, TokenType.RIGHT_PAREN };
             if (!lastValidTokens.Contains(tokens[tokens.Count - 1].Type))
                 throw new FormulaFormatException("The last token of an expression must be a number, a variable, or a closing parenthesis.");
+        }
+
+        /// <summary>
+        /// Validates the Parenthesis Following Rule
+        /// Any token that immediately follows an opening parenthesis or 
+        /// an operator must be either a number, a variable, or an opening parenthesis.
+        /// </summary>
+        /// <param name="i">The index of token to check at. </param>
+        private void ValidateParenthesisFollowingRuleAt(int i)
+        {
+            TokenType[] preTokens = new TokenType[] { TokenType.LEFT_PAREN, TokenType.OP_DIV, TokenType.OP_MINUS, TokenType.OP_MULT, TokenType.OP_PLUS };
+            TokenType[] validPostTokens = new TokenType[] { TokenType.NUMBER, TokenType.VARIABLE, TokenType.LEFT_PAREN };
+
+            if (i > 0)
+            {
+                if (preTokens.Contains(tokens[i - 1].Type))  // if previous token was lef paren or an op 
+                {
+                    if (! validPostTokens.Contains(tokens[i].Type))
+                        throw new FormulaFormatException("Any token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis.");
+                }
+            }
         }
 
         /// <summary>
@@ -175,7 +201,12 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
-            return null;
+            HashSet<Token> variables = new HashSet<Token>(tokens.Where(t => t.Type == TokenType.VARIABLE));
+
+            foreach (Token token in variables)
+            {
+                yield return token.Value;
+            }           
         }
 
         /// <summary>
@@ -211,13 +242,13 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object obj)
         {
-            if(!(obj == null && typeof(Formula) != obj.GetType()))
+            if (!(obj == null && typeof(Formula) != obj.GetType()))
             {
                 Formula fObj = (Formula)obj;
-                for(int i = 0; i < tokens.Count; i++)
+                for (int i = 0; i < tokens.Count; i++)
                 {
                     if (!tokens.ElementAt(i).Equals(fObj.tokens.ElementAt(i)))
-                        return false;                        
+                        return false;
                 }
                 return true;
             }
@@ -334,10 +365,12 @@ namespace SpreadsheetUtilities
                         type = TokenType.OP_DIV;
                         break;
                     default:
-                        if (Regex.IsMatch(token, DOUBLE_PATTERN)) {                // double                                                       
+                        if (Regex.IsMatch(token, DOUBLE_PATTERN))
+                        {                // double                                                       
                             type = TokenType.NUMBER;
                         }
-                        else if (Regex.IsMatch(token, VAR_PATTERN) && validator(token)) {               // variables
+                        else if (Regex.IsMatch(token, VAR_PATTERN) && validator(token))
+                        {               // variables
                             value = normalizer(token);
                             type = TokenType.VARIABLE;
                         }
@@ -357,7 +390,7 @@ namespace SpreadsheetUtilities
             public override bool Equals(object obj)
             {
                 if (obj != null && obj.GetType() == typeof(Token) && value.Equals(((Token)obj).value))
-                    return true;                
+                    return true;
                 return false;
             }
 
@@ -371,7 +404,7 @@ namespace SpreadsheetUtilities
             }
         }
 
-      
+
         /// <summary>
         /// Represents a type of the token object.
         /// </summary>
