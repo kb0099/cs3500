@@ -208,8 +208,157 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return null;
+            Stack<double> valueStack = new Stack<double>();
+            Stack<char> opStack = new Stack<char>();
+            char[] plusMinus = new char[] { '+', '-' };
+            char[] mulDiv = new char[] { '*', '/' };
+            double t = 0;       // temporary variable
+         
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                switch (tokens[i].Value)
+                {
+                    case "":
+                        break;
+                    case "+":
+                    case "-":
+                        /*
+                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                        Apply the popped operator to the popped numbers. Push the result onto the value stack. 
+                        Next, push t onto the operator stack
+                        */
+                        if (HasOnTop(opStack, plusMinus))
+                        {
+                            t = Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+                            valueStack.Push(t);
+                        }
+                        opStack.Push(tokens[i].Value[0]);
+                        break;
+                    case "*":
+                    case "/":
+                        /*
+                        Push t onto the operator stack
+                        */
+                        opStack.Push(tokens[i].Value[0]);
+                        break;
+                    case "(":
+                        opStack.Push('(');
+                        break;
+                    case ")":
+                        /*
+                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                        Apply the popped operator to the popped numbers. Push the result onto the value stack. 
+                        Next, the top of the operator stack should be a (. Pop it. Finally, if * or / is at the top of the 
+                        operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. 
+                        Push the result onto the value stack.
+                        */
+                        if (HasOnTop(opStack, plusMinus))
+                        {
+                            valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
+                        }
+                        if (HasOnTop(opStack, mulDiv))
+                        {
+                            valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
+                        }
+                        break;
+                    default:
+                        if (Double.TryParse(tokens[i].Value, out t))
+                        {
+                            // token is integer(or double)
+                            /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, 
+                            and apply the popped operator to t and the popped number. Push the result onto the value stack.
+                            Otherwise, push t onto the value stack.
+                            */
+                        }
+                        else 
+                        {
+                            // token is a variable
+                            /*
+                            Proceed as above, using the looked-up value of t instead of t
+                            */
+                            t = lookup(tokens[i].Value);
+                        }
+                        // at this point t has a value assigned to it
+                        if (HasOnTop(opStack, mulDiv))
+                        {
+                            t = Calc(t, valueStack.Pop(), opStack.Pop());
+                        }
+                        valueStack.Push(t);
+
+                        break;
+                }
+            }
+            // after all the tokens has been processed
+            /*
+            If Operator stack is empty	
+            Value stack should contain a single number
+            Pop it and report as the value of the expression
+
+            Else, There should be exactly one operator on 
+            the operator stack, and it should be either + or -. There should be 
+            exactly two values on the value stack. Apply the operator to the two 
+            values and report the result as the value of the expression.
+            */
+            if (opStack.Count == 0)
+            {
+                return valueStack.Pop();
+                // else might have to throw err
+            }
+            else
+            {
+                 return Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+            }
         }
+
+        /// <summary>
+        /// Checks if top of the stack has any of the array values.
+        /// </summary>
+        /// <typeparam name="T">The underlying type of values.</typeparam>
+        /// <param name="stack">Represents stack.</param>
+        /// <param name="values">An array of T.</param>
+        /// <returns></returns>
+        private static bool HasOnTop(Stack<char> stack, char[] values)
+        {
+            if (stack.Count > 0)
+                foreach (char v in values)
+                {
+                    if (stack.Peek().Equals(v))
+                        return true;
+                }
+            return false;
+        }
+
+        /// <summary>
+        /// Represents a helper method for arithmetic operations based on stack pop order.
+        /// The order of operation is reversed: v2 op v1
+        /// Example: Calc(1, 2, '-') would return the value of 2-1 which is 1.
+        /// </summary>
+        /// <param name="v1">First popped item</param>
+        /// <param name="v2">Last popped item</param>
+        /// <param name="op">Operator: +, -, *, or /</param>
+        /// <returns>The result of applying the operator to the operands in reverse order</returns>
+        private static double Calc(double v1, double v2, char op)
+        {
+            switch (op)
+            {
+                case '+':
+                    return v2 + v1;
+                case '-':
+                    return v2 - v1;
+                case '*':
+                    return v2 * v1;
+                case '/':
+                    return v2 / v1;
+                default:
+                    throw new Exception();
+            }
+        }
+
+
+
+
+
+
 
         /// <summary>
         /// Enumerates the normalized versions of all of the variables that occur in this 
@@ -469,6 +618,7 @@ namespace SpreadsheetUtilities
 
         // pattern for a variable as per assignment specs
         private static string VAR_PATTERN = @"^[a-zA-Z_](?:[a-zA-Z_]|\d)*$";
+
     }
 
 
@@ -507,5 +657,6 @@ namespace SpreadsheetUtilities
         public string Reason { get; private set; }
     }
 
+   
 }
 
