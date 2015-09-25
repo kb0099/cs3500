@@ -262,6 +262,10 @@ namespace SpreadsheetUtilities
                             {
                                 valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
                             }
+
+                            // pop the right paren
+                            opStack.Pop().Equals('(');
+
                             if (HasOnTop(opStack, mulDiv))
                             {
                                 valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
@@ -369,7 +373,7 @@ namespace SpreadsheetUtilities
                 case '/':
                     return v2 / v1;
                 default:
-                    throw new Exception();
+                    return 0;   
             }
         }
 
