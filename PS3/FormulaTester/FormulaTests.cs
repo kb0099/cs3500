@@ -333,6 +333,15 @@ namespace SpreadsheetUtilities
         [TestMethod()]
         public void PublicToStringTest()
         {
+            Formula f1 = new Formula("(x1+y1)/2.0");
+            Assert.AreEqual("(x1+y1)/2.0", f1.ToString());
+
+            Formula f2 = new Formula("a1 * b1 - c1 * A1 /C1 + 99.99e-99", s => s.ToUpper(), s => true);
+            Assert.AreEqual("A1*B1-C1*A1/C1+99.99e-99", f2.ToString());
+
+            Formula f3 = new Formula("a1 * b1 - c1 * A1 /C1 + 99.99e-99");
+            Assert.AreEqual("a1*b1-c1*A1/C1+99.99e-99", f3.ToString());
+            
         }
 
         [TestMethod()]
