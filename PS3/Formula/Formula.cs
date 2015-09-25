@@ -120,6 +120,13 @@ namespace SpreadsheetUtilities
                 // Else add the token as a valid token
                 tokens.Add(currToken);
             }
+
+            // The first token of an expression must be a number, a variable, or an opening parenthesis.
+            TokenType[] firstValidTokens = new TokenType[] { TokenType.NUMBER, TokenType.VARIABLE, TokenType.LEFT_PAREN };
+            if (!firstValidTokens.Contains(tokens[0].Type))
+                throw new FormulaFormatException("The first token of an expression must be a number, a variable, or an opening parenthesis.");
+
+            // cannot be empty
             if (tokens.Count < 1)
                 throw new FormulaFormatException("The formula must contain at least at least one token. Spaces don't count as token. Check your formula.");
         }

@@ -137,13 +137,23 @@ namespace SpreadsheetUtilities
         }
 
         /// <summary>
-        /// The first token of an expression must be a number, 
-        /// a variable, or an opening parenthesis.
+        /// The first token of an expression must be a number, a variable, or an opening parenthesis.
         /// </summary>
         [TestMethod()]
-        public void PublicFormulaTestStartingTokenRule()
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestStartingTokenRule1()
         {
-            Assert.Fail();
+            Formula f1 = new Formula(" + 9 - 3");
+        }
+
+        /// <summary>
+        /// The first token of an expression must be a number, a variable, or an opening parenthesis.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestStartingTokenRule2()
+        {
+            Formula f2 = new Formula(" * 23 / 44 + x1");
         }
 
         /// <summary>
