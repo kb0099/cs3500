@@ -326,12 +326,12 @@ namespace SpreadsheetUtilities
             String rpPattern = @"\)";
             String opPattern = @"[\+\-*/]";
             String varPattern = @"[a-zA-Z_](?:[a-zA-Z_]|\d)*";
-            String doublePattern = @"^(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+-]?\d+)?$";
+            String doublePattern = @"(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][\+-]?\d+)?";
             String spacePattern = @"\s+";
 
             // Overall pattern
             String pattern = String.Format("({0})|({1})|({2})|({3})|({4})|({5})",
-                                            lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern);
+                                            lpPattern, rpPattern, opPattern, doublePattern, varPattern, spacePattern);
 
             // Enumerate matching tokens that don't consist solely of white space.
             foreach (String s in Regex.Split(formula, pattern, RegexOptions.IgnorePatternWhitespace))

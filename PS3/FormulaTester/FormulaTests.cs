@@ -239,16 +239,70 @@ namespace SpreadsheetUtilities
             Formula f5 = new Formula("((h1 + w2) + (+ 3 + 99))");
         }
 
+
+        /// <summary>
+        /// Any token that immediately follows an opening parenthesis or
+        /// an operator must be either a number,
+        /// a variable, or an opening parenthesis.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParenthesisFollowingRule6()
+        {
+            Formula f6 = new Formula("9e-9 + + 2 * x1 + y1");
+        }
+
+        /// <summary>
+        /// Any token that immediately follows an opening parenthesis or
+        /// an operator must be either a number,
+        /// a variable, or an opening parenthesis.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParenthesisFollowingRule7()
+        {
+            Formula f7 = new Formula("x1 / ) + 3.0");
+        }
+        
         /// <summary>
         /// Any token that immediately follows a number, a variable, or a closing 
         /// parenthesis must be either an operator or a closing parenthesis.
         /// </summary>
         [TestMethod()]
-        public void PublicFormulaTestExtraFollowingRule()
+        public void PublicFormulaTestExtraFollowingRule1()
         {
-            Assert.Fail();
+            Formula f1 = new Formula("9.0 (2 + b2) * 9");
         }
 
+        /// <summary>
+        /// Any token that immediately follows a number, a variable, or a closing 
+        /// parenthesis must be either an operator or a closing parenthesis.
+        /// </summary>
+        [TestMethod()]
+        public void PublicFormulaTestExtraFollowingRule2()
+        {
+            Formula f2= new Formula("(x1+y1)(x1-y1)");
+        }
+
+        /// <summary>
+        /// Any token that immediately follows a number, a variable, or a closing 
+        /// parenthesis must be either an operator or a closing parenthesis.
+        /// </summary>
+        [TestMethod()]
+        public void PublicFormulaTestExtraFollowingRule3()
+        {
+            Formula f3 = new Formula("1.11e-34 3.14 - x1");
+        }
+
+        /// <summary>
+        /// Any token that immediately follows a number, a variable, or a closing 
+        /// parenthesis must be either an operator or a closing parenthesis.
+        /// </summary>
+        [TestMethod()]
+        public void PublicFormulaTestExtraFollowingRule4()
+        {
+            Formula f4 = new Formula("3.14 * (r1 r1)");
+        }
 
         [TestMethod()]
         public void PublicEvaluateTest()
@@ -256,16 +310,29 @@ namespace SpreadsheetUtilities
             Assert.Fail();
         }
 
+        /// <summary>
+        /// Tests the GetVariables method.
+        /// </summary>
         [TestMethod()]
         public void PublicGetVariablesTest()
         {
-            Assert.Fail();
+            Formula f1 = new Formula("(x1+y1)/2.0");
+            Assert.IsTrue(new HashSet<string>(f1.GetVariables()).SetEquals(new HashSet<string>() { "x1", "y1" }));
+
+            Formula f2 = new Formula("a1 * b1 - c1 * A1 /C1 + 99.99e-99", s => s.ToUpper(), s => true);
+            Assert.IsTrue(new HashSet<string>(f2.GetVariables()).SetEquals(new HashSet<string>() { "A1", "B1", "C1" }));
+
+            // without normalization
+            Formula f3 = new Formula("a1 * b1 - c1 * A1 /C1 + 99.99e-99");
+            Assert.IsTrue(new HashSet<string>(f3.GetVariables()).SetEquals(new HashSet<string>() { "a1", "b1", "c1", "A1",  "C1" }));
         }
 
+        /// <summary>
+        /// Tests the ToString method.
+        /// </summary>
         [TestMethod()]
         public void PublicToStringTest()
         {
-            Assert.Fail();
         }
 
         [TestMethod()]
