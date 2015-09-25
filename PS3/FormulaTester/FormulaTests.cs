@@ -185,9 +185,58 @@ namespace SpreadsheetUtilities
         /// </summary>
         [TestMethod()]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void PublicFormulaTestParenthesisFollowingRule()
+        public void PublicFormulaTestParenthesisFollowingRule1()
         {
-            
+            Formula f1 = new Formula("()");
+                        
+        }/// <summary>
+         /// Any token that immediately follows an opening parenthesis or
+         /// an operator must be either a number,
+         /// a variable, or an opening parenthesis.
+         /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParenthesisFollowingRule2()
+        {
+            Formula f2 = new Formula("a + 99.00e+2 + (-");
+        }
+
+        /// <summary>
+        /// Any token that immediately follows an opening parenthesis or
+        /// an operator must be either a number,
+        /// a variable, or an opening parenthesis.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParenthesisFollowingRule3()
+        {
+            Formula f3 = new Formula("2 + (*");
+            Formula f4 = new Formula("x1 + y1 + (/ + z3*y10");
+            Formula f5 = new Formula("((h1 + w2) + (+ 3 + 99))");
+        }
+
+        /// <summary>
+        /// Any token that immediately follows an opening parenthesis or
+        /// an operator must be either a number,
+        /// a variable, or an opening parenthesis.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParenthesisFollowingRule4()
+        {
+            Formula f4 = new Formula("x1 + y1 + (/ + z3*y10");
+        }
+
+        /// <summary>
+        /// Any token that immediately follows an opening parenthesis or
+        /// an operator must be either a number,
+        /// a variable, or an opening parenthesis.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParenthesisFollowingRule5()
+        {
+            Formula f5 = new Formula("((h1 + w2) + (+ 3 + 99))");
         }
 
         /// <summary>
