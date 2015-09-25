@@ -98,15 +98,30 @@ namespace SpreadsheetUtilities
         private void ProcessTokens()
         {
             Token currToken;        // represents the current token
+            // track # of tokens processed
+            Dictionary<TokenType, int> tokenCounts = new Dictionary<TokenType, int>();
+            //initialize token counts for each token type
+            foreach(TokenType tt in Enum.GetValues(typeof(TokenType)))
+            {
+                tokenCounts[tt] = 0;
+            }
+
             foreach (string token in GetTokens(formula))
             {
                 currToken = new Token(token, normalize, isValid);  // normalized and validity checked
                 if (currToken.Type == TokenType.UNDEFINED)
                     throw new FormulaFormatException("Error parsing the formula. Check your formula near the token: " + token);
- 
+                
+                tokenCounts[currToken.Type] += 1;
+                // # fo right paren can't be greater than # of left paren
+                if (tokenCounts[TokenType.LEFT_PAREN] < tokenCounts[TokenType.RIGHT_PAREN])
+                    throw new FormulaFormatException("Error parsing the formula. When reading tokens from left to right, at no point should the number of closing parentheses seen so far be greater than the number of opening parentheses seen so far.");
+
                 // Else add the token as a valid token
                 tokens.Add(currToken);
             }
+            if (tokens.Count < 1)
+                throw new FormulaFormatException("The formula must contain at least at least one token. Spaces don't count as token. Check your formula.");
         }
 
         /// <summary>

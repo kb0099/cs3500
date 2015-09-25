@@ -13,23 +13,105 @@ namespace SpreadsheetUtilities
     {
         /// <summary>
         /// Verify that the only tokens are (, ), +, -, *, /, 
-        /// variables, and floating-point numbers.
+        /// variables, and floating-point numbers.    
+        /// If, valid formulas are given to constructor, and it should not throw exception.
         /// </summary>
         [TestMethod()]
-        public void PublicFormulaTestParsing()
+        public void PublicFormulaTestParsingValidTokens1()
         {
-            Formula f1 = new Formula("x");      // should not fail
-            f1 = new Formula(" ");              // should not fail
+            // All of these must not throw exceptions, hence, this test should pass.
+            Formula f1 = new Formula("x_ + _123 + _ * 3.49");
+            f1 = new Formula("99");
+            f1 = new Formula("123.4e+47 + a2 + b3 + a99 + c6 + .99 + 0.99 + 99.99e99 * 99.99e-99/9999+e99");
+            f1 = new Formula("(___ + myVar99 / yourVar24) + (2*x) + 3*x*y*z*(hello /world)");
+        }
+
+        /// <summary>
+        /// Verify that the only tokens are (, ), +, -, *, /, 
+        /// variables, and floating-point numbers.
+        /// Invalid tokens must throw exception.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParsingValidTokens2()
+        {
+            Formula f2 = new Formula("#"); //invalid symbol
+        }
+
+
+        /// <summary>
+        /// Verify that the only tokens are (, ), +, -, *, /, 
+        /// variables, and floating-point numbers.
+        /// Invalid tokens must throw exception.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParsingValidTokens3()
+        {
+            Formula f3 = new Formula("#(((x1+y1) + y2 + z3)"); //invalid symbol #
+        }
+
+
+        /// <summary>
+        /// Verify that the only tokens are (, ), +, -, *, /, 
+        /// variables, and floating-point numbers.
+        /// Invalid tokens must throw exception.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParsingValidTokens4()
+        {
+            Formula f4 = new Formula("x1 - b!+ 3"); //invalid symbol !
+        }
+
+
+        /// <summary>
+        /// Verify that the only tokens are (, ), +, -, *, /, 
+        /// variables, and floating-point numbers.
+        /// Invalid tokens must throw exception.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParsingValidTokens5()
+        {
+            Formula f5 = new Formula("a#%$~!@#^^$$"); //invalid symbols
+        }
+
+        /// <summary>
+        /// Verify that the only tokens are (, ), +, -, *, /, 
+        /// variables, and floating-point numbers.
+        /// Invalid tokens must throw exception.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestParsingValidTokens6()
+        {
+            Formula f6 = new Formula("x$ - y$"); //invalid symbols
+        }
+
+
+        /// <summary>
+        /// Verifies One Token Rule
+        /// There must be at least one token.
+        /// Throws exception if does not contain at least one token.
+        /// </summary> 
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestAtLeastOneToken1()
+        {
+            Formula f1 = new Formula("");
         }
 
         /// <summary>
         /// Verifies One Token Rule
         /// There must be at least one token.
+        /// Throws exception if does not contain at least one token.
         /// </summary> 
         [TestMethod()]
-        public void PublicFormulaTestAtLeastOneToken()
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestAtLeastOneToken2()
         {
-            Assert.Fail();
+            Formula f7 = new Formula("          ");
         }
 
         /// <summary>
@@ -125,6 +207,6 @@ namespace SpreadsheetUtilities
         {
             Assert.Fail();
         }
-        
+
     }
 }
