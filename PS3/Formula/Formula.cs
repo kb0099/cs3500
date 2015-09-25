@@ -213,80 +213,93 @@ namespace SpreadsheetUtilities
             char[] plusMinus = new char[] { '+', '-' };
             char[] mulDiv = new char[] { '*', '/' };
             double t = 0;       // temporary variable
-         
+
+            // There are no other possible exceptions that we need to handle
+            // Variable look up fail will be handled by the lookup itself.
+            // We only need to check Division by zero as parsing errors have been already checked.
             for (int i = 0; i < tokens.Count; i++)
             {
-                switch (tokens[i].Value)
+                try
                 {
-                    case "":
-                        break;
-                    case "+":
-                    case "-":
-                        /*
-                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
-                        Apply the popped operator to the popped numbers. Push the result onto the value stack. 
-                        Next, push t onto the operator stack
-                        */
-                        if (HasOnTop(opStack, plusMinus))
-                        {
-                            t = Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
-                            valueStack.Push(t);
-                        }
-                        opStack.Push(tokens[i].Value[0]);
-                        break;
-                    case "*":
-                    case "/":
-                        /*
-                        Push t onto the operator stack
-                        */
-                        opStack.Push(tokens[i].Value[0]);
-                        break;
-                    case "(":
-                        opStack.Push('(');
-                        break;
-                    case ")":
-                        /*
-                        If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
-                        Apply the popped operator to the popped numbers. Push the result onto the value stack. 
-                        Next, the top of the operator stack should be a (. Pop it. Finally, if * or / is at the top of the 
-                        operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. 
-                        Push the result onto the value stack.
-                        */
-                        if (HasOnTop(opStack, plusMinus))
-                        {
-                            valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
-                        }
-                        if (HasOnTop(opStack, mulDiv))
-                        {
-                            valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
-                        }
-                        break;
-                    default:
-                        if (Double.TryParse(tokens[i].Value, out t))
-                        {
-                            // token is integer(or double)
-                            /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, 
-                            and apply the popped operator to t and the popped number. Push the result onto the value stack.
-                            Otherwise, push t onto the value stack.
-                            */
-                        }
-                        else 
-                        {
-                            // token is a variable
-                            /*
-                            Proceed as above, using the looked-up value of t instead of t
-                            */
-                            t = lookup(tokens[i].Value);
-                        }
-                        // at this point t has a value assigned to it
-                        if (HasOnTop(opStack, mulDiv))
-                        {
-                            t = Calc(t, valueStack.Pop(), opStack.Pop());
-                        }
-                        valueStack.Push(t);
 
-                        break;
+                    switch (tokens[i].Value)
+                    {
+                        case "":
+                            break;
+                        case "+":
+                        case "-":
+                            /*
+                            If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                            Apply the popped operator to the popped numbers. Push the result onto the value stack. 
+                            Next, push t onto the operator stack
+                            */
+                            if (HasOnTop(opStack, plusMinus))
+                            {
+                                t = Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+                                valueStack.Push(t);
+                            }
+                            opStack.Push(tokens[i].Value[0]);
+                            break;
+                        case "*":
+                        case "/":
+                            /*
+                            Push t onto the operator stack
+                            */
+                            opStack.Push(tokens[i].Value[0]);
+                            break;
+                        case "(":
+                            opStack.Push('(');
+                            break;
+                        case ")":
+                            /*
+                            If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                            Apply the popped operator to the popped numbers. Push the result onto the value stack. 
+                            Next, the top of the operator stack should be a (. Pop it. Finally, if * or / is at the top of the 
+                            operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. 
+                            Push the result onto the value stack.
+                            */
+                            if (HasOnTop(opStack, plusMinus))
+                            {
+                                valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
+                            }
+                            if (HasOnTop(opStack, mulDiv))
+                            {
+                                valueStack.Push(Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop()));
+                            }
+                            break;
+                        default:
+                            if (Double.TryParse(tokens[i].Value, out t))
+                            {
+                                // token is integer(or double)
+                                /*If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, 
+                                and apply the popped operator to t and the popped number. Push the result onto the value stack.
+                                Otherwise, push t onto the value stack.
+                                */
+                            }
+                            else
+                            {
+                                // token is a variable
+                                /*
+                                Proceed as above, using the looked-up value of t instead of t
+                                */
+                                t = lookup(tokens[i].Value);
+                            }
+                            // at this point t has a value assigned to it
+                            if (HasOnTop(opStack, mulDiv))
+                            {
+                                t = Calc(t, valueStack.Pop(), opStack.Pop());
+                            }
+                            valueStack.Push(t);
+
+                            break;
+
+                    }
                 }
+                catch (DivideByZeroException ex)
+                {
+                    return new FormulaError("Cannot divide by zero. Please fix division by zero in formula: " + formula + ".\nError details: " + ex.Message);
+                }
+
             }
             // after all the tokens has been processed
             /*
@@ -302,20 +315,26 @@ namespace SpreadsheetUtilities
             if (opStack.Count == 0)
             {
                 return valueStack.Pop();
-                // else might have to throw err
             }
             else
             {
-                 return Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+                try
+                {
+                    return Calc(valueStack.Pop(), valueStack.Pop(), opStack.Pop());
+                }
+                catch (DivideByZeroException)
+                {
+                    return new FormulaError("Cannot divide by zero. Please fix division by zero error in formula: " + formula);
+                }
             }
         }
+
 
         /// <summary>
         /// Checks if top of the stack has any of the array values.
         /// </summary>
-        /// <typeparam name="T">The underlying type of values.</typeparam>
         /// <param name="stack">Represents stack.</param>
-        /// <param name="values">An array of T.</param>
+        /// <param name="values">An array of char.</param>
         /// <returns></returns>
         private static bool HasOnTop(Stack<char> stack, char[] values)
         {
@@ -502,12 +521,12 @@ namespace SpreadsheetUtilities
         {
             private string value;                           // string value of token
             private TokenType type;                         // type of token
-            /// <summary>
-            /// Returns the current value of the token as object.
-            /// Note: it simply returns the token as it is. 
-            /// For example: if token = "x1", it doesn't evaluate the value of "x1".
-            /// It is simply returns the token itself which is "x1".
-            /// </summary>            
+                                                            /// <summary>
+                                                            /// Returns the current value of the token as object.
+                                                            /// Note: it simply returns the token as it is. 
+                                                            /// For example: if token = "x1", it doesn't evaluate the value of "x1".
+                                                            /// It is simply returns the token itself which is "x1".
+                                                            /// </summary>            
             public string Value { get { return value; } }
 
             /// <summary>
@@ -657,6 +676,6 @@ namespace SpreadsheetUtilities
         public string Reason { get; private set; }
     }
 
-   
+
 }
 
