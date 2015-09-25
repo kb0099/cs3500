@@ -161,9 +161,21 @@ namespace SpreadsheetUtilities
         /// a variable, or a closing parenthesis.
         /// </summary>
         [TestMethod()]
-        public void PublicFormulaTestEndingTokenRule()
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestEndingTokenRule1()
         {
-            Assert.Fail();
+            Formula f1 = new Formula("(x1 + x2 + ("); 
+        }
+
+        /// <summary>
+        /// The last token of an expression must be a number, 
+        /// a variable, or a closing parenthesis.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void PublicFormulaTestEndingTokenRule2()
+        {
+            Formula f1 = new Formula("99 - 23 + 1.602e-19/");
         }
 
         /// <summary>
@@ -172,9 +184,10 @@ namespace SpreadsheetUtilities
         /// a variable, or an opening parenthesis.
         /// </summary>
         [TestMethod()]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void PublicFormulaTestParenthesisFollowingRule()
         {
-            Assert.Fail();
+            
         }
 
         /// <summary>
