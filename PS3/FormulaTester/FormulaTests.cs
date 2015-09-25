@@ -304,6 +304,9 @@ namespace SpreadsheetUtilities
             Formula f4 = new Formula("3.14 * (r1 r1)");
         }
 
+        /// <summary>
+        /// Tests the Evaluate public method
+        /// </summary>
         [TestMethod()]
         public void PublicEvaluateTest()
         {
@@ -344,16 +347,28 @@ namespace SpreadsheetUtilities
             
         }
 
+        /// <summary>
+        /// Tests two instance of formula for equality
+        /// </summary>
         [TestMethod()]
         public void PublicEqualsTest()
         {
-            Assert.Fail();
+            Formula f1 = new Formula("3.14*pi*r*r");
+            Formula f2 = new Formula(" 3.14 * pi * r * r ");
+
+            Assert.IsTrue(f1.Equals(f2));
         }
 
+        /// <summary>
+        /// Tests the GetHashCode method
+        /// </summary>
         [TestMethod()]
         public void PublicGetHashCodeTest()
         {
-            Assert.Fail();
+            Formula f1 = new Formula("3.14*pi*r*r");
+            Formula f2 = new Formula(" 3.14 * pi * r * r ");
+
+            Assert.IsTrue(f1.GetHashCode() == f2.GetHashCode());
         }
 
     }
