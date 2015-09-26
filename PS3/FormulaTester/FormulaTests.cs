@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace SpreadsheetUtilities
 {
+    /// <summary>
+    /// Represents a test class for Formula class
+    /// </summary>
     [TestClass()]
     public class FormulaTests
     {
