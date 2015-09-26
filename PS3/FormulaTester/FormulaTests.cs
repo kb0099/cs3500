@@ -405,7 +405,8 @@ namespace SpreadsheetUtilities
             Assert.IsInstanceOfType(f.Evaluate(s => 99), typeof(FormulaError));
             Assert.IsInstanceOfType(new Formula("99/00").Evaluate(s=>0), typeof(FormulaError));
             f = new Formula("9.99 * x3/10.0 -11e-27");
-            Assert.IsTrue(f.Equals(new Formula(" 999e-2 *    x3/10 - 11.00e027")));
+            Assert.IsTrue(f.Equals(new Formula(" 999e-2 *    x3/10 - 11.00e-27")));
+            Assert.IsFalse(f.Equals(new Formula(" 999e-2 *    x3/10 - 11.00e-27 + 4 * z3")));
             Assert.IsFalse(f.Equals(null));
             Assert.IsFalse(f.Equals("99"));
 

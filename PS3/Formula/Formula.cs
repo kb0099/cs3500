@@ -449,14 +449,21 @@ namespace SpreadsheetUtilities
         public override bool Equals(object obj)
         {
             if (obj != null && typeof(Formula) == obj.GetType())
-            {
+            {                
                 Formula fObj = (Formula)obj;
+
+                // if # of tokens differ not equal!
+                if (tokens.Count != fObj.tokens.Count)
+                    return false;
+
                 for (int i = 0; i < tokens.Count; i++)
                 {
                     if (tokens[i].Type == TokenType.NUMBER && fObj.tokens[i].Type == TokenType.NUMBER)  // if number compare the actual values
-                        return Double.Parse(tokens[i].Value) == Double.Parse(fObj.tokens[i].Value);
-
-                    if (!tokens.ElementAt(i).Equals(fObj.tokens.ElementAt(i)))
+                    {
+                        if (Double.Parse(tokens[i].Value) != Double.Parse(fObj.tokens[i].Value))
+                            return false;
+                    }
+                    else if (!tokens.ElementAt(i).Equals(fObj.tokens.ElementAt(i)))
                         return false;
                 }
                 return true;
@@ -473,15 +480,11 @@ namespace SpreadsheetUtilities
         {
             // If both are null, or both are same instance, return true.
             if (System.Object.ReferenceEquals(f1, f2))
-            {
                 return true;
-            }
 
             // If one is null, but not both, return false.
             if (((object)f1 == null) || ((object)f2 == null))
-            {
                 return false;
-            }
 
             // else return according to equals
            return  f1.Equals(f2);
@@ -494,9 +497,6 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            if (f1 == null && f2 == null)
-                return false;
-                        
             return !(f1 == f2);
         }
 
