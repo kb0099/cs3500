@@ -378,6 +378,7 @@ namespace SpreadsheetUtilities
             Formula f2 = new Formula(" 3.14 * pi * r * r ");
 
             Assert.IsTrue(f1.GetHashCode() == f2.GetHashCode());
+            Assert.IsTrue(f1.GetHashCode() == new Formula("0.314e+1*pi*r*r").GetHashCode());
         }
 
         // Below are comprehensive tests which will try to cover the parts that could have been missed in individual tests.

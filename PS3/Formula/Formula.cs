@@ -508,7 +508,13 @@ namespace SpreadsheetUtilities
         public override int GetHashCode()
         {
             // returns hashcode on the normalized string representation of the formula
-            return ToString().GetHashCode();
+            // first create a string that matches the requirements for Equals() method
+            string expr = "";
+            foreach(Token t in tokens)
+            {
+                expr += t.Type == TokenType.NUMBER ? double.Parse(t.Value).ToString() : t.Value;
+            }
+            return expr.GetHashCode();
         }
 
         /// <summary>
