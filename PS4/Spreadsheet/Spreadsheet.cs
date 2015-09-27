@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Implemented by Mitchell Terry
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
