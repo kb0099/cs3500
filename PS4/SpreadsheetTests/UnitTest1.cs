@@ -11,7 +11,7 @@ namespace SpreadsheetTests
     {
         /// <summary>
         /// Test that constructor creates an empty spreadsheet.
-        /// Use GetNamesOfAllNonemptyCells() to prove it.
+        /// Uses GetNamesOfAllNonemptyCells() to prove it.
         /// </summary>
         [TestMethod]
         public void TestConstructor1()
@@ -22,7 +22,7 @@ namespace SpreadsheetTests
 
         /// <summary>
         /// Test that GetNamesOfAllNonemptyCells() enumerates names of all nonempty cells in Spreadsheet.
-        /// Use SetCellContents() to prove it.
+        /// Uses SetCellContents() to prove it.
         /// </summary>
         [TestMethod]
         public void TestGetNamesOfAllNonemptyCells1()
@@ -52,38 +52,114 @@ namespace SpreadsheetTests
 
         /// <summary>
         /// Test that GetCellContents() returns a string for a cell that contains a string.
+        /// Uses SetCellContents() to prove it.
         /// </summary>
         [TestMethod]
         public void TestGetCellContents1()
         {
-
+            AbstractSpreadsheet ss = new Spreadsheet();
+            // Add cells
+            ss.SetCellContents("A1", 2);
+            ss.SetCellContents("B1", 7);
+            ss.SetCellContents("C3", new Formula("92-2"));
+            ss.SetCellContents("D5", new Formula("A1*B1"));
+            ss.SetCellContents("E2", "Bill");
+            ss.SetCellContents("F5", "Francis");
+            // assert the string cells return strings
+            Assert.IsTrue(ss.GetCellContents("E2") is string);
+            Assert.IsTrue(ss.GetCellContents("F5") is string);
+            // assert the non-string cells don't return strings
+            Assert.IsFalse(ss.GetCellContents("A1") is string);
+            Assert.IsFalse(ss.GetCellContents("B1") is string);
+            Assert.IsFalse(ss.GetCellContents("C3") is string);
+            Assert.IsFalse(ss.GetCellContents("D5") is string);
         }
 
         /// <summary>
         /// Test that GetCellContents() returns a double for a cell that contains a double.
+        /// Uses SetCellContents() to prove it.
         /// </summary>
         [TestMethod]
         public void TestGetCellContents2()
         {
-
+            AbstractSpreadsheet ss = new Spreadsheet();
+            // Add cells
+            ss.SetCellContents("A1", 2);
+            ss.SetCellContents("B1", 7);
+            ss.SetCellContents("C3", new Formula("92-2"));
+            ss.SetCellContents("D5", new Formula("A1*B1"));
+            ss.SetCellContents("E2", "Bill");
+            ss.SetCellContents("F5", "Francis");
+            // assert the double cells return doubles
+            Assert.IsTrue(ss.GetCellContents("A1") is double);
+            Assert.IsTrue(ss.GetCellContents("B1") is double);
+            // assert the non-double cells don't return doubles
+            Assert.IsFalse(ss.GetCellContents("C3") is double);
+            Assert.IsFalse(ss.GetCellContents("D5") is double);
+            Assert.IsFalse(ss.GetCellContents("E2") is double);
+            Assert.IsFalse(ss.GetCellContents("F5") is double);
         }
 
         /// <summary>
         /// Test that GetCellContents() returns a Formula for a cell that contains a Formula.
+        /// Uses SetCellContents() to prove it.
         /// </summary>
         [TestMethod]
         public void TestGetCellContents3()
         {
-
+            AbstractSpreadsheet ss = new Spreadsheet();
+            // Add cells
+            ss.SetCellContents("A1", 2);
+            ss.SetCellContents("B1", 7);
+            ss.SetCellContents("C3", new Formula("92-2"));
+            ss.SetCellContents("D5", new Formula("A1*B1"));
+            ss.SetCellContents("E2", "Bill");
+            ss.SetCellContents("F5", "Francis");
+            // assert the Formula cells return Formulas
+            Assert.IsTrue(ss.GetCellContents("C3") is Formula);
+            Assert.IsTrue(ss.GetCellContents("D5") is Formula);
+            // assert the non-Formula cells don't return Formuals
+            Assert.IsFalse(ss.GetCellContents("A1") is Formula);
+            Assert.IsFalse(ss.GetCellContents("B1") is Formula);
+            Assert.IsFalse(ss.GetCellContents("E2") is Formula);
+            Assert.IsFalse(ss.GetCellContents("F5") is Formula);
         }
 
         /// <summary>
-        /// Test that GetCellContents() returns an empty string when calling for a cell that has not been set content yet.
+        /// Test that GetCellContents() returns the contents of the cell.
+        /// Uses SetCellContents() to prove it.
         /// </summary>
         [TestMethod]
         public void TestGetCellContents4()
         {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            // Add cells
+            ss.SetCellContents("A1", 2);
+            ss.SetCellContents("B1", 7);
+            ss.SetCellContents("C3", new Formula("92-2"));
+            ss.SetCellContents("D5", new Formula("A1*B1"));
+            ss.SetCellContents("E2", "Bill");
+            ss.SetCellContents("F5", "Francis");
+            // assert the string cells return the string contained
+            Assert.AreEqual("Bill", ss.GetCellContents("E2"));
+            Assert.AreEqual("Francis", ss.GetCellContents("F5"));
+            // assert the double cells return the contained double
+            Assert.AreEqual(2, ss.GetCellContents("A1"));
+            Assert.AreEqual(7, ss.GetCellContents("B1"));
+            // assert the Formula cells return the contained Formula
+            Assert.AreEqual(new Formula("92-2"), ss.GetCellContents("C3"));
+            Assert.AreEqual(new Formula("A1*B1"), ss.GetCellContents("D5"));
+        }
 
+        /// <summary>
+        /// Test that GetCellContents() returns an empty string when calling for an empty cell.
+        /// </summary>
+        [TestMethod]
+        public void TestGetCellContents5()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            // assert that an empty cell returns a blank string
+            Assert.AreEqual("", ss.GetCellContents("B52"));
         }
 
         /// <summary>
@@ -93,17 +169,44 @@ namespace SpreadsheetTests
         [ExpectedException(typeof(InvalidNameException))]
         public void TestGetCellContentsException1()
         {
-
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.GetCellContents(null);
         }
 
         /// <summary>
         /// Test that GetCellContents() throws an InvalidNameException when given an invalid name.
+        /// The invalid name used is "25".
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
-        public void TestGetCellContentsException2()
+        public void TestGetCellContentsException20()
         {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.GetCellContents("25");
+        }
 
+        /// <summary>
+        /// Test that GetCellContents() throws an InvalidNameException when given an invalid name.
+        /// The invalid name used is "2x".
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestGetCellContentsException21()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.GetCellContents("2x");
+        }
+
+        /// <summary>
+        /// Test that GetCellContents() throws an InvalidNameException when given an invalid name.
+        /// The invalid name used is "&".
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestGetCellContentsException22()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.GetCellContents("&");
         }
 
         /// <summary>
