@@ -30,24 +30,24 @@ namespace SpreadsheetTests
             AbstractSpreadsheet ss = new Spreadsheet();
             // Add cells, assert that they get added
             ss.SetCellContents("A1", 2);
-            Assert.AreEqual(new HashSet<string>() { "A1" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
             ss.SetCellContents("B1", 7);
-            Assert.AreEqual(new HashSet<string>() { "A1", "B1" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1", "B1" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
             ss.SetCellContents("C3", new Formula("92-2"));
-            Assert.AreEqual(new HashSet<string>() { "A1", "B1", "C3" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1", "B1", "C3" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
             ss.SetCellContents("D5", new Formula("A1*B1"));
-            Assert.AreEqual(new HashSet<string>() { "A1", "B1", "C3", "D5" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1", "B1", "C3", "D5" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
             ss.SetCellContents("E2", "Bill");
-            Assert.AreEqual(new HashSet<string>() { "A1", "B1", "C3", "D5", "E2" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1", "B1", "C3", "D5", "E2" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
             // Reset a cell, assert that nothing changed
             ss.SetCellContents("D5", "Katie");
-            Assert.AreEqual(new HashSet<string>() { "A1", "B1", "C3", "D5", "E2" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1", "B1", "C3", "D5", "E2" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
             // Add an empty cell, assert that nothing changed
             ss.SetCellContents("F22", "");
-            Assert.AreEqual(new HashSet<string>() { "A1", "B1", "C3", "D5", "E2" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1", "B1", "C3", "D5", "E2" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
             // Reset a cell to empty, assert that the cell is not included
             ss.SetCellContents("C3", "");
-            Assert.AreEqual(new HashSet<string>() { "A1", "B3", "D5", "E2" }, ss.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(new HashSet<string>() { "A1", "B1", "D5", "E2" }.SetEquals(ss.GetNamesOfAllNonemptyCells()));
         }
 
         /// <summary>
@@ -144,8 +144,8 @@ namespace SpreadsheetTests
             Assert.AreEqual("Bill", ss.GetCellContents("E2"));
             Assert.AreEqual("Francis", ss.GetCellContents("F5"));
             // assert the double cells return the contained double
-            Assert.AreEqual(2, ss.GetCellContents("A1"));
-            Assert.AreEqual(7, ss.GetCellContents("B1"));
+            Assert.AreEqual((double)2, ss.GetCellContents("A1"));
+            Assert.AreEqual((double)7, ss.GetCellContents("B1"));
             // assert the Formula cells return the contained Formula
             Assert.AreEqual(new Formula("92-2"), ss.GetCellContents("C3"));
             Assert.AreEqual(new Formula("A1*B1"), ss.GetCellContents("D5"));
@@ -219,13 +219,13 @@ namespace SpreadsheetTests
             AbstractSpreadsheet ss = new Spreadsheet();
             // assert with several number cells
             ss.SetCellContents("A1", 5);
-            Assert.AreEqual(5, ss.GetCellContents("A1"));
+            Assert.AreEqual((double)5, ss.GetCellContents("A1"));
             ss.SetCellContents("B1", 12);
-            Assert.AreEqual(12, ss.GetCellContents("B1"));
+            Assert.AreEqual((double)12, ss.GetCellContents("B1"));
             ss.SetCellContents("C3", -56);
-            Assert.AreEqual(-56, ss.GetCellContents("C3"));
+            Assert.AreEqual((double)-56, ss.GetCellContents("C3"));
             ss.SetCellContents("D2", 0);
-            Assert.AreEqual(0, ss.GetCellContents("D2"));
+            Assert.AreEqual((double)0, ss.GetCellContents("D2"));
             ss.SetCellContents("E5", double.PositiveInfinity);
             Assert.AreEqual(double.PositiveInfinity, ss.GetCellContents("E5"));
         }
@@ -245,7 +245,24 @@ namespace SpreadsheetTests
             ss.SetCellContents("D5", new Formula("C3/2"));
             ss.SetCellContents("E2", new Formula("B52-2*5"));
             // assert the set contains expected dependents
-            Assert.AreEqual(new HashSet<string>() { "F6", "A1", "B1", "C3", "D5" }, ss.SetCellContents("F6", 20));
+            Assert.IsTrue(new HashSet<string>() { "F6", "A1", "B1", "C3", "D5" }.SetEquals(ss.SetCellContents("F6", 20)));
+        }
+
+        /// <summary>
+        /// SetCellContents(name,number) didn't get coverage on code that would run if the cell previously held a formula with dependencies.
+        /// Uses SpreadsheetWrapper.GetDirectDependentsWrapper() to prove reaching it.
+        /// </summary>
+        [TestMethod]
+        public void TestSetCellContentsNumberCoverage1()
+        {
+            SpreadsheetWrapper ss = new SpreadsheetWrapper();
+            // create a formula with a dependency
+            ss.SetCellContents("B1", new Formula("A1*3"));
+            // change content of cell to number
+            ss.SetCellContents("B1", 3);
+            // check that dependencies are removed
+            ss.GetDirectDependentsWrapper("A1");
+            Assert.IsTrue(new HashSet<string>(ss.GetDirectDependentsWrapper("A1")).Count == 0);
         }
 
         /// <summary>
@@ -329,7 +346,7 @@ namespace SpreadsheetTests
             ss.SetCellContents("D5", new Formula("C3/2"));
             ss.SetCellContents("E2", new Formula("B52-2*5"));
             // assert the set contains expected dependents
-            Assert.AreEqual(new HashSet<string>() { "F6", "A1", "B1", "C3", "D5" }, ss.SetCellContents("F6", "Brady"));
+            Assert.IsTrue(new HashSet<string>() { "F6", "A1", "B1", "C3", "D5" }.SetEquals(ss.SetCellContents("F6", "Brady")));
         }
 
         /// <summary>
@@ -426,7 +443,27 @@ namespace SpreadsheetTests
             ss.SetCellContents("D5", new Formula("C3/2"));
             ss.SetCellContents("E2", new Formula("B52-2*5"));
             // assert the set contains expected dependents
-            Assert.AreEqual(new HashSet<string>() { "F6", "A1", "B1", "C3", "D5" }, ss.SetCellContents("F6", new Formula("7")));
+            Assert.IsTrue(new HashSet<string>() { "F6", "A1", "B1", "C3", "D5" }.SetEquals(ss.SetCellContents("F6", new Formula("7"))));
+        }
+
+        /// <summary>
+        /// SetCellContents(name,formula) didn't get coverage for code that would reset non-empty cell content when a CircularException occurs.
+        /// Uses GetCellContents() to prove reaching it.
+        /// </summary>
+        [TestMethod]
+        public void TestSetCellContentsFormulaCoverage1()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.SetCellContents("A1", 27);
+            try
+            {
+                ss.SetCellContents("A1", new Formula("A1"));
+                Assert.Fail("Didn't throw CircularException, so can't check changes to spreadsheet");
+            }
+            catch (CircularException)
+            {
+                Assert.AreEqual((double)27, ss.GetCellContents("A1"));
+            }
         }
 
         /// <summary>
@@ -564,8 +601,8 @@ namespace SpreadsheetTests
             SpreadsheetWrapper ss = new SpreadsheetWrapper();
             ss.SetCellContents("B1", new Formula("A1*A1"));
             ss.SetCellContents("C3", new Formula("B1 + A1"));
-            ss.SetCellContents("D5", new Formula("B1 - C1"));
-            Assert.IsTrue(new HashSet<string>() { "B1", "C1" }.SetEquals(ss.GetDirectDependentsWrapper("A1")));
+            ss.SetCellContents("D5", new Formula("B1 - C3"));
+            Assert.IsTrue(new HashSet<string>() { "B1", "C3" }.SetEquals(ss.GetDirectDependentsWrapper("A1")));
         }
 
         /// <summary>
@@ -613,6 +650,30 @@ namespace SpreadsheetTests
         {
             SpreadsheetWrapper ss = new SpreadsheetWrapper();
             ss.GetDirectDependentsWrapper("&");
+        }
+
+        /// <summary>
+        /// Private method IsValidName() didn't run code to respond to empty string.
+        /// Uses SetCellContents("",number) to reach it.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestPrivateIsValidNameCoverage1()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.SetCellContents("", 13);
+        }
+
+        /// <summary>
+        /// Private method IsValidName() didn't run code to respond to invalid characters after the first valid character.
+        /// Uses SetCellContents("n_3^x",number) to reach it.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestPrivateIsValidNameCoverage2()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.SetCellContents("n_3^x", 13);
         }
     }
 
