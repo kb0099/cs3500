@@ -202,6 +202,11 @@ namespace SS
         /// A helper for the GetCellsToRecalculate method.
         /// 
         ///   -- You should fully comment what is going on below --
+        ///   (1) name is added to visited
+        ///   (2) loops through the direct dependents of name in which:
+        ///       - if it finds a string the same as the start, a circular dependency is found, which throws a CircularException
+        ///       - else if it finds a string that is not in visited, it recursively calls itself (using the found string as name)
+        ///   (3) adds the name to the start of changed
         /// </summary>
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
         {

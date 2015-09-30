@@ -61,7 +61,7 @@ namespace SpreadsheetTests
             // Add cells
             ss.SetCellContents("A1", 2);
             ss.SetCellContents("B1", 7);
-            ss.SetCellContents("C3", new Formula("92-2"));
+            ss.SetCellContents("C3", new Formula("92-2")); // TODO recursion happens with this method; seems to relate to Formula == Formula
             ss.SetCellContents("D5", new Formula("A1*B1"));
             ss.SetCellContents("E2", "Bill");
             ss.SetCellContents("F5", "Francis");
