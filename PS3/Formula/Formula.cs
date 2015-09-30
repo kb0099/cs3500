@@ -1,5 +1,6 @@
 ﻿// Skeleton written by Joe Zachary for CS 3500, September 2013
 // Full Implementation by Mitchell Terry
+// Update 9/30/2015 by Mitchell Terry - fix stack overflow error for ==
 // Read the entire skeleton carefully and completely before you
 // do anything else!
 
@@ -390,9 +391,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            if (f1 == null)
+            if (object.ReferenceEquals(f1, null))
             {
-                if (f2 == null) return true;
+                if (object.ReferenceEquals(f2, null)) return true;
                 else return false;
             }
             return f1.Equals(f2);
