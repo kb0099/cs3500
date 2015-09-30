@@ -34,7 +34,7 @@ namespace SS
     /// Note that this is the same as the definition of valid variable from the PS3 Formula class.
     /// 
     /// For example, "x", "_", "x2", "y_15", and "___" are all valid cell  names, but
-    /// "25", "2x", and "&" are not.  Cell names are case sensitive, so "x" and "X" are
+    /// "25", "2x", and "&amp;" are not.  Cell names are case sensitive, so "x" and "X" are
     /// different cell names.
     /// 
     /// A spreadsheet contains a cell corresponding to every possible cell name.  (This
