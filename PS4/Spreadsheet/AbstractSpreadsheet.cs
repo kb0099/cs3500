@@ -199,8 +199,17 @@ namespace SS
 
         /// <summary>
         /// A helper for the GetCellsToRecalculate method.
-        /// 
-        ///   -- You should fully comment what is going on below --
+        /// It recursively gets the list of all cells that depend on  name.
+        /// The parameter start indicates the starting point for the search.
+        /// First, it starts by marking cell name as visited.
+        /// Then, for each cells that directly depend upon name it checks  2 things.
+        /// If that dependent cell is same as starting cell, it means there is a circular 
+        /// dependency and it throws an exception. Otherwise, if this cell has not 
+        /// yet been visited, it visited next. 
+        /// At last, it adds the the dependent cell to the first index of changed,
+        /// which maintains the proper order that is needed for calculations.
+        ///  
+        /// Requires that all the parameters be non null.
         /// </summary>
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
         {
