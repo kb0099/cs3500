@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9CC25A8C-BC66-413C-85A4-F025FD24458A}</ProjectGuid>
+    <ProjectGuid>{30534DB9-E72E-4E51-9350-BB58D360D861}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SpreadsheetTests</RootNamespace>
-    <AssemblyName>SpreadsheetTests</AssemblyName>
+    <RootNamespace>SpreadsheetTests1</RootNamespace>
+    <AssemblyName>SpreadsheetTests1</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,6 +35,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Formula">
+      <HintPath>..\Resources\Libraries\Formula.dll</HintPath>
+    </Reference>
+    <Reference Include="SpreadsheetUtilities">
+      <HintPath>..\Resources\Libraries\SpreadsheetUtilities.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>

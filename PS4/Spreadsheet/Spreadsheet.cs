@@ -139,7 +139,7 @@ namespace SS
         /// The direct dependents of A1 are B1 and C1
         /// </summary>
         protected override IEnumerable<String> GetDirectDependents(String name){
-            Cell c = new Cell();
+           // Cell c = new Cell();
             
             throw new NotImplementedException();          
         }
