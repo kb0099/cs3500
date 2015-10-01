@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SpreadsheetUtilities;
+
 
 namespace SSTests
 {
@@ -23,7 +23,7 @@ namespace SSTests
             Assert.AreEqual("", s1.GetCellContents("a1"));
             Assert.AreEqual("", s1.GetCellContents("x_"));
             Assert.AreEqual("", s1.GetCellContents("_"));
-            
+
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace SSTests
         [TestMethod()]
         public void GetNamesOfAllNonemptyCellsTest()
         {
-            
+
             Assert.Fail();
         }
 
@@ -49,7 +49,7 @@ namespace SSTests
             Assert.Fail();
         }
 
-       
+
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
         /// 
