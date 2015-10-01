@@ -54,8 +54,10 @@ namespace SS
     {
         /// <summary>
         /// Creates an empty Spreadsheet
+        /// In a new spreadsheet, the contents of every cell is the empty string.
         /// </summary>
-        public Spreadsheet() { throw new NotImplementedException(); }
+        public Spreadsheet() {
+        }
 
 
         /// <summary>
@@ -136,7 +138,35 @@ namespace SS
         /// D1 contains the formula B1 - C1
         /// The direct dependents of A1 are B1 and C1
         /// </summary>
-        protected override IEnumerable<String> GetDirectDependents(String name){ throw new NotImplementedException(); }
+        protected override IEnumerable<String> GetDirectDependents(String name){
+            Cell c = new Cell();
+            
+            throw new NotImplementedException();          
+        }
 
+
+
+        // ============================================================================================
+        // ======================= Private Members ====================================================
+        // ============================================================================================
+
+        private class Cell
+        {
+            /// <summary>
+            /// Represents the content (not the value) of the cell
+            /// It can be either String, Double, or Formula
+            /// </summary>
+            public object Content { get; set; }
+
+            /// <summary>
+            /// Represents the value of the cell
+            /// It can be either String, Double, or FormulaError
+            /// If a cell's contents is a string, its value is that string.
+            /// If a cell's contents is a double, its value is that double.
+            /// If a cell's contents is a Formula, its value is either a double or a FormulaError,
+            /// as reported by the Evaluate method of the Formula class. 
+            /// </summary>
+            public object Value { get; set; }
+        }
     }
 }
