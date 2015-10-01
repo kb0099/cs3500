@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spreadsheet", "Spreadsheet\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resources", "Resources\Resources.csproj", "{EB11AACA-88AE-4962-9395-A6ADC35FE87E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetTests", "SpreadsheetTests\SpreadsheetTests.csproj", "{5F29FBE9-7208-441E-A31D-F253A0A07AE3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EB11AACA-88AE-4962-9395-A6ADC35FE87E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB11AACA-88AE-4962-9395-A6ADC35FE87E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB11AACA-88AE-4962-9395-A6ADC35FE87E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F29FBE9-7208-441E-A31D-F253A0A07AE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F29FBE9-7208-441E-A31D-F253A0A07AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F29FBE9-7208-441E-A31D-F253A0A07AE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F29FBE9-7208-441E-A31D-F253A0A07AE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
