@@ -6,9 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace SSTests
 {
+    /// <summary>
+    /// Represents a test class for SS.Spreadsheet class.
+    /// </summary>
     [TestClass()]
     public class SpreadsheetTests
     {
