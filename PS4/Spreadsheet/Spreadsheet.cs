@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using SpreadsheetUtilities;
 
 namespace SS
@@ -59,6 +60,7 @@ namespace SS
         public Spreadsheet()
         {
             cells = new Dictionary<string, Cell>();
+            dGraph = new DependencyGraph();
         }
 
 
@@ -77,7 +79,14 @@ namespace SS
         /// Otherwise, returns the contents (as opposed to the value) of the named cell.  The return
         /// value should be either a string, a double, or a Formula.
         /// </summary>
-        public override object GetCellContents(String name) { throw new NotImplementedException(); }
+        public override object GetCellContents(String name)
+        {
+            ValidateName(name);     // ensures whether name is valid
+            if (cells.Keys.Contains(name))
+                return cells[name].Content;
+            else
+                return string.Empty;          // if the cell doesn't exist it should contain empty string. 
+        }
 
 
         /// <summary>
@@ -90,7 +99,12 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, double number) { throw new NotImplementedException(); }
+        public override ISet<String> SetCellContents(String name, double number) {
+            ValidateName(name);
+            HashSet<string> dependees = new HashSet<string>(dGraph.GetDependees(name));
+            dependees.Add(name);
+            return dependees;
+        }
 
         /// <summary>
         /// If text is null, throws an ArgumentNullException.
@@ -104,7 +118,9 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, String text) { throw new NotImplementedException(); }
+        public override ISet<String> SetCellContents(String name, String text) {
+            return null;
+        }
 
         /// <summary>
         /// If the formula parameter is null, throws an ArgumentNullException.
@@ -143,9 +159,7 @@ namespace SS
         /// </summary>
         protected override IEnumerable<String> GetDirectDependents(String name)
         {
-            // Cell c = new Cell();
-
-            throw new NotImplementedException();
+            return dGraph.GetDependents(name);
         }
 
 
@@ -159,10 +173,31 @@ namespace SS
         /// Maps cell name to cell object.
         /// </summary>
         private Dictionary<string, Cell> cells;
+
+        /// <summary>
+        /// Represents a dependency among cells
+        /// </summary>
+        private DependencyGraph dGraph;
+
         /// <summary>
         /// Represents the lookup delegate
         /// </summary>
         private Func<string, double> lookup;
+
+        /// <summary>
+        /// pattern for a variable as per assignment specs
+        /// </summary>
+        private static string VAR_PATTERN = @"^[a-zA-Z_](?:[a-zA-Z_]|\d)*$";
+
+        /// <summary>
+        /// Represents a helper method to throw exception.
+        /// </summary>
+        /// <param name="name"></param>
+        private void ValidateName(string name)
+        {
+            if (name == null || !Regex.IsMatch(name, VAR_PATTERN))
+                throw new InvalidNameException();
+        }
 
         private class Cell
         {
@@ -170,7 +205,7 @@ namespace SS
             /// Indicates the type of the content
             /// </summary>
             private ContentType contentType;
-                        
+
             /// <summary>
             /// Represents the name of the cell, as required by specification.
             /// Name once set by constructor cannot be changed.
@@ -191,7 +226,7 @@ namespace SS
             /// If a cell's contents is a Formula, its value is either a double or a FormulaError,
             /// as reported by the Evaluate method of the Formula class. 
             /// </summary>
-            public object Value            { get; set; }
+            public object Value { get; set; }
 
             public Cell(string name) : this(name, "")
             {
@@ -199,7 +234,7 @@ namespace SS
             public Cell(string name, Object content)
             {
                 Name = name;
-                Content = content;                                                             
+                Content = content;
             }
 
             /// <summary>
