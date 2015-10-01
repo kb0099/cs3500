@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace SpreadsheetUtilities
 {
+    /// <summary>
+    /// Represents a test class for Formula class
+    /// </summary>
     [TestClass()]
     public class FormulaTests
     {
@@ -375,6 +378,7 @@ namespace SpreadsheetUtilities
             Formula f2 = new Formula(" 3.14 * pi * r * r ");
 
             Assert.IsTrue(f1.GetHashCode() == f2.GetHashCode());
+            Assert.IsTrue(f1.GetHashCode() == new Formula("0.314e+1*pi*r*r").GetHashCode());
         }
 
         // Below are comprehensive tests which will try to cover the parts that could have been missed in individual tests.
@@ -401,7 +405,8 @@ namespace SpreadsheetUtilities
             Assert.IsInstanceOfType(f.Evaluate(s => 99), typeof(FormulaError));
             Assert.IsInstanceOfType(new Formula("99/00").Evaluate(s=>0), typeof(FormulaError));
             f = new Formula("9.99 * x3/10.0 -11e-27");
-            Assert.IsTrue(f.Equals(new Formula(" 999e-2 *    x3/10 - 11.00e027")));
+            Assert.IsTrue(f.Equals(new Formula(" 999e-2 *    x3/10 - 11.00e-27")));
+            Assert.IsFalse(f.Equals(new Formula(" 999e-2 *    x3/10 - 11.00e-27 + 4 * z3")));
             Assert.IsFalse(f.Equals(null));
             Assert.IsFalse(f.Equals("99"));
 
