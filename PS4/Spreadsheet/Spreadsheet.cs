@@ -56,16 +56,19 @@ namespace SS
         /// Creates an empty Spreadsheet
         /// In a new spreadsheet, the contents of every cell is the empty string.
         /// </summary>
-        public Spreadsheet() {
+        public Spreadsheet()
+        {
+            cells = new Dictionary<string, Cell>();
         }
 
 
         /// <summary>
         /// Enumerates the names of all the non-empty cells in the spreadsheet.
         /// </summary>
-        public override IEnumerable<String> GetNamesOfAllNonemptyCells(){
-            throw new NotImplementedException();
-                }
+        public override IEnumerable<String> GetNamesOfAllNonemptyCells()
+        {
+            return cells.Keys;
+        }
 
 
         /// <summary>
@@ -74,7 +77,7 @@ namespace SS
         /// Otherwise, returns the contents (as opposed to the value) of the named cell.  The return
         /// value should be either a string, a double, or a Formula.
         /// </summary>
-        public override object GetCellContents(String name){ throw new NotImplementedException(); }
+        public override object GetCellContents(String name) { throw new NotImplementedException(); }
 
 
         /// <summary>
@@ -87,7 +90,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, double number){ throw new NotImplementedException(); }
+        public override ISet<String> SetCellContents(String name, double number) { throw new NotImplementedException(); }
 
         /// <summary>
         /// If text is null, throws an ArgumentNullException.
@@ -101,7 +104,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, String text){ throw new NotImplementedException(); }
+        public override ISet<String> SetCellContents(String name, String text) { throw new NotImplementedException(); }
 
         /// <summary>
         /// If the formula parameter is null, throws an ArgumentNullException.
@@ -118,7 +121,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, Formula formula){ throw new NotImplementedException(); }
+        public override ISet<String> SetCellContents(String name, Formula formula) { throw new NotImplementedException(); }
 
 
         /// <summary>
@@ -138,10 +141,11 @@ namespace SS
         /// D1 contains the formula B1 - C1
         /// The direct dependents of A1 are B1 and C1
         /// </summary>
-        protected override IEnumerable<String> GetDirectDependents(String name){
-           // Cell c = new Cell();
-            
-            throw new NotImplementedException();          
+        protected override IEnumerable<String> GetDirectDependents(String name)
+        {
+            // Cell c = new Cell();
+
+            throw new NotImplementedException();
         }
 
 
@@ -150,8 +154,29 @@ namespace SS
         // ======================= Private Members ====================================================
         // ============================================================================================
 
+        /// <summary>
+        /// Represents the cells in a Spreadsheet
+        /// Maps cell name to cell object.
+        /// </summary>
+        private Dictionary<string, Cell> cells;
+        /// <summary>
+        /// Represents the lookup delegate
+        /// </summary>
+        private Func<string, double> lookup;
+
         private class Cell
         {
+            /// <summary>
+            /// Indicates the type of the content
+            /// </summary>
+            private ContentType contentType;
+                        
+            /// <summary>
+            /// Represents the name of the cell, as required by specification.
+            /// Name once set by constructor cannot be changed.
+            /// </summary>
+            public string Name { get; }
+
             /// <summary>
             /// Represents the content (not the value) of the cell
             /// It can be either String, Double, or Formula
@@ -166,7 +191,21 @@ namespace SS
             /// If a cell's contents is a Formula, its value is either a double or a FormulaError,
             /// as reported by the Evaluate method of the Formula class. 
             /// </summary>
-            public object Value { get; set; }
+            public object Value            { get; set; }
+
+            public Cell(string name) : this(name, "")
+            {
+            }
+            public Cell(string name, Object content)
+            {
+                Name = name;
+                Content = content;                                                             
+            }
+
+            /// <summary>
+            /// An enum for possible content types.
+            /// </summary>
+            enum ContentType { STRING, DOUBLE, FORMULA }
         }
     }
 }
