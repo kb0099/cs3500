@@ -99,11 +99,9 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, double number) {
-            ValidateName(name);
-            HashSet<string> dependees = new HashSet<string>(dGraph.GetDependees(name));
-            dependees.Add(name);
-            return dependees;
+        public override ISet<String> SetCellContents(String name, double number)
+        {
+            return SetContentsHelper(name, number);
         }
 
         /// <summary>
@@ -118,8 +116,9 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, String text) {
-            return null;
+        public override ISet<String> SetCellContents(String name, String text)
+        {
+            return SetContentsHelper(name, text);
         }
 
         /// <summary>
@@ -137,8 +136,10 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, Formula formula) { throw new NotImplementedException(); }
-
+        public override ISet<String> SetCellContents(String name, Formula formula)
+        {
+            return SetContentsHelper(name, formula);
+        }
 
         /// <summary>
         /// If name is null, throws an ArgumentNullException.
@@ -197,6 +198,47 @@ namespace SS
         {
             if (name == null || !Regex.IsMatch(name, VAR_PATTERN))
                 throw new InvalidNameException();
+        }
+
+        /// <summary>
+        /// A helper method for SetContents method(s).
+        /// </summary>
+        /// <param name="name">The name of the cell.</param>
+        /// <param name="content">The content of the cell.</param>
+        /// <returns>Dependees of the cell name.</returns>
+        private ISet<string> SetContentsHelper(string name, object content)
+        {
+            if (content == null)
+                throw new ArgumentNullException("The content of a cell cannot be null!");
+            ValidateName(name);
+
+            // first save the old content (in case we need to undo the changes), and try making the changes 
+            object oldContent = GetCellContents(name);
+            HashSet<string> oldDependents = new HashSet<string>(dGraph.GetDependents(name));        //direct dependents
+
+            // set to new cell content
+            cells.Add(name, new Cell(name, content));
+
+            // remove old direct dependents
+            foreach (var od in oldDependents) { dGraph.RemoveDependency(name, od); }
+
+            // if it is a formula object, 
+            // add new direct dependents
+            if(content.GetType() == typeof(Formula))
+            {
+                foreach (var nd in ((Formula)content).GetVariables()) { dGraph.AddDependency(name, nd); }
+            }
+
+            try
+            {
+               return new HashSet<string>(GetCellsToRecalculate(name));   // could throw circular exception for Formula type                
+            }
+            catch (CircularException ce)
+            {
+                // undo the changes : this is basically setting to old content
+                SetContentsHelper(name, oldContent);
+                throw ce;                   // re-throw the same exception ce
+            }
         }
 
         private class Cell
