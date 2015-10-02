@@ -18,7 +18,7 @@ namespace SS
     /// Note that this is the same as the definition of valid variable from the PS3 Formula class.
     /// 
     /// For example, "x", "_", "x2", "y_15", and "___" are all valid cell  names, but
-    /// "25", "2x", and "&" are not.  Cell names are case sensitive, so "x" and "X" are
+    /// "25", "2x", and "&amp;" are not.  Cell names are case sensitive, so "x" and "X" are
     /// different cell names.
     /// 
     /// A spreadsheet contains a cell corresponding to every possible cell name.  (This
@@ -156,11 +156,16 @@ namespace SS
         /// B1 contains the formula A1 * A1
         /// C1 contains the formula B1 + A1
         /// D1 contains the formula B1 - C1
-        /// The direct dependents of A1 are B1 and C1
+        /// The direct dependents(this should be dependees if following previous specificatoin ps3/ps2 etc) 
+        /// of A1 are B1 and C1
         /// </summary>
         protected override IEnumerable<String> GetDirectDependents(String name)
         {
-            return dGraph.GetDependents(name);
+            if (name == null)
+                throw new ArgumentNullException("Cell name cannot be null!");
+            if (!Regex.IsMatch(name, VAR_PATTERN))
+                throw new InvalidNameException();
+            return dGraph.GetDependees(name);
         }
 
 
@@ -179,11 +184,6 @@ namespace SS
         /// Represents a dependency among cells
         /// </summary>
         private DependencyGraph dGraph;
-
-        /// <summary>
-        /// Represents the lookup delegate
-        /// </summary>
-        private Func<string, double> lookup;
 
         /// <summary>
         /// pattern for a variable as per assignment specs
@@ -217,7 +217,9 @@ namespace SS
             HashSet<string> oldDependents = new HashSet<string>(dGraph.GetDependents(name));        //direct dependents
 
             // set to new cell content
-            cells.Add(name, new Cell(name, content));
+            if (!cells.ContainsKey(name))
+                cells.Add(name, null);
+            cells[name] = new Cell(name, content);            
 
             // remove old direct dependents
             foreach (var od in oldDependents) { dGraph.RemoveDependency(name, od); }
@@ -236,18 +238,14 @@ namespace SS
             catch (CircularException ce)
             {
                 // undo the changes : this is basically setting to old content
-                SetContentsHelper(name, oldContent);
+                if(oldContent != null)
+                    SetContentsHelper(name, oldContent);
                 throw ce;                   // re-throw the same exception ce
             }
         }
 
         private class Cell
         {
-            /// <summary>
-            /// Indicates the type of the content
-            /// </summary>
-            private ContentType contentType;
-
             /// <summary>
             /// Represents the name of the cell, as required by specification.
             /// Name once set by constructor cannot be changed.
@@ -278,11 +276,6 @@ namespace SS
                 Name = name;
                 Content = content;
             }
-
-            /// <summary>
-            /// An enum for possible content types.
-            /// </summary>
-            enum ContentType { STRING, DOUBLE, FORMULA }
         }
     }
 }

@@ -130,8 +130,8 @@ namespace SSTests
 
             Assert.AreEqual((string)s1.GetCellContents("a1"), "Unit Cost");
             Assert.AreEqual((double)s1.GetCellContents("b1"), 10);
-            Assert.AreEqual((double)s1.GetCellContents("c2"), 100);
-            Assert.AreEqual((Formula)s1.GetCellContents("c3"), new Formula("a3+b3+c3"));
+            Assert.AreEqual((double)s1.GetCellContents("c2"), 2);
+            Assert.AreEqual((Formula)s1.GetCellContents("d3"), new Formula("a3+b3+c3"));
         }
 
 
@@ -201,13 +201,13 @@ namespace SSTests
         /// set {A1, B1, C1} is returned.
         /// </summary>
         [TestMethod()]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(CircularException))]
         public void SetCellContentsTest4_CircularDependency()
         {
             Spreadsheet s1 = new Spreadsheet();
             s1.SetCellContents("b1", 10);
-            s1.SetCellContents("a1", "b1 + c1");
-            s1.SetCellContents("c1", "a1 * b1");
+            s1.SetCellContents("a1", new Formula("b1 + c1"));
+            s1.SetCellContents("c1", new Formula("a1 * b1"));
         }
 
 
@@ -219,8 +219,7 @@ namespace SSTests
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        [TestMethod()]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [TestMethod()] 
         public void SetCellContentsTest5_CircularDependency()
         {
             Spreadsheet s1 = new Spreadsheet();
@@ -240,9 +239,9 @@ namespace SSTests
             s1.SetCellContents("d1", "Subtotal");
             s1.SetCellContents("e1", "Discount");
             s1.SetCellContents("e3", new Formula("d3*0.15"));       // 15 % off the subtotal
-            HashSet<string> dependents = new HashSet<string>(s1.SetCellContents("d3", new Formula("a3 + b3 + c3")));
+            HashSet<string> dependees = new HashSet<string>(s1.SetCellContents("d3", new Formula("a3 + b3 + c3")));
 
-            Assert.IsTrue(dependents.SetEquals(new HashSet<string>() { "d3", "e3" }));      // only "e3" depends on "d3"
+            Assert.IsTrue(dependees.SetEquals(new HashSet<string>() { "d3", "e3" }));      // only "e3" depends on "d3"
         }
         
 
