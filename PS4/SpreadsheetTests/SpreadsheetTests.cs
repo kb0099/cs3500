@@ -44,6 +44,13 @@ namespace SSTests
             s1.SetCellContents("a2", new Formula("a1-b1/100"));
             Assert.IsTrue(new HashSet<string>(s1.GetNamesOfAllNonemptyCells()).
                 SetEquals(new HashSet<string>() { "a1", "b1", "c1", "a2" }));                     // should contain the names/cell just added
+
+            s1.SetCellContents("a1", "");
+            s1.SetCellContents("b1", "");
+            s1.SetCellContents("c1", "");
+            Assert.IsTrue(new HashSet<string>(s1.GetNamesOfAllNonemptyCells()).
+                SetEquals(new HashSet<string>() { "a2" }));        
+
         }
 
         /// <summary>

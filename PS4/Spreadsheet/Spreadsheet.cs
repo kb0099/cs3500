@@ -69,7 +69,13 @@ namespace SS
         /// </summary>
         public override IEnumerable<String> GetNamesOfAllNonemptyCells()
         {
-            return cells.Keys;
+            // The logic here is that if the value is not equal to empty string, 
+            // we will return the key corrseponding to that.
+            foreach(var kv in cells)
+            {
+                if (!Object.Equals("", kv.Value.Content))
+                    yield return kv.Key ;
+            }
         }
 
 
@@ -230,7 +236,7 @@ namespace SS
             {
                 foreach (var nd in ((Formula)content).GetVariables()) { dGraph.AddDependency(name, nd); }
             }
-
+            
             try
             {
                return new HashSet<string>(GetCellsToRecalculate(name));   // could throw circular exception for Formula type                
