@@ -12,18 +12,20 @@ namespace SS
     /// A Spreadsheet object represents the state of a simple spreadsheet.  A 
     /// spreadsheet consists of an infinite number of named cells.
     /// 
-    /// A string is a valid cell name if and only if:
-    ///   (1) its first character is an underscore or a letter
-    ///   (2) its remaining characters (if any) are underscores and/or letters and/or digits
-    /// Note that this is the same as the definition of valid variable from the PS3 Formula class.
+    /// A string is a cell name if and only if it consists of one or more letters,
+    /// followed by one or more digits AND it satisfies the predicate IsValid.
+    /// For example, "A15", "a15", "XY032", and "BC7" are cell names so long as they
+    /// satisfy IsValid.  On the other hand, "Z", "X_", and "hello" are not cell names,
+    /// regardless of IsValid.
     /// 
-    /// For example, "x", "_", "x2", "y_15", and "___" are all valid cell  names, but
-    /// "25", "2x", and "&amp;" are not.  Cell names are case sensitive, so "x" and "X" are
-    /// different cell names.
+    /// Any valid incoming cell name, whether passed as a parameter or embedded in a formula,
+    /// must be normalized with the Normalize method before it is used by or saved in 
+    /// this spreadsheet.  For example, if Normalize is s => s.ToUpper(), then
+    /// the Formula "x3+a5" should be converted to "X3+A5" before use.
     /// 
-    /// A spreadsheet contains a cell corresponding to every possible cell name.  (This
-    /// means that a spreadsheet contains an infinite number of cells.)  In addition to 
-    /// a name, each cell has a contents and a value.  The distinction is important.
+    /// A spreadsheet contains a cell corresponding to every possible cell name.  
+    /// In addition to a name, each cell has a contents and a value.  The distinction is
+    /// important.
     /// 
     /// The contents of a cell can be (1) a string, (2) a double, or (3) a Formula.  If the
     /// contents is an empty string, we say that the cell is empty.  (By analogy, the contents
@@ -56,122 +58,91 @@ namespace SS
         /// <summary>
         /// Creates an empty Spreadsheet
         /// In a new spreadsheet, the contents of every cell is the empty string.
+        /// The zero-argument constructor will create an empty spreadsheet that
+        /// imposes no extra validity conditions, normalizes every cell name 
+        /// to itself, and has version "default".
         /// </summary>
-        public Spreadsheet()
+        public Spreadsheet():base(s=>true, s=>s, "default")
         {
+        }
+
+        /// <summary>
+        /// In addition to creating an empty Spreadsheet it will allow custom Validator,
+        /// Normalizer, and VersionString to be sent at the time of construction.
+        /// </summary>
+        public Spreadsheet(Func<string, bool> ValidityDelegate, Func<string, string> NormalizeDelegate, string VersionString)
+            :base(ValidityDelegate, NormalizeDelegate, VersionString)
+        {        
+        }
+
+        /// <summary>
+        /// It will allow the user to provide a string representing a path to a file (first parameter), 
+        /// a validity delegate (second parameter), a normalization delegate (third parameter), and a 
+        /// version (fourth parameter). It will read a saved spreadsheet from a file (see the Save method) 
+        /// and use it to construct a new spreadsheet. The new spreadsheet will use the provided validity 
+        /// delegate, normalization delegate, and version.
+        /// </summary>
+        public Spreadsheet(string PathToFile, Func<string, bool> ValidityDelegate, Func<string, string> NormalizeDelegate, string VersionString)
+              : base(ValidityDelegate, NormalizeDelegate, VersionString)
+        {
+            Changed = false;
             cells = new Dictionary<string, Cell>();
             dGraph = new DependencyGraph();
         }
-
-
         /// <summary>
-        /// Enumerates the names of all the non-empty cells in the spreadsheet.
+        /// True if this spreadsheet has been modified since it was created or saved                  
+        /// (whichever happened most recently); false otherwise.
         /// </summary>
-        public override IEnumerable<String> GetNamesOfAllNonemptyCells()
+        public override bool Changed { get;  protected set;}
+
+        public override object GetCellContents(string name)
         {
-            // The logic here is that if the value is not equal to empty string, 
-            // we will return the key corrseponding to that.
-            foreach(var kv in cells)
-            {
-                if (!Object.Equals("", kv.Value.Content))
-                    yield return kv.Key ;
-            }
+            throw new NotImplementedException();
         }
 
-
-        /// <summary>
-        /// If name is null or invalid, throws an InvalidNameException.
-        /// 
-        /// Otherwise, returns the contents (as opposed to the value) of the named cell.  The return
-        /// value should be either a string, a double, or a Formula.
-        /// </summary>
-        public override object GetCellContents(String name)
+        public override object GetCellValue(string name)
         {
-            ValidateName(name);     // ensures whether name is valid
-            if (cells.Keys.Contains(name))
-                return cells[name].Content;
-            else
-                return string.Empty;          // if the cell doesn't exist it should contain empty string. 
+            throw new NotImplementedException();
         }
 
-
-        /// <summary>
-        /// If name is null or invalid, throws an InvalidNameException.
-        /// 
-        /// Otherwise, the contents of the named cell becomes number.  The method returns a
-        /// set consisting of name plus the names of all other cells whose value depends, 
-        /// directly or indirectly, on the named cell.
-        /// 
-        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-        /// set {A1, B1, C1} is returned.
-        /// </summary>
-        public override ISet<String> SetCellContents(String name, double number)
+        public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
-            return SetContentsHelper(name, number);
+            throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// If text is null, throws an ArgumentNullException.
-        /// 
-        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
-        /// 
-        /// Otherwise, the contents of the named cell becomes text.  The method returns a
-        /// set consisting of name plus the names of all other cells whose value depends, 
-        /// directly or indirectly, on the named cell.
-        /// 
-        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-        /// set {A1, B1, C1} is returned.
-        /// </summary>
-        public override ISet<String> SetCellContents(String name, String text)
+        public override string GetSavedVersion(string filename)
         {
-            return SetContentsHelper(name, text);
+            throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// If the formula parameter is null, throws an ArgumentNullException.
-        /// 
-        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
-        /// 
-        /// Otherwise, if changing the contents of the named cell to be the formula would cause a 
-        /// circular dependency, throws a CircularException.  (No change is made to the spreadsheet.)
-        /// 
-        /// Otherwise, the contents of the named cell becomes formula.  The method returns a
-        /// Set consisting of name plus the names of all other cells whose value depends,
-        /// directly or indirectly, on the named cell.
-        /// 
-        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-        /// set {A1, B1, C1} is returned.
-        /// </summary>
-        public override ISet<String> SetCellContents(String name, Formula formula)
+        public override void Save(string filename)
         {
-            return SetContentsHelper(name, formula);
+            throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// If name is null, throws an ArgumentNullException.
-        /// 
-        /// Otherwise, if name isn't a valid cell name, throws an InvalidNameException.
-        /// 
-        /// Otherwise, returns an enumeration, without duplicates, of the names of all cells whose
-        /// values depend directly on the value of the named cell.  In other words, returns
-        /// an enumeration, without duplicates, of the names of all cells that contain
-        /// formulas containing name.
-        /// 
-        /// For example, suppose that
-        /// A1 contains 3
-        /// B1 contains the formula A1 * A1
-        /// C1 contains the formula B1 + A1
-        /// D1 contains the formula B1 - C1
-        /// The direct dependents(this should be dependees if following previous specificatoin ps3/ps2 etc) 
-        /// of A1 are B1 and C1
-        /// </summary>
-        protected override IEnumerable<String> GetDirectDependents(String name)
+        public override ISet<string> SetContentsOfCell(string name, string content)
         {
-            if (name == null)
-                throw new ArgumentNullException("Cell name cannot be null!");
-            if (!Regex.IsMatch(name, VAR_PATTERN))
-                throw new InvalidNameException();
-            return dGraph.GetDependees(name);
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<string> GetDirectDependents(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ISet<string> SetCellContents(string name, Formula formula)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ISet<string> SetCellContents(string name, string text)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ISet<string> SetCellContents(string name, double number)
+        {
+            throw new NotImplementedException();
         }
 
 
@@ -225,26 +196,26 @@ namespace SS
             // set to new cell content
             if (!cells.ContainsKey(name))
                 cells.Add(name, null);
-            cells[name] = new Cell(name, content);            
+            cells[name] = new Cell(name, content);
 
             // remove old direct dependents
             foreach (var od in oldDependents) { dGraph.RemoveDependency(name, od); }
 
             // if it is a formula object, 
             // add new direct dependents
-            if(content.GetType() == typeof(Formula))
+            if (content.GetType() == typeof(Formula))
             {
                 foreach (var nd in ((Formula)content).GetVariables()) { dGraph.AddDependency(name, nd); }
             }
-            
+
             try
             {
-               return new HashSet<string>(GetCellsToRecalculate(name));   // could throw circular exception for Formula type                
+                return new HashSet<string>(GetCellsToRecalculate(name));   // could throw circular exception for Formula type                
             }
             catch (CircularException ce)
             {
                 // undo the changes : this is basically setting to old content
-                if(oldContent != null)
+                if (oldContent != null)
                     SetContentsHelper(name, oldContent);
                 throw ce;                   // re-throw the same exception ce
             }
