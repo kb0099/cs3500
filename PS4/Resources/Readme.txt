@@ -5,6 +5,7 @@ Fall 2015, CS3500
 PS5 Branch
 A new branch fro the existing PS4 solution was forked and named as PS5.
 
+It will use built in C# XML libraries to handle reading and writing of XML documents.
 
 
 

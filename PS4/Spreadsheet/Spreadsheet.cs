@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using SpreadsheetUtilities;
+using System.Xml.Linq;
 
 namespace SS
 {
@@ -62,7 +63,7 @@ namespace SS
         /// imposes no extra validity conditions, normalizes every cell name 
         /// to itself, and has version "default".
         /// </summary>
-        public Spreadsheet():base(s=>true, s=>s, "default")
+        public Spreadsheet() : this(null, s => true, s => s, "default")
         {
         }
 
@@ -71,8 +72,8 @@ namespace SS
         /// Normalizer, and VersionString to be sent at the time of construction.
         /// </summary>
         public Spreadsheet(Func<string, bool> ValidityDelegate, Func<string, string> NormalizeDelegate, string VersionString)
-            :base(ValidityDelegate, NormalizeDelegate, VersionString)
-        {        
+            : this(null, ValidityDelegate, NormalizeDelegate, VersionString)
+        {
         }
 
         /// <summary>
@@ -81,6 +82,13 @@ namespace SS
         /// version (fourth parameter). It will read a saved spreadsheet from a file (see the Save method) 
         /// and use it to construct a new spreadsheet. The new spreadsheet will use the provided validity 
         /// delegate, normalization delegate, and version.
+        /// Error Checking/Handling
+        /// If anything goes wrong when reading the file, the constructor should throw a SpreadsheetReadWriteException with an explanatory message.
+        /// If the version of the saved spreadsheet does not match the version parameter provided to the constructor, an exception should be thrown.
+        /// If any of the names contained in the saved spreadsheet are invalid, an exception should be thrown.
+        /// If any invalid fomulas or circular dependencies are encountered, an exception should be thrown.
+        /// If there are any problems opening, reading, or closing the file, an exception should be thrown.
+        /// There are doubtless other things that can go wrong and should be handled appropriately.
         /// </summary>
         public Spreadsheet(string PathToFile, Func<string, bool> ValidityDelegate, Func<string, string> NormalizeDelegate, string VersionString)
               : base(ValidityDelegate, NormalizeDelegate, VersionString)
@@ -88,61 +96,247 @@ namespace SS
             Changed = false;
             cells = new Dictionary<string, Cell>();
             dGraph = new DependencyGraph();
+            if (PathToFile != null)
+            {
+                XDocument xmlDoc;
+                try
+                {
+                    xmlDoc = XDocument.Load(PathToFile);
+                }
+                catch(System.IO.FileNotFoundException fnfe) {
+                    throw new SpreadsheetReadWriteException($"The file {PathToFile} could not be located. \n{fnfe.Message}");
+                }
+                catch (System.Xml.XmlException xex)
+                {
+                    throw new SpreadsheetReadWriteException($"Error while reading: {PathToFile}.\n{xex.Message}");
+                }
+                
+            }
         }
         /// <summary>
         /// True if this spreadsheet has been modified since it was created or saved                  
         /// (whichever happened most recently); false otherwise.
         /// </summary>
-        public override bool Changed { get;  protected set;}
+        public override bool Changed { get; protected set; }
 
-        public override object GetCellContents(string name)
+        /// <summary>
+        /// Returns the version information of the spreadsheet saved in the named file.
+        /// If there are any problems opening, reading, or closing the file, the method
+        /// should throw a SpreadsheetReadWriteException with an explanatory message.
+        /// </summary> 
+        public override string GetSavedVersion(string filename)
         {
-            throw new NotImplementedException();
+            try
+            {
+                XDocument xmlDoc = XDocument.Load(filename);
+                return xmlDoc.Root.Attribute("version").Value;
+            }
+            catch
+            {
+                throw new SpreadsheetReadWriteException("Error reading the file: " + filename + ", while trying to get version info.");
+            }
         }
 
+
+        /// <summary>
+        /// Writes the contents of this spreadsheet to the named file using an XML format.
+        /// The XML elements should be structured as follows:
+        /// 
+        /// <spreadsheet version="version information goes here">
+        /// 
+        /// <cell>
+        /// <name>
+        /// cell name goes here
+        /// </name>
+        /// <contents>
+        /// cell contents goes here
+        /// </contents>    
+        /// </cell>
+        /// 
+        /// </spreadsheet>
+        /// 
+        /// There should be one cell element for each non-empty cell in the spreadsheet.  
+        /// If the cell contains a string, it should be written as the contents.  
+        /// If the cell contains a double d, d.ToString() should be written as the contents.  
+        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+        /// 
+        /// If there are any problems opening, writing, or closing the file, the method should throw a
+        /// SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
+        public override void Save(string filename)
+        {
+        }
+
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+        /// value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
+        /// </summary>
         public override object GetCellValue(string name)
         {
             throw new NotImplementedException();
         }
 
-        public override IEnumerable<string> GetNamesOfAllNonemptyCells()
-        {
-            throw new NotImplementedException();
-        }
 
-        public override string GetSavedVersion(string filename)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Save(string filename)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>
+        /// If content is null, throws an ArgumentNullException.
+        /// 
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, if content parses as a double, the contents of the named
+        /// cell becomes that double.
+        /// 
+        /// Otherwise, if content begins with the character '=', an attempt is made
+        /// to parse the remainder of content into a Formula f using the Formula
+        /// constructor.  There are then three possibilities:
+        /// 
+        ///   (1) If the remainder of content cannot be parsed into a Formula, a 
+        ///       SpreadsheetUtilities.FormulaFormatException is thrown.
+        ///       
+        ///   (2) Otherwise, if changing the contents of the named cell to be f
+        ///       would cause a circular dependency, a CircularException is thrown.
+        ///       
+        ///   (3) Otherwise, the contents of the named cell becomes f.
+        /// 
+        /// Otherwise, the contents of the named cell becomes content.
+        /// 
+        /// If an exception is not thrown, the method returns a set consisting of
+        /// name plus the names of all other cells whose value depends, directly
+        /// or indirectly, on the named cell.
+        /// 
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// set {A1, B1, C1} is returned.
+        /// </summary> 
         public override ISet<string> SetContentsOfCell(string name, string content)
         {
-            throw new NotImplementedException();
+            if (content == null)
+                throw new ArgumentNullException("The content of a cell cannot be null!");
+            ValidateName(name);
+            double d;
+            if (Double.TryParse(content, out d))
+            {
+                return SetCellContents(name, d);
+            }
+            else if (content.StartsWith("="))
+            {
+                return SetCellContents(name, new Formula(content.Substring(1), Normalize, IsValid));
+            }
+            else
+            {
+                return SetCellContents(name, content);
+            }
         }
 
-        protected override IEnumerable<string> GetDirectDependents(string name)
+
+        /// <summary>
+        /// Enumerates the names of all the non-empty cells in the spreadsheet.
+        /// </summary>
+        public override IEnumerable<String> GetNamesOfAllNonemptyCells()
         {
-            throw new NotImplementedException();
+            // The logic here is that if the value is not equal to empty string, 
+            // we will return the key corrseponding to that.
+            foreach (var kv in cells)
+            {
+                if (!Object.Equals("", kv.Value.Content))
+                    yield return kv.Key;
+            }
         }
 
-        protected override ISet<string> SetCellContents(string name, Formula formula)
+
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, returns the contents (as opposed to the value) of the named cell.  The return
+        /// value should be either a string, a double, or a Formula.
+        /// </summary>
+        public override object GetCellContents(String name)
         {
-            throw new NotImplementedException();
+            ValidateName(name);     // ensures whether name is valid
+            if (cells.Keys.Contains(name))
+                return cells[name].Content;
+            else
+                return string.Empty;          // if the cell doesn't exist it should contain empty string. 
         }
 
-        protected override ISet<string> SetCellContents(string name, string text)
+
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, the contents of the named cell becomes number.  The method returns a
+        /// set consisting of name plus the names of all other cells whose value depends, 
+        /// directly or indirectly, on the named cell.
+        /// 
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// set {A1, B1, C1} is returned.
+        /// </summary>
+        protected override ISet<String> SetCellContents(String name, double number)
         {
-            throw new NotImplementedException();
+            return SetContentsHelper(name, number);
         }
 
-        protected override ISet<string> SetCellContents(string name, double number)
+        /// <summary>
+        /// If text is null, throws an ArgumentNullException.
+        /// 
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, the contents of the named cell becomes text.  The method returns a
+        /// set consisting of name plus the names of all other cells whose value depends, 
+        /// directly or indirectly, on the named cell.
+        /// 
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// set {A1, B1, C1} is returned.
+        /// </summary>
+        protected override ISet<String> SetCellContents(String name, String text)
         {
-            throw new NotImplementedException();
+            return SetContentsHelper(name, text);
+        }
+
+        /// <summary>
+        /// If the formula parameter is null, throws an ArgumentNullException.
+        /// 
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, if changing the contents of the named cell to be the formula would cause a 
+        /// circular dependency, throws a CircularException.  (No change is made to the spreadsheet.)
+        /// 
+        /// Otherwise, the contents of the named cell becomes formula.  The method returns a
+        /// Set consisting of name plus the names of all other cells whose value depends,
+        /// directly or indirectly, on the named cell.
+        /// 
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// set {A1, B1, C1} is returned.
+        /// </summary>
+        protected override ISet<String> SetCellContents(String name, Formula formula)
+        {
+            return SetContentsHelper(name, formula);
+        }
+
+        /// <summary>
+        /// If name is null, throws an ArgumentNullException.
+        /// 
+        /// Otherwise, if name isn't a valid cell name, throws an InvalidNameException.
+        /// 
+        /// Otherwise, returns an enumeration, without duplicates, of the names of all cells whose
+        /// values depend directly on the value of the named cell.  In other words, returns
+        /// an enumeration, without duplicates, of the names of all cells that contain
+        /// formulas containing name.
+        /// 
+        /// For example, suppose that
+        /// A1 contains 3
+        /// B1 contains the formula A1 * A1
+        /// C1 contains the formula B1 + A1
+        /// D1 contains the formula B1 - C1
+        /// The direct dependents(this should be dependees if following previous specificatoin ps3/ps2 etc) 
+        /// of A1 are B1 and C1
+        /// </summary>
+        protected override IEnumerable<String> GetDirectDependents(String name)
+        {
+            if (name == null)
+                throw new ArgumentNullException("Cell name cannot be null!");
+            if (!Regex.IsMatch(name, VAR_PATTERN))
+                throw new InvalidNameException();
+            return dGraph.GetDependees(name);
         }
 
 
@@ -185,10 +379,6 @@ namespace SS
         /// <returns>Dependees of the cell name.</returns>
         private ISet<string> SetContentsHelper(string name, object content)
         {
-            if (content == null)
-                throw new ArgumentNullException("The content of a cell cannot be null!");
-            ValidateName(name);
-
             // first save the old content (in case we need to undo the changes), and try making the changes 
             object oldContent = GetCellContents(name);
             HashSet<string> oldDependents = new HashSet<string>(dGraph.GetDependents(name));        //direct dependents
