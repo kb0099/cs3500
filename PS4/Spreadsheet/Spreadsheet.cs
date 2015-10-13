@@ -192,30 +192,24 @@ namespace SS
         /// </summary>
         public override void Save(string filename)
         {
-            XDocument xmlDoc = new XDocument();
-
             try
             {
-                foreach (string name in GetNamesOfAllNonemptyCells())
-                {
-
-                }
-                XElement spreadsheet = new XElement("spreadsheet",
-                  from name in GetNamesOfAllNonemptyCells()
-                  select new XElement("cell", 
-                    new XElement("name", name), 
-                    new XElement("contents",
-                        new Func<object, string>((v) => {
-                            return ""; })(cells[name].Content))
+                XElement spreadsheet = new XElement("spreadsheet", new XAttribute("version", Version),          /* root element */
+                  from name in GetNamesOfAllNonemptyCells()                 /* We are saving only the non-empty cells! */
+                  select new XElement("cell",
+                    new XElement("name", name),                             /* <name> element */
+                    new XElement("contents", cells[name].XMLContent))       /* <contents> element */
                   );
-                xmlDoc.Save(filename);
+                spreadsheet.Save(filename);
+                Changed = false;        // Now it has been saved!
             }
             catch (System.Xml.XmlException)
             {
-                throw new SpreadsheetReadWriteException("Error occurred while creating a XML file in: {filename}");
+                throw new SpreadsheetReadWriteException($"Error occurred while creating a XML file in: {filename}");
             }
             catch (Exception ex)
             {
+                throw new SpreadsheetReadWriteException($"Unexpected error occurred while saving: {filename}\n{ex.GetType()}\n{ex.Message}\nMake sure file path is correct and not write protected!");
             }
         }
 
@@ -453,6 +447,7 @@ namespace SS
 
             try
             {
+                Changed = true;
                 return new HashSet<string>(GetCellsToRecalculate(name));   // could throw circular exception for Formula type                
             }
             catch (CircularException ce)
@@ -483,14 +478,11 @@ namespace SS
             /// If the cell contains a double d, d.ToString() should be written as the contents.  
             /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
             /// </summary>
-            public string XMLContent {
+            public string XMLContent
+            {
                 get
                 {
-                    if (Content.GetType() == typeof(string))
-                        return (string)Content;
-                    if (Content.GetType() == typeof(double))
-                        return (Content).ToString(); ;
-                    return "";
+                    return (Content.GetType() == typeof(Formula) ? "=" : "") + Content.ToString();
                 }
             }
 
