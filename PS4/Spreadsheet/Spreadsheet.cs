@@ -192,6 +192,31 @@ namespace SS
         /// </summary>
         public override void Save(string filename)
         {
+            XDocument xmlDoc = new XDocument();
+
+            try
+            {
+                foreach (string name in GetNamesOfAllNonemptyCells())
+                {
+
+                }
+                XElement spreadsheet = new XElement("spreadsheet",
+                  from name in GetNamesOfAllNonemptyCells()
+                  select new XElement("cell", 
+                    new XElement("name", name), 
+                    new XElement("contents",
+                        new Func<object, string>((v) => {
+                            return ""; })(cells[name].Content))
+                  );
+                xmlDoc.Save(filename);
+            }
+            catch (System.Xml.XmlException)
+            {
+                throw new SpreadsheetReadWriteException("Error occurred while creating a XML file in: {filename}");
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         /// <summary>
@@ -202,7 +227,8 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            throw new NotImplementedException();
+            ValidateName(name);
+            return cells[name].Value;
         }
 
 
@@ -451,6 +477,22 @@ namespace SS
             /// It can be either String, Double, or Formula
             /// </summary>
             public object Content { get; set; }
+
+            /// <summary>           
+            /// If the cell contains a string, it should be written as the contents.  
+            /// If the cell contains a double d, d.ToString() should be written as the contents.  
+            /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+            /// </summary>
+            public string XMLContent {
+                get
+                {
+                    if (Content.GetType() == typeof(string))
+                        return (string)Content;
+                    if (Content.GetType() == typeof(double))
+                        return (Content).ToString(); ;
+                    return "";
+                }
+            }
 
             /// <summary>
             /// Represents the value of the cell
