@@ -99,18 +99,45 @@ namespace SS
             if (PathToFile != null)
             {
                 XDocument xmlDoc;
+                string name = string.Empty, contents = string.Empty;      // currently processing cell's name and contents.
                 try
                 {
                     xmlDoc = XDocument.Load(PathToFile);
+                    //verify version
+                    if (!GetSavedVersion(PathToFile).Equals(VersionString))
+                        throw new SpreadsheetReadWriteException("The version of the saved spreadsheet does not match the version parameter provided to the constructor");
+
+                    //fill in the spreadsheet data
+                    foreach (XElement cell in xmlDoc.Descendants("cell"))
+                    {
+                        name = cell.Element("name").Value;
+                        contents = cell.Element("contents").Value;
+
+                        // Add those values
+                        SetContentsOfCell(name, contents);
+                    }
                 }
-                catch(System.IO.FileNotFoundException fnfe) {
-                    throw new SpreadsheetReadWriteException($"The file {PathToFile} could not be located. \n{fnfe.Message}");
+                catch (System.IO.FileNotFoundException fnfe)
+                {
+                    throw new SpreadsheetReadWriteException($"The provided file path, {PathToFile}, is invalid.\n{fnfe.Message}");
                 }
                 catch (System.Xml.XmlException xex)
                 {
                     throw new SpreadsheetReadWriteException($"Error while reading: {PathToFile}.\n{xex.Message}");
                 }
-                
+                catch (CircularException ce)
+                {
+                    throw new SpreadsheetReadWriteException($"Circular dependency detected while reading: {PathToFile}\nAt cell: {name}, contents: {contents}\n{ce.Message}");
+                }
+                catch (SpreadsheetReadWriteException srwe)
+                {
+                    throw new SpreadsheetReadWriteException(srwe.Message);      // Re-use the existing descriptive message
+                }
+                catch (Exception ex)    // Spec says:  There are doubtless other things that can go wrong and should be handled appropriately!
+                {
+                    throw new SpreadsheetReadWriteException($"Error while re-creating spreadsheet object from file: {PathToFile}\n{ex.Message}");
+                }
+
             }
         }
         /// <summary>
