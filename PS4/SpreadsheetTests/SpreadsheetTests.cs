@@ -38,16 +38,16 @@ namespace SSTests
         {
             Spreadsheet s1 = new Spreadsheet();
             Assert.IsTrue(new HashSet<string>(s1.GetNamesOfAllNonemptyCells()).Count == 0);     // should be empty!
-            s1.SetCellContents("a1", 10);
-            s1.SetCellContents("b1", 100);
-            s1.SetCellContents("c1", "Rate");
-            s1.SetCellContents("a2", new Formula("a1-b1/100"));
+            s1.SetContentsOfCell("a1", "10");
+            s1.SetContentsOfCell("b1", "100");
+            s1.SetContentsOfCell("c1", "Rate");
+            s1.SetContentsOfCell("a2", "=a1-b1/100");
             Assert.IsTrue(new HashSet<string>(s1.GetNamesOfAllNonemptyCells()).
                 SetEquals(new HashSet<string>() { "a1", "b1", "c1", "a2" }));                     // should contain the names/cell just added
 
-            s1.SetCellContents("a1", "");
-            s1.SetCellContents("b1", "");
-            s1.SetCellContents("c1", "");
+            s1.SetContentsOfCell("a1", "");
+            s1.SetContentsOfCell("b1", "");
+            s1.SetContentsOfCell("c1", "");
             Assert.IsTrue(new HashSet<string>(s1.GetNamesOfAllNonemptyCells()).
                 SetEquals(new HashSet<string>() { "a2" }));        
 
@@ -120,20 +120,20 @@ namespace SSTests
         {
             Spreadsheet s1 = new Spreadsheet();
             // Simple bill
-            s1.SetCellContents("a1", "Unit Cost");
-            s1.SetCellContents("a2", "Quantity");
-            s1.SetCellContents("a3", "Net Cost");
+            s1.SetContentsOfCell("a1", "Unit Cost");
+            s1.SetContentsOfCell("a2", "Quantity");
+            s1.SetContentsOfCell("a3", "Net Cost");
 
-            s1.SetCellContents("b1", 10);
-            s1.SetCellContents("b2", 9);
-            s1.SetCellContents("b3", new Formula("b1*b2"));
+            s1.SetContentsOfCell("b1", "10");
+            s1.SetContentsOfCell("b2", "9");
+            s1.SetContentsOfCell("b3", "=b1*b2");
 
-            s1.SetCellContents("c1", 100);
-            s1.SetCellContents("c2", 2);
-            s1.SetCellContents("c3", new Formula("c1*c2"));
+            s1.SetContentsOfCell("c1", "100");
+            s1.SetContentsOfCell("c2", "2");
+            s1.SetContentsOfCell("c3", "=c1*c2");
 
-            s1.SetCellContents("d1", "Total Cost");
-            s1.SetCellContents("d3", new Formula("a3 + b3 + c3"));
+            s1.SetContentsOfCell("d1", "Total Cost");
+            s1.SetContentsOfCell("d3", "=a3 + b3 + c3");
 
             Assert.AreEqual((string)s1.GetCellContents("a1"), "Unit Cost");
             Assert.AreEqual((double)s1.GetCellContents("b1"), 10);
@@ -145,29 +145,29 @@ namespace SSTests
 
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
-        /// Test for: SetCellContents(String name, double number)
+        /// Test for: SetContentsOfCell(String name, double number)
         /// </summary>
         [TestMethod()]
         [ExpectedException(typeof(InvalidNameException))]
-        public void SetCellContentsTest1()
+        public void SetContentsOfCellTest1()
         {
             Spreadsheet s1 = new Spreadsheet();
-            s1.SetCellContents("abc", 10);
+            s1.SetContentsOfCell("abc", "10");
             Assert.AreEqual((double)s1.GetCellContents("abc"), 10);
-            new Spreadsheet().SetCellContents("", 99);       // empty cell name is invalid, must throw
+            new Spreadsheet().SetContentsOfCell("", "99");       // empty cell name is invalid, must throw
         }
 
 
         /// <summary>
         /// If text is null, throws an ArgumentNullException.
-        /// Test for: SetCellContents(String name, String text)
+        /// Test for: SetContentsOfCell(String name, String text)
         /// </summary>
         [TestMethod()]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void SetCellContentsTest2()
+        public void SetContentsOfCellTest2()
         {
             Spreadsheet s1 = new Spreadsheet();
-            s1.SetCellContents("abc", (string)null);  
+            s1.SetContentsOfCell("abc", (string)null);  
         }
 
 
@@ -188,10 +188,10 @@ namespace SSTests
         /// </summary>
         [TestMethod()]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void SetCellContentsTest3()
+        public void SetContentsOfCellTest3()
         {
             Spreadsheet s1 = new Spreadsheet();
-            s1.SetCellContents("abc", (Formula)null);
+            s1.SetContentsOfCell("abc", null);
         }
 
 
@@ -209,12 +209,12 @@ namespace SSTests
         /// </summary>
         [TestMethod()]
         [ExpectedException(typeof(CircularException))]
-        public void SetCellContentsTest4_CircularDependency()
+        public void SetContentsOfCellTest4_CircularDependency()
         {
             Spreadsheet s1 = new Spreadsheet();
-            s1.SetCellContents("b1", 10);
-            s1.SetCellContents("a1", new Formula("b1 + c1"));
-            s1.SetCellContents("c1", new Formula("a1 * b1"));
+            s1.SetContentsOfCell("b1", "10");
+            s1.SetContentsOfCell("a1", "=b1 + c1");
+            s1.SetContentsOfCell("c1", "=a1 * b1");
         }
 
 
@@ -227,26 +227,26 @@ namespace SSTests
         /// set {A1, B1, C1} is returned.
         /// </summary>
         [TestMethod()] 
-        public void SetCellContentsTest5_CircularDependency()
+        public void SetContentsOfCellTest5_CircularDependency()
         {
             Spreadsheet s1 = new Spreadsheet();
             // Simple bill
-            s1.SetCellContents("a1", "Unit Cost");
-            s1.SetCellContents("a2", "Quantity");
-            s1.SetCellContents("a3", "Net Cost");
+            s1.SetContentsOfCell("a1", "Unit Cost");
+            s1.SetContentsOfCell("a2", "Quantity");
+            s1.SetContentsOfCell("a3", "Net Cost");
 
-            s1.SetCellContents("b1", 10);
-            s1.SetCellContents("b2", 9);
-            s1.SetCellContents("b3", new Formula("b1*b2"));
+            s1.SetContentsOfCell("b1", "10");
+            s1.SetContentsOfCell("b2", "9");
+            s1.SetContentsOfCell("b3", "=b1*b2");
 
-            s1.SetCellContents("c1", 100);
-            s1.SetCellContents("c2", 2);
-            s1.SetCellContents("c3", new Formula("c1*c2"));
+            s1.SetContentsOfCell("c1", "100");
+            s1.SetContentsOfCell("c2", "2");
+            s1.SetContentsOfCell("c3", "=c1*c2");
 
-            s1.SetCellContents("d1", "Subtotal");
-            s1.SetCellContents("e1", "Discount");
-            s1.SetCellContents("e3", new Formula("d3*0.15"));       // 15 % off the subtotal
-            HashSet<string> dependees = new HashSet<string>(s1.SetCellContents("d3", new Formula("a3 + b3 + c3")));
+            s1.SetContentsOfCell("d1", "Subtotal");
+            s1.SetContentsOfCell("e1", "Discount");
+            s1.SetContentsOfCell("e3", "=d3*0.15");       // 15 % off the subtotal
+            HashSet<string> dependees = new HashSet<string>(s1.SetContentsOfCell("d3", "=a3 + b3 + c3"));
 
             Assert.IsTrue(dependees.SetEquals(new HashSet<string>() { "d3", "e3" }));      // only "e3" depends on "d3"
         }
@@ -292,10 +292,10 @@ namespace SSTests
         public void GetDirectDependentsTest3()
         {
             Spreadsheet s1 = new Spreadsheet();
-            s1.SetCellContents("A1", 3);
-            s1.SetCellContents("B1", new Formula("A1 * A1"));
-            s1.SetCellContents("C1", new Formula("B1 + A1"));
-            s1.SetCellContents("D1", new Formula("B1 - C1"));
+            s1.SetContentsOfCell("A1", "3");
+            s1.SetContentsOfCell("B1", "=A1 * A1");
+            s1.SetContentsOfCell("C1", "=B1 + A1");
+            s1.SetContentsOfCell("D1", "=B1 - C1");
 
             PrivateObject p1 = new PrivateObject(s1);
             HashSet<string> directPendents = new HashSet<string>((IEnumerable<string>)p1.Invoke("GetDirectDependents", new string[] {"A1"}));
