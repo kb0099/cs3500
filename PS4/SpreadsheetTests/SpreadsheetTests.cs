@@ -25,8 +25,8 @@ namespace SSTests
         {
             Spreadsheet s1 = new Spreadsheet();
             Assert.AreEqual("", s1.GetCellContents("a1"));
-            Assert.AreEqual("", s1.GetCellContents("x_"));
-            Assert.AreEqual("", s1.GetCellContents("_"));
+            Assert.AreEqual("", s1.GetCellContents("x3"));
+            Assert.AreEqual("", s1.GetCellContents("b4"));
 
         }
 

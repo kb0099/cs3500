@@ -63,7 +63,7 @@ namespace SS
         /// imposes no extra validity conditions, normalizes every cell name 
         /// to itself, and has version "default".
         /// </summary>
-        public Spreadsheet() : base(s => true, s => s, "default")
+        public Spreadsheet() : this(s => true, s => s, "default")
         {
         }
 
@@ -74,6 +74,9 @@ namespace SS
         public Spreadsheet(Func<string, bool> ValidityDelegate, Func<string, string> NormalizeDelegate, string VersionString)
             : base(ValidityDelegate, NormalizeDelegate, VersionString)
         {
+            Changed = false;
+            cells = new Dictionary<string, Cell>();
+            dGraph = new DependencyGraph();
         }
 
         /// <summary>
@@ -91,12 +94,8 @@ namespace SS
         /// There are doubtless other things that can go wrong and should be handled appropriately.
         /// </summary>
         public Spreadsheet(string PathToFile, Func<string, bool> ValidityDelegate, Func<string, string> NormalizeDelegate, string VersionString)
-              : base(ValidityDelegate, NormalizeDelegate, VersionString)
+              : this(ValidityDelegate, NormalizeDelegate, VersionString)
         {
-            Changed = false;
-            cells = new Dictionary<string, Cell>();
-            dGraph = new DependencyGraph();
-
             XDocument xmlDoc;
             string name = string.Empty, contents = string.Empty;      // currently processing cell's name and contents.
             try
@@ -410,10 +409,12 @@ namespace SS
         /// <summary>
         /// pattern for a variable as per assignment specs
         /// </summary>
-        private static string VAR_PATTERN = @"^[a-zA-Z_](?:[a-zA-Z_]|\d)*$";
+        private static string VAR_PATTERN = @"^[a-zA-Z]+\d+$";
 
         /// <summary>
         /// Represents a helper to validate a name, throws exception if not valid.
+        /// Variables in the formula class are valid as long as they consist of a letter or underscore followed by zero or more letters, underscores.
+        /// Variables for a Spreadsheet are only valid if they are one or more letters followed by one or more digits(numbers). 
         /// </summary>
         /// <param name="name"></param>
         private void Validate(string name)
@@ -475,7 +476,7 @@ namespace SS
             catch (CircularException ce)
             {
                 // undo the changes : this is basically setting to old content
-                if (oldContent != null && Object.Equals(string.Empty, oldContent))
+                if (oldContent != null && !Object.Equals(string.Empty, oldContent))
                     SetContentsHelper(name, oldContent);
                 throw ce;                   // re-throw the same exception ce
             }
