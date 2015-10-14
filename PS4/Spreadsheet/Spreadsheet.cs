@@ -304,6 +304,7 @@ namespace SS
         public override object GetCellContents(String name)
         {
             Validate(name);     // ensures whether name is valid
+            name = Normalize(name);
             if (cells.ContainsKey(name))
                 return cells[name].Content;
             else
@@ -475,7 +476,7 @@ namespace SS
             catch (CircularException ce)
             {
                 // undo the changes : this is basically setting to old content
-                if (oldContent != null)
+                if (oldContent != null && Object.Equals(string.Empty, oldContent))
                     SetContentsHelper(name, oldContent);
                 throw ce;                   // re-throw the same exception ce
             }
