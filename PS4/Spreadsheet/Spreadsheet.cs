@@ -221,8 +221,11 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            ValidateName(name);
-            return cells[name].Value;
+            Validate(name);
+            name = Normalize(name);
+            if (cells.ContainsKey(name))
+                return cells[name].Value(Lookup);
+            return string.Empty;
         }
 
 
@@ -259,7 +262,8 @@ namespace SS
         {
             if (content == null)
                 throw new ArgumentNullException("The content of a cell cannot be null!");
-            ValidateName(name);
+            Validate(name);
+            name = Normalize(name);
             double d;
             if (Double.TryParse(content, out d))
             {
@@ -299,8 +303,8 @@ namespace SS
         /// </summary>
         public override object GetCellContents(String name)
         {
-            ValidateName(name);     // ensures whether name is valid
-            if (cells.Keys.Contains(name))
+            Validate(name);     // ensures whether name is valid
+            if (cells.ContainsKey(name))
                 return cells[name].Content;
             else
                 return string.Empty;          // if the cell doesn't exist it should contain empty string. 
@@ -409,13 +413,31 @@ namespace SS
         private static string VAR_PATTERN = @"^[a-zA-Z_](?:[a-zA-Z_]|\d)*$";
 
         /// <summary>
-        /// Represents a helper method to throw exception.
+        /// Represents a helper to validate a name, throws exception if not valid.
         /// </summary>
         /// <param name="name"></param>
-        private void ValidateName(string name)
+        private void Validate(string name)
         {
-            if (name == null || !Regex.IsMatch(name, VAR_PATTERN))
+            if (name == null || !Regex.IsMatch(name, VAR_PATTERN) || !IsValid(name))
                 throw new InvalidNameException();
+        }
+
+        /// <summary>
+        /// Tries to get the value of the named cell.
+        /// </summary>
+        /// <param name="name">Name of the cell</param>
+        /// <returns></returns>
+        private double Lookup(string name)
+        {
+            // Any name that comes in should be arleady normalized and validated
+            try
+            {
+                return (double)(cells[name].Value(Lookup));
+            }
+            catch
+            {
+                throw new ArgumentException($"Unable to get value of cell: {name} as a double.");
+            }
         }
 
         /// <summary>
@@ -494,7 +516,11 @@ namespace SS
             /// If a cell's contents is a Formula, its value is either a double or a FormulaError,
             /// as reported by the Evaluate method of the Formula class. 
             /// </summary>
-            public object Value { get; set; }
+            /// <param name="lookup">Represents a lookup for cell value</param>
+            public object Value(Func<string, double> lookup)
+            {
+                return Content.GetType() == typeof(Formula) ? ((Formula)Content).Evaluate(lookup) : Content;
+            }
 
             public Cell(string name) : this(name, "")
             {

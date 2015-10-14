@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetTests", "Spreads
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS4Client", "PS4Client\PS4Client.csproj", "{06F0EABB-E9C6-4381-849C-B02DF377CF6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{A63B552F-03F1-4405-B1DC-54913C06EF26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{06F0EABB-E9C6-4381-849C-B02DF377CF6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06F0EABB-E9C6-4381-849C-B02DF377CF6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06F0EABB-E9C6-4381-849C-B02DF377CF6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A63B552F-03F1-4405-B1DC-54913C06EF26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A63B552F-03F1-4405-B1DC-54913C06EF26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A63B552F-03F1-4405-B1DC-54913C06EF26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A63B552F-03F1-4405-B1DC-54913C06EF26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
