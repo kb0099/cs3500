@@ -75,7 +75,7 @@ namespace SS
             : base(ValidityDelegate, NormalizeDelegate, VersionString)
         {
             Changed = false;
-            cells = new Dictionary<string, Cell>();
+            cells = new Dictionary<string, Cell>(900);      // Initialize to an equivalent of 30x30 grids
             dGraph = new DependencyGraph();
         }
 
@@ -222,7 +222,9 @@ namespace SS
             Validate(name);
             name = Normalize(name);
             if (cells.ContainsKey(name))
-                return cells[name].Value(Lookup);
+            {
+                return cells[name].Value;
+            }
             return string.Empty;
         }
 
@@ -377,7 +379,7 @@ namespace SS
         /// B1 contains the formula A1 * A1
         /// C1 contains the formula B1 + A1
         /// D1 contains the formula B1 - C1
-        /// The direct dependents(this should be dependees if following previous specificatoin ps3/ps2 etc) 
+        /// The direct dependents(this should be dependees if following previous specification ps3/ps2 etc) 
         /// of A1 are B1 and C1
         /// </summary>
         protected override IEnumerable<String> GetDirectDependents(String name)
@@ -386,7 +388,7 @@ namespace SS
                 throw new ArgumentNullException("Cell name cannot be null!");
             if (!Regex.IsMatch(name, VAR_PATTERN))
                 throw new InvalidNameException();
-            return dGraph.GetDependees(name);
+            return dGraph.GetDependees(name);    
         }
 
 
@@ -424,7 +426,7 @@ namespace SS
         }
 
         /// <summary>
-        /// Tries to get the value of the named cell.
+        /// Tries to get the value of the named cell as a number.
         /// </summary>
         /// <param name="name">Name of the cell</param>
         /// <returns></returns>
@@ -433,7 +435,7 @@ namespace SS
             // Any name that comes in should be arleady normalized and validated
             try
             {
-                return (double)(cells[name].Value(Lookup));
+                return (double)(cells[name].Value);
             }
             catch
             {
@@ -454,8 +456,6 @@ namespace SS
             HashSet<string> oldDependents = new HashSet<string>(dGraph.GetDependents(name));        //direct dependents
 
             // set to new cell content
-            if (!cells.ContainsKey(name))
-                cells.Add(name, null);
             cells[name] = new Cell(name, content);
 
             // remove old direct dependents
@@ -471,7 +471,10 @@ namespace SS
             try
             {
                 Changed = true;
-                return new HashSet<string>(GetCellsToRecalculate(name));   // could throw circular exception for Formula type                
+                var dependees =  new HashSet<string>(GetCellsToRecalculate(name));   // could throw circular exception for Formula type  
+                foreach (var dpndee in dependees)
+                    cells[dpndee].Recalc(Lookup);
+                return dependees;
             }
             catch (CircularException ce)
             {
@@ -496,6 +499,25 @@ namespace SS
             /// </summary>
             public object Content { get; set; }
 
+            /// <summary>
+            /// Represents the value of the cell
+            /// It can be either String, Double, or FormulaError
+            /// If a cell's contents is a string, its value is that string.
+            /// If a cell's contents is a double, its value is that double.
+            /// If a cell's contents is a Formula, its value is either a double or a FormulaError,
+            /// as reported by the Evaluate method of the Formula class. 
+            /// </summary>
+            public object Value { get; set; }
+
+            /// <summary>
+            /// Indicates the Value needs to be Re-calculated.
+            /// Must be called explicitly whenever new formula is placed.
+            /// </summary>
+            public void Recalc(Func<string, double> lookup)
+            {
+                Value = Content.GetType() == typeof(Formula) ? ((Formula)Content).Evaluate(lookup) : Content;
+            }
+
             /// <summary>           
             /// If the cell contains a string, it should be written as the contents.  
             /// If the cell contains a double d, d.ToString() should be written as the contents.  
@@ -508,21 +530,6 @@ namespace SS
                     return (Content.GetType() == typeof(Formula) ? "=" : "") + Content.ToString();
                 }
             }
-
-            /// <summary>
-            /// Represents the value of the cell
-            /// It can be either String, Double, or FormulaError
-            /// If a cell's contents is a string, its value is that string.
-            /// If a cell's contents is a double, its value is that double.
-            /// If a cell's contents is a Formula, its value is either a double or a FormulaError,
-            /// as reported by the Evaluate method of the Formula class. 
-            /// </summary>
-            /// <param name="lookup">Represents a lookup for cell value</param>
-            public object Value(Func<string, double> lookup)
-            {
-                return Content.GetType() == typeof(Formula) ? ((Formula)Content).Evaluate(lookup) : Content;
-            }
-
             public Cell(string name) : this(name, "")
             {
             }
