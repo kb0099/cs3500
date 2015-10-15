@@ -28,6 +28,24 @@ time a new cell is added.
 Rigorous tests were written to comply with the specifications.
 Version control were used to the good extent!
 
+a6936d2 PS5: Adjusts the file path to use relative path
+efeb7f5 PS5: Adds the XML test files to the repo
+f6cf522 PS5: Adds more tests for XML file
+b862441 PS5: Adds more tests for validation
+66b3d0c PS5: Changes the way Cell Value is calculated
+a438da7 PS5: Changes constructors to use this instead of base
+41646f6 PS5: Constructor now throws exception if path is null
+1cf1759 PS5: Adds more normalization and validation checks
+55c68a8 PS5: Adds a private Lookup method
+8b36644 PS5: Updates tests to match the new changes in PS5.
+3c8e473 PS5: Updates the private Cell class
+761846a PS5: Edits the save method
+24f0f9d PS5: Adds exception handling to final Constructor
+189d073 PS5: Edits first two constructors
+bfd972d PS5: Adds new constructors to Spreadsheet
+7008046 PS5: Edits Readme.txt to indicate PS5
+3de05d5 PS5: Ignores the Client apps and Private Unit Tests
+8afa0a6 PS5: Copies the new AbstractSpreadsheet.cs
 
 
 
