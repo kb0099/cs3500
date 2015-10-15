@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using SpreadsheetUtilities;
+using System.Xml.Linq;
 
 namespace SSTests
 {
@@ -16,6 +17,159 @@ namespace SSTests
     [TestClass()]
     public class SpreadsheetTests
     {
+        // All the previous tests from PS4 are at the bottom and new tests are being added from top to down:
+
+        /// <summary>      
+        /// If any of the names contained in the saved spreadsheet are invalid, an exception should be thrown.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void Spreadsheet3Arg()
+        {
+            Spreadsheet ss = new Spreadsheet(s => s.Length < 5, b => b.ToUpper(), "test");
+            ss.SetContentsOfCell("x1", "99");
+            Assert.AreEqual(99.0, (double)ss.GetCellContents("X1"));
+
+            ss.SetContentsOfCell("invalidlengtth99", "=(3.14*r1*r1)");     // invalidated by constraint
+        }
+
+
+        // Multiple tests for save() with invalid paths
+
+        [TestMethod()]
+        public void SaveTest01()
+        {
+            Spreadsheet ss = new Spreadsheet(s => s.Length < 10, s => s, "test");
+
+            ss.SetContentsOfCell("a1", "9");
+            ss.SetContentsOfCell("b1", "10");
+            ss.SetContentsOfCell("c1", "=a1+b1");
+            ss.Save("kb01_1.xml");
+
+            // "kb01.xml" is pre-written and saved in the /bin/degug directory for the SpreadsheetTests project
+            XDocument expected = XDocument.Load("kb01.xml");       
+            XDocument actual = XDocument.Load("kb01_1.xml");
+
+            Assert.IsTrue(XDocument.DeepEquals(expected, actual));
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void SaveTest02()
+        {
+            Spreadsheet ss = new Spreadsheet(s => s.Length < 10, s => s, "test");
+
+            ss.SetContentsOfCell("a1", "9");
+            ss.SetContentsOfCell("b1", "10");
+            ss.SetContentsOfCell("c1", "=a1+b1");
+            ss.Save("ZZ:\\kb01_2.xml");     // invalid path
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void SaveTest03()
+        {
+            Spreadsheet ss = new Spreadsheet(s => s.Length < 10, s => s, "test");
+
+            ss.SetContentsOfCell("a1", "9");
+            ss.SetContentsOfCell("b1", "10");
+            ss.SetContentsOfCell("c1", "=a1+b1");
+            ss.Save("c:\\");     // incomplete path
+        }
+
+
+        // formula error, division by zero etc.
+        [TestMethod()]
+        public void DviByZeroTest()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("a1", "2.0");
+            ss.SetContentsOfCell("b1", "0.0");
+            ss.SetContentsOfCell("c1", "=a1/b1");
+
+            Assert.IsInstanceOfType(ss.GetCellValue("c1"), typeof(FormulaError));
+        }
+        // un-initialized/empty cells for formula
+        [TestMethod()]
+        public void UninitializedTest()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("x3", "=9 + b4 - c99");
+            ss.SetContentsOfCell("x4", "=x1 - x2");
+
+            Assert.IsInstanceOfType(ss.GetCellValue("x3"), typeof(FormulaError));
+            Assert.IsInstanceOfType(ss.GetCellValue("x4"), typeof(FormulaError));
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetCellContentsTest()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("a1", "2.0");
+            ss.SetContentsOfCell("b1", "0.0");
+            ss.SetContentsOfCell("a0", "Grocery Bill");
+            ss.SetContentsOfCell("x3", "=9 + b4 - c99");
+            ss.SetContentsOfCell("x4", "=x1 - x2");
+
+            Assert.AreEqual("Grocery Bill", ss.GetCellContents("a0"));
+            Assert.AreEqual(2.0, ss.GetCellContents("a1"));
+            Assert.AreEqual(new Formula("x1-x2", s=>s, s=> true), ss.GetCellContents("x4"));
+
+            // Catches the first lets to throw the next
+            try
+            {
+                ss.GetCellContents("this-is-invalid99#Cell");
+            }catch(InvalidNameException)
+            {
+                ss.GetCellContents(null);
+            }
+
+        }
+
+        /// <summary>
+        /// Timing Test: ensures that cell operations should be done within reasonable time.
+        /// Mimics a fibonacci sequence! Also, tests for the rigitidy of the save method.
+        /// </summary>
+        [TestMethod()]
+        public void TimingTest()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            var s1 = System.Diagnostics.Stopwatch.StartNew();
+            for(int i = 2; i < 901; i++)
+            {
+                ss.SetContentsOfCell("a" + i, "=a" + (i - 2) + " + a" + (i - 1));
+            }
+            ss.SetContentsOfCell("a0", "" + 0);
+            ss.SetContentsOfCell("a1", "" + 1);
+            s1.Stop();
+
+            XElement spreadsheet = new XElement("spreadsheet", new XAttribute("version", "fibo"),          /* root element */
+                  from name in ss.GetNamesOfAllNonemptyCells()                 /* We are saving only the non-empty cells! */
+                  select new XElement("cell",
+                    new XElement("name", name),                             /* <name> element */
+                    new XElement("contents", ss.GetCellValue(name)))       /* saving VALUES HERE! */
+                  );
+            spreadsheet.Save("fibo.xml");
+            Assert.IsTrue(s1.ElapsedMilliseconds < 15*1000);    // should not take more than 15 seconds!
+        }
+
+        /// <summary>
+        /// Two spreadsheets should not interfere with one another's data
+        /// </summary>
+        [TestMethod()]
+        public void IndependencyTest()
+        {
+            AbstractSpreadsheet s1 = new Spreadsheet();
+            AbstractSpreadsheet s2 = new Spreadsheet();
+            s1.SetContentsOfCell("a1", "100");
+            s2.SetContentsOfCell("a1", "Invoice");
+
+            Assert.AreEqual(s1.GetCellValue("a1"), 100.0);
+            Assert.AreEqual(s2.GetCellValue("a1"), "Invoice");
+        }
+
+
         /// <summary>
         /// An empty spreadsheet should have infinite number of cells
         /// Each cell contains empty string initially.
@@ -49,7 +203,7 @@ namespace SSTests
             s1.SetContentsOfCell("b1", "");
             s1.SetContentsOfCell("c1", "");
             Assert.IsTrue(new HashSet<string>(s1.GetNamesOfAllNonemptyCells()).
-                SetEquals(new HashSet<string>() { "a2" }));        
+                SetEquals(new HashSet<string>() { "a2" }));
 
         }
 
@@ -167,7 +321,7 @@ namespace SSTests
         public void SetContentsOfCellTest2()
         {
             Spreadsheet s1 = new Spreadsheet();
-            s1.SetContentsOfCell("abc", (string)null);  
+            s1.SetContentsOfCell("abc", (string)null);
         }
 
 
@@ -226,7 +380,7 @@ namespace SSTests
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        [TestMethod()] 
+        [TestMethod()]
         public void SetContentsOfCellTest5_CircularDependency()
         {
             Spreadsheet s1 = new Spreadsheet();
@@ -250,7 +404,7 @@ namespace SSTests
 
             Assert.IsTrue(dependees.SetEquals(new HashSet<string>() { "d3", "e3" }));      // only "e3" depends on "d3"
         }
-        
+
 
 
         /// <summary>
@@ -261,7 +415,7 @@ namespace SSTests
         public void GetDirectDependentsTest1_NameIsNull()
         {
             PrivateObject p1 = new PrivateObject(new Spreadsheet());
-            p1.Invoke("GetDirectDependents", new string[]{null});
+            p1.Invoke("GetDirectDependents", new string[] { null });
         }
 
         /// <summary>
@@ -298,7 +452,7 @@ namespace SSTests
             s1.SetContentsOfCell("D1", "=B1 - C1");
 
             PrivateObject p1 = new PrivateObject(s1);
-            HashSet<string> directPendents = new HashSet<string>((IEnumerable<string>)p1.Invoke("GetDirectDependents", new string[] {"A1"}));
+            HashSet<string> directPendents = new HashSet<string>((IEnumerable<string>)p1.Invoke("GetDirectDependents", new string[] { "A1" }));
             Assert.IsTrue(directPendents.SetEquals(new HashSet<string>() { "B1", "C1" }));
         }
     }

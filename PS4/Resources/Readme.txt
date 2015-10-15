@@ -2,11 +2,27 @@
 University of Utah
 Fall 2015, CS3500
 
+
+Important Notes on Tests:
+Some of the tests need pre-written XML files that are saved in the PS4\SpreadsheetTests\bin\Debug directory.
+
 PS5 Branch
-A new branch fro the existing PS4 solution was forked and named as PS5.
+A new branch from the existing PS4 solution was forked and named as PS5.
 
 It will use built in C# XML libraries to handle reading and writing of XML documents.
 
+New private codes will be added such that it will still be compatible with the old libraries developed before PS4.
+
+To make the calculations faster the way to calculate Value of a Cell is updated. Whenever a cell is changed, 
+all it's dependees(PS1 naming convention) will be updated instantly. Invalid formulas will simply contain 
+FormulaError objects. Using this approach, whenever a value needs to be checked, we simply look at the Value 
+property of the Cell, which is much faster than having to calculate every time it is queried. This also makes
+lengthy or recursive kind of formulas operate faster, say for example a Fibonachi style cell assignments/formulas.
+
+A through testings and critical optimizations were performed to make sure the application performs within acceptable
+constraints. Since, an usable spreadsheet will have at least about 30 x 30 cells used, the Dictionary object will be
+allocated 900 spaces for cells. Doing this will improve performance, since, it doesn't have to re-allocate memory each
+time a new cell is added.
 
 
 09/30/2015
