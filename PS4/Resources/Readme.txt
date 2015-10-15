@@ -2,6 +2,11 @@
 University of Utah
 Fall 2015, CS3500
 
+Notes on Submission:
+It was not specified whether PS5 was supposed to be merged back to master branch.
+The submission is due today, but, PS4 grades are not published yet, so, PS4 master is left untouched.
+PS5 branch is the actual submission for PS5.
+The assignment did not ask to change the PS4 solution name to PS5, so, it is left unchanged.
 
 Important Notes on Tests:
 Some of the tests need pre-written XML files that are saved in the PS4\SpreadsheetTests\testfiles directory.
