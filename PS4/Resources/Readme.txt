@@ -4,7 +4,7 @@ Fall 2015, CS3500
 
 
 Important Notes on Tests:
-Some of the tests need pre-written XML files that are saved in the PS4\SpreadsheetTests\bin\Debug directory.
+Some of the tests need pre-written XML files that are saved in the PS4\SpreadsheetTests\testfiles directory.
 
 PS5 Branch
 A new branch from the existing PS4 solution was forked and named as PS5.

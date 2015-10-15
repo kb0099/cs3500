@@ -40,19 +40,19 @@ namespace SSTests
         [TestMethod()]
         public void ConstructorTest02()
         {
-            RWHelper("kb_err01.xml");
-            RWHelper("kb_err02.xml");
-            RWHelper("kb_err03.xml");
-            RWHelper("kb_err04.xml");
-            RWHelper("kb_err05.xml");
-            RWHelper("kb_err06.xml");
-            RWHelper("kb_err07.xml");
-            RWHelper("kb_err08.xml");
-            RWHelper("kb_err09.xml");
+            RWHelper("../../testfiles/kb_err01.xml");
+            RWHelper("../../testfiles/kb_err02.xml");
+            RWHelper("../../testfiles/kb_err03.xml");
+            RWHelper("../../testfiles/kb_err04.xml");
+            RWHelper("../../testfiles/kb_err05.xml");
+            RWHelper("../../testfiles/kb_err06.xml");
+            RWHelper("../../testfiles/kb_err07.xml");
+            RWHelper("../../testfiles/kb_err08.xml");
+            RWHelper("../../testfiles/kb_err09.xml");
 
             //Valid spreadsheet, but zero cells.
             //Should not throw exceptions or anything
-            Spreadsheet ss = new Spreadsheet("kb_nocells.xml", s=> true, s=>s, "test");
+            Spreadsheet ss = new Spreadsheet("../../testfiles/kb_nocells.xml", s=> true, s=>s, "test");
             Assert.IsTrue(ss.GetNamesOfAllNonemptyCells().Count() == 0);
         }
         /// <summary>
@@ -79,11 +79,11 @@ namespace SSTests
             ss.SetContentsOfCell("a1", "9");
             ss.SetContentsOfCell("b1", "10");
             ss.SetContentsOfCell("c1", "=a1+b1");
-            ss.Save("kb01_1.xml");
+            ss.Save("../../testfiles/kb01_1.xml");
 
-            // "kb01.xml" is pre-written and saved in the /bin/degug directory for the SpreadsheetTests project
-            XDocument expected = XDocument.Load("kb01.xml");       
-            XDocument actual = XDocument.Load("kb01_1.xml");
+            // "../../testfiles/kb01.xml" is pre-written and saved in the /bin/degug directory for the SpreadsheetTests project
+            XDocument expected = XDocument.Load("../../testfiles/kb01.xml");       
+            XDocument actual = XDocument.Load("../../testfiles/kb01_1.xml");
 
             Assert.IsTrue(XDocument.DeepEquals(expected, actual));
         }
@@ -97,7 +97,7 @@ namespace SSTests
             ss.SetContentsOfCell("a1", "9");
             ss.SetContentsOfCell("b1", "10");
             ss.SetContentsOfCell("c1", "=a1+b1");
-            ss.Save("ZZ:\\kb01_2.xml");     // invalid path
+            ss.Save("../../testfiles/ZZ:\\kb01_2.xml");     // invalid path
         }
 
         [TestMethod()]
@@ -185,10 +185,10 @@ namespace SSTests
             s1.Stop();
 
             WriteValues(ss);
-            Spreadsheet resurrected = new Spreadsheet("fibo.xml", s => true, s => s, "fibo");
-            resurrected.Save("fibo_.xml");
+            Spreadsheet resurrected = new Spreadsheet("../../testfiles/fibo.xml", s => true, s => s, "fibo");
+            resurrected.Save("../../testfiles/fibo_.xml");
 
-            XDocument.DeepEquals(XDocument.Load("fibo.xml"), XDocument.Load("fibo_.xml"));
+            XDocument.DeepEquals(XDocument.Load("../../testfiles/fibo.xml"), XDocument.Load("fibo_.xml"));
             Assert.IsTrue(s1.ElapsedMilliseconds < 15*1000);    // should not take more than 15 seconds!
         }
         // helper for TimingTest()
@@ -200,7 +200,7 @@ namespace SSTests
                       new XElement("name", name),                             /* <name> element */
                       new XElement("contents", ss.GetCellValue(name)))       /* saving VALUES HERE! */
                     );
-            spreadsheet.Save("fibo.xml");
+            spreadsheet.Save("../../testfiles/fibo.xml");
         }
         //
 
