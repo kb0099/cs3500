@@ -24,7 +24,7 @@ namespace SSTests
         /// </summary>
         [TestMethod()]
         [ExpectedException(typeof(InvalidNameException))]
-        public void Spreadsheet3Arg()
+        public void ConstructorTest01()
         {
             Spreadsheet ss = new Spreadsheet(s => s.Length < 5, b => b.ToUpper(), "test");
             ss.SetContentsOfCell("x1", "99");
@@ -33,6 +33,41 @@ namespace SSTests
             ss.SetContentsOfCell("invalidlengtth99", "=(3.14*r1*r1)");     // invalidated by constraint
         }
 
+        /// <summary>
+        /// Tests for all read-write exceptions.
+        /// kb_err*.xml files have malformed xml, and problematic formulas.
+        /// </summary>
+        [TestMethod()]
+        public void ConstructorTest02()
+        {
+            RWHelper("kb_err01.xml");
+            RWHelper("kb_err02.xml");
+            RWHelper("kb_err03.xml");
+            RWHelper("kb_err04.xml");
+            RWHelper("kb_err05.xml");
+            RWHelper("kb_err06.xml");
+            RWHelper("kb_err07.xml");
+            RWHelper("kb_err08.xml");
+            RWHelper("kb_err09.xml");
+
+            //Valid spreadsheet, but zero cells.
+            //Should not throw exceptions or anything
+            Spreadsheet ss = new Spreadsheet("kb_nocells.xml", s=> true, s=>s, "test");
+            Assert.IsTrue(ss.GetNamesOfAllNonemptyCells().Count() == 0);
+        }
+        /// <summary>
+        /// Helper for ConstructorTest02, to indicate it failed to throw exceptions.
+        /// </summary>
+        public void RWHelper(string file)
+        {
+            Spreadsheet s1;
+            try
+            {
+                s1 = new Spreadsheet(file, s => true, s => s, "test");
+                Assert.Fail($"For file: {file}, Did not throw expected: SpreadsheetReadWriteException");
+            }
+            catch (SpreadsheetReadWriteException) { }
+        }
 
         // Multiple tests for save() with invalid paths
 
@@ -111,7 +146,10 @@ namespace SSTests
             ss.SetContentsOfCell("a0", "Grocery Bill");
             ss.SetContentsOfCell("x3", "=9 + b4 - c99");
             ss.SetContentsOfCell("x4", "=x1 - x2");
+            ss.SetContentsOfCell("x9", "=a1");
 
+            Assert.AreEqual(ss.GetCellValue("x9"), ss.GetCellValue("a1"));
+            Assert.IsInstanceOfType(ss.GetCellValue("x3"), typeof(FormulaError));
             Assert.AreEqual("Grocery Bill", ss.GetCellContents("a0"));
             Assert.AreEqual(2.0, ss.GetCellContents("a1"));
             Assert.AreEqual(new Formula("x1-x2", s=>s, s=> true), ss.GetCellContents("x4"));
@@ -128,8 +166,10 @@ namespace SSTests
         }
 
         /// <summary>
-        /// Timing Test: ensures that cell operations should be done within reasonable time.
-        /// Mimics a fibonacci sequence! Also, tests for the rigitidy of the save method.
+        /// Timing Test: ensures that cell operations/reading/writing should be done within reasonable time.
+        /// Mimics a fibonacci sequence! 
+        /// In doing so, it tests for the rigitidy of the save method.
+        /// Makes sure save method saves correctly and constructor can read back accurately!
         /// </summary>
         [TestMethod()]
         public void TimingTest()
@@ -144,15 +184,26 @@ namespace SSTests
             ss.SetContentsOfCell("a1", "" + 1);
             s1.Stop();
 
-            XElement spreadsheet = new XElement("spreadsheet", new XAttribute("version", "fibo"),          /* root element */
-                  from name in ss.GetNamesOfAllNonemptyCells()                 /* We are saving only the non-empty cells! */
-                  select new XElement("cell",
-                    new XElement("name", name),                             /* <name> element */
-                    new XElement("contents", ss.GetCellValue(name)))       /* saving VALUES HERE! */
-                  );
-            spreadsheet.Save("fibo.xml");
+            WriteValues(ss);
+            Spreadsheet resurrected = new Spreadsheet("fibo.xml", s => true, s => s, "fibo");
+            resurrected.Save("fibo_.xml");
+
+            XDocument.DeepEquals(XDocument.Load("fibo.xml"), XDocument.Load("fibo_.xml"));
             Assert.IsTrue(s1.ElapsedMilliseconds < 15*1000);    // should not take more than 15 seconds!
         }
+        // helper for TimingTest()
+        public void WriteValues(Spreadsheet ss)
+        {
+            XElement spreadsheet = new XElement("spreadsheet", new XAttribute("version", "fibo"),          /* root element */
+                    from name in ss.GetNamesOfAllNonemptyCells()                 /* We are saving only the non-empty cells! */
+                    select new XElement("cell",
+                      new XElement("name", name),                             /* <name> element */
+                      new XElement("contents", ss.GetCellValue(name)))       /* saving VALUES HERE! */
+                    );
+            spreadsheet.Save("fibo.xml");
+        }
+        //
+
 
         /// <summary>
         /// Two spreadsheets should not interfere with one another's data
@@ -168,6 +219,56 @@ namespace SSTests
             Assert.AreEqual(s1.GetCellValue("a1"), 100.0);
             Assert.AreEqual(s2.GetCellValue("a1"), "Invoice");
         }
+
+        /// <summary>
+        /// The Normalized delegate should be used for all calls
+        /// </summary>
+        [TestMethod()]
+        public void NormalizationTest()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet(s => true, s => s.ToUpper(), "test");
+            ss.SetContentsOfCell("a1", "9");
+            ss.SetContentsOfCell("A1", "99E2");
+            ss.SetContentsOfCell("aBc01", "BookStore");
+
+            Assert.AreEqual(99E2, (double)ss.GetCellValue("A1"));
+            Assert.AreEqual("BookStore", ss.GetCellValue("AbC01"));
+        }
+
+        /// <summary>
+        /// If setting to a new content throws circular exception, 
+        /// the previous state should not be affected.
+        /// </summary>
+        [TestMethod()]
+        public void CircularTest()
+        {
+            AbstractSpreadsheet s1 = new Spreadsheet();
+            s1.SetContentsOfCell("B1", "9");
+            try
+            {
+                s1.SetContentsOfCell("A1", "=B1 + C1");
+                s1.SetContentsOfCell("B1", "=D1-E1*F1/G1-99*A1");
+                Assert.Fail("Did not throw Circular Exception!");
+            }
+            catch (CircularException)
+            {
+                Assert.AreEqual(s1.GetCellValue("B1"), 9.0);
+                Assert.AreEqual(s1.GetCellContents("A1"), new Formula("B1+C1"));
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         /// <summary>

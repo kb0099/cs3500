@@ -154,6 +154,7 @@ namespace SS
             try
             {
                 XDocument xmlDoc = XDocument.Load(filename);
+                if (xmlDoc.Root.Name != "spreadsheet") throw new Exception();
                 return xmlDoc.Root.Attribute("version").Value;
             }
             catch

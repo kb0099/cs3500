@@ -25,6 +25,13 @@ allocated 900 spaces for cells. Doing this will improve performance, since, it d
 time a new cell is added.
 
 
+Rigorous tests were written to comply with the specifications.
+Version control were used to the good extent!
+
+
+
+
+
 09/30/2015
 
 PS4 Implementation
