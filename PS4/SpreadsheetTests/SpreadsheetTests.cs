@@ -188,7 +188,7 @@ namespace SSTests
             Spreadsheet resurrected = new Spreadsheet("../../testfiles/fibo.xml", s => true, s => s, "fibo");
             resurrected.Save("../../testfiles/fibo_.xml");
 
-            XDocument.DeepEquals(XDocument.Load("../../testfiles/fibo.xml"), XDocument.Load("fibo_.xml"));
+            XDocument.DeepEquals(XDocument.Load("../../testfiles/fibo.xml"), XDocument.Load("../../testfiles/fibo_.xml"));
             Assert.IsTrue(s1.ElapsedMilliseconds < 15*1000);    // should not take more than 15 seconds!
         }
         // helper for TimingTest()
