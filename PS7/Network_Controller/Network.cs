@@ -41,24 +41,6 @@ namespace AgCubio
                 clientSocket.BeginConnect(remoteEP, new AsyncCallback(ConnectedToServer), new PreservedState() { clientSocket = clientSocket, callback = callback });
 
                 return clientSocket;
-
-                //connectDone.WaitOne();
-
-                //// Send test data to the remote device.
-                //Send(client, "This is a test<EOF>");
-                //sendDone.WaitOne();
-
-                //// Receive the response from the remote device.
-                //Receive(client);
-                //receiveDone.WaitOne();
-
-                //// Write the response to the console.
-                //Console.WriteLine("Response received : {0}", response);
-
-                //// Release the socket.
-                //client.Shutdown(SocketShutdown.Both);
-                //client.Close();
-
             }
             catch (Exception e)
             {
