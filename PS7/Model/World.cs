@@ -31,6 +31,9 @@ namespace Model
         /// <summary>
         /// Constructor of a World object.
         /// </summary>
+        /// <param name="w">The width of the world.</param>
+        /// <param name="h">The height of the world</param>
+        /// <param name="id">The player's cube ID.</param>
         public World(double w, double h, int id)
         {
             this.Width = w;

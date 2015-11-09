@@ -11,13 +11,13 @@ namespace Model
     public class Cube
     {
         /// <summary>
-        /// The x location.
+        /// The x location. It is assumed to be the left edge of the cube.
         /// </summary>
         [JsonProperty(PropertyName = "loc_x")]
         public double X;
 
         /// <summary>
-        /// The y location.
+        /// The y location. It is assumed to be the top edge of the cube.
         /// </summary>
         [JsonProperty(PropertyName = "loc_y")]
         public double Y;
@@ -51,6 +51,21 @@ namespace Model
         /// </summary>
         [JsonProperty]
         public double Mass;
+
+        /// <summary>
+        /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.
+        /// </summary>
+        public double Size { get { return Math.Sqrt(Mass); } }
+
+        /// <summary>
+        /// The x coordinate location of the center.
+        /// </summary>
+        public double CenterX { get { return X + Size/2; } }
+
+        /// <summary>
+        /// The y coordinate location of the center.
+        /// </summary>
+        public double CenterY { get { return Y + Size / 2; } }
 
         /// <summary>
         /// A constructor to fill all parameters of the cube. This is most useful for deserializing a JSON.
