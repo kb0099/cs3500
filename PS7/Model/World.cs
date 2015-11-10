@@ -30,6 +30,11 @@ namespace Model
         private List<Cube> Cubes;
 
         /// <summary>
+        /// The player's cube, which updates as new cube collecitons are set.
+        /// </summary>
+        private Cube Player;
+
+        /// <summary>
         /// The comparer used to sort the collection of cubes.
         /// </summary>
         private IComparer<Cube> Comparer;
@@ -45,7 +50,7 @@ namespace Model
             this.Width = w;
             this.Height = h;
             this.PlayerID = id;
-            this.Cubes = new List<Cube>(1);
+            this.Cubes = new List<Cube>();
             this.Comparer = new CubeMassComparer();
         }
 
@@ -59,6 +64,8 @@ namespace Model
             this.Cubes = new List<Cube>(cubes);
             // sort the list based on the cube sizes
             this.Cubes.Sort(Comparer);
+            // search Cubes to get the player's cube
+            Player = this.Cubes.Find(c => { return c.uid == PlayerID; });
         }
 
         /// <summary>
@@ -68,6 +75,15 @@ namespace Model
         public IEnumerable<Cube> GetCubes()
         {
             return Cubes;
+        }
+
+        /// <summary>
+        /// A method to return the player's cube. The player is identified by the ID given to the world upon
+        /// construction.
+        /// </summary>
+        public Cube GetPlayerCube()
+        {
+            return Player;
         }
 
         /// <summary>

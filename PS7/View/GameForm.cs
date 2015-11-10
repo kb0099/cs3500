@@ -14,7 +14,6 @@ namespace View
 {
     public partial class GameForm : Form
     {
-        // private SolidBrush brush;
         private World world;
 
         public GameForm()
@@ -89,10 +88,6 @@ namespace View
             // useful offsetY: 1200
         }
 
-        private SolidBrush redBrush = new SolidBrush(Color.Red);
-        private SolidBrush blueBrush = new SolidBrush(Color.Blue);
-        private SolidBrush greenBrush = new SolidBrush(Color.Green);
-
         /// <summary>
         /// The paint method run to paint the game content.
         /// </summary>
@@ -100,16 +95,13 @@ namespace View
         /// <param name="e"></param>
         private void GamePanel_Paint(object sender, PaintEventArgs e)
         {
-            // TODO a test on painting in panel
-            // Color color = Color.FromArgb(255, 0, 255);
-            // brush = new System.Drawing.SolidBrush(color);
-            // e.Graphics.FillRectangle(brush, new Rectangle(20, 50, 500, 480));
-
             // calculate the parameters that affect the scale and location of rendering (so player is in center and magnified to a scale)
-            // TODO how to do that? will need player cube info
-            double multiplier = 2.4; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
-            double offsetX = 1400; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
-            double offsetY = 1200; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
+            Cube p = world.GetPlayerCube();
+            double percentPanel = 0.7; // the percentage the player's cube size should be in comparison to the panel size
+            double panelMinSize = (GamePanel.Width > GamePanel.Height) ? GamePanel.Height : GamePanel.Width; // the minimum dimension size of the game panel
+            double multiplier = (panelMinSize*percentPanel)/p.Size; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
+            double offsetX = p.CenterX * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
+            double offsetY = p.CenterY * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
 
             // loop through world's cubes, render each
             SolidBrush brush = new SolidBrush(Color.White);
@@ -134,6 +126,8 @@ namespace View
                     e.Graphics.DrawString(c.Name, GamePanel.Font, black, new PointF(x, y));
                 }
             }
+            // TODO temp way to refresh panel
+            Invalidate();
         }
     }
 }
