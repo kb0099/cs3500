@@ -41,9 +41,10 @@ namespace View
         /// </summary>
         private void TempWorldSetup()
         {
-            // TODO temp way to setup world
+            // temp way to setup world
             HashSet<Cube> cubes = new HashSet<Cube>();
             cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":926.0,\"loc_y\":682.0,\"argb_color\":-65536,\"uid\":5571,\"food\":false,\"Name\":\"3500 is love\",\"Mass\":1000.0}"));
+            cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":920.0,\"loc_y\":673.0,\"argb_color\":-9834450,\"uid\":1571,\"food\":false,\"Name\":\"Bill Gates\",\"Mass\":500.0}"));
             cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":116.0,\"loc_y\":350.0,\"argb_color\":-8243084,\"uid\":5002,\"food\":true,\"Name\":\"\",\"Mass\":1.0}"));
             cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":193.0,\"loc_y\":523.0,\"argb_color\":-4759773,\"uid\":5075,\"food\":true,\"Name\":\"\",\"Mass\":1.0}"));
             cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":267.0,\"loc_y\":55.0,\"argb_color\":-7502725,\"uid\":2,\"food\":true,\"Name\":\"\",\"Mass\":1.0}"));
@@ -81,8 +82,11 @@ namespace View
             cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":367.0,\"loc_y\":669.0,\"argb_color\":-6626356,\"uid\":34,\"food\":true,\"Name\":\"\",\"Mass\":1.0}"));
             cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":140.0,\"loc_y\":347.0,\"argb_color\":-8316193,\"uid\":35,\"food\":true,\"Name\":\"\",\"Mass\":1.0}"));
             cubes.Add(JsonConvert.DeserializeObject<Cube>("{\"loc_x\":885.0,\"loc_y\":634.0,\"argb_color\":-15560314,\"uid\":36,\"food\":true,\"Name\":\"\",\"Mass\":1.0}"));
-            world = new World((double)1000, (double)1000, 5571);
+            world = new World(1000, 1000, 5571);
             world.SetCubes(cubes);
+            // useful magnification: 2.4
+            // useful offsetX: 1400
+            // useful offsetY: 1200
         }
 
         private SolidBrush redBrush = new SolidBrush(Color.Red);
@@ -103,9 +107,9 @@ namespace View
 
             // calculate the parameters that affect the scale and location of rendering (so player is in center and magnified to a scale)
             // TODO how to do that? will need player cube info
-            double multiplier = 1.5; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
-            double offsetX = 200; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
-            double offsetY = 200; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
+            double multiplier = 2.4; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
+            double offsetX = 1400; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
+            double offsetY = 1200; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
 
             // loop through world's cubes, render each
             SolidBrush brush = new SolidBrush(Color.White);
