@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,9 +25,14 @@ namespace Model
         private int PlayerID;
 
         /// <summary>
-        /// Collection of cubes in the world. Cubes can be identified by their unique ID, which will be the key.
+        /// Collection of cubes in the world.
         /// </summary>
-        private IEnumerable<Cube> Cubes;
+        private List<Cube> Cubes;
+
+        /// <summary>
+        /// The comparer used to sort the collection of cubes.
+        /// </summary>
+        private IComparer<Cube> Comparer;
 
         /// <summary>
         /// Constructor of a World object.
@@ -39,7 +45,8 @@ namespace Model
             this.Width = w;
             this.Height = h;
             this.PlayerID = id;
-            this.Cubes = new HashSet<Cube>();
+            this.Cubes = new List<Cube>(1);
+            this.Comparer = new CubeMassComparer();
         }
 
         /// <summary>
@@ -48,15 +55,33 @@ namespace Model
         /// </summary>
         public void SetCubes(IEnumerable<Cube> cubes)
         {
-            this.Cubes = cubes;
+            // create a new list containing the cubes
+            this.Cubes = new List<Cube>(cubes);
+            // sort the list based on the cube sizes
+            this.Cubes.Sort(Comparer);
         }
 
         /// <summary>
         /// A method to return the cubes of the world.
+        /// The collection of cubes will be sorted by the smallest first.
         /// </summary>
         public IEnumerable<Cube> GetCubes()
         {
             return Cubes;
+        }
+
+        /// <summary>
+        /// The private IComparer used for sorting cubes by their mass.
+        /// </summary>
+        private class CubeMassComparer : IComparer<Cube>
+        {
+            int IComparer<Cube>.Compare(Cube c1, Cube c2)
+            {
+                // 1 is c1>c2, 0 is c1==c2, -1 is c1<c2
+                if (c1.Mass == c2.Mass) return 0;
+                else if (c1.Mass > c2.Mass) return 1;
+                else return -1;
+            }
         }
     }
 }
