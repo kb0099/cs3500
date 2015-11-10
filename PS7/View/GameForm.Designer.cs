@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.ConnectionPanel = new System.Windows.Forms.Panel();
-            this.NameTextBox = new System.Windows.Forms.TextBox();
-            this.ServerTextBox = new System.Windows.Forms.TextBox();
-            this.NameLabel = new System.Windows.Forms.Label();
-            this.ServerLabel = new System.Windows.Forms.Label();
             this.ConnectButton = new System.Windows.Forms.Button();
+            this.ServerLabel = new System.Windows.Forms.Label();
+            this.NameLabel = new System.Windows.Forms.Label();
+            this.ServerTextBox = new System.Windows.Forms.TextBox();
+            this.NameTextBox = new System.Windows.Forms.TextBox();
             this.GamePanel = new System.Windows.Forms.Panel();
             this.ConnectionPanel.SuspendLayout();
             this.SuspendLayout();
@@ -51,31 +51,16 @@
             this.ConnectionPanel.Size = new System.Drawing.Size(380, 160);
             this.ConnectionPanel.TabIndex = 0;
             // 
-            // NameTextBox
+            // ConnectButton
             // 
-            this.NameTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.NameTextBox.Location = new System.Drawing.Point(118, 4);
-            this.NameTextBox.Name = "NameTextBox";
-            this.NameTextBox.Size = new System.Drawing.Size(259, 44);
-            this.NameTextBox.TabIndex = 0;
-            // 
-            // ServerTextBox
-            // 
-            this.ServerTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ServerTextBox.Location = new System.Drawing.Point(118, 54);
-            this.ServerTextBox.Name = "ServerTextBox";
-            this.ServerTextBox.Size = new System.Drawing.Size(259, 44);
-            this.ServerTextBox.TabIndex = 1;
-            // 
-            // NameLabel
-            // 
-            this.NameLabel.AutoSize = true;
-            this.NameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.NameLabel.Location = new System.Drawing.Point(3, 7);
-            this.NameLabel.Name = "NameLabel";
-            this.NameLabel.Size = new System.Drawing.Size(103, 37);
-            this.NameLabel.TabIndex = 2;
-            this.NameLabel.Text = "Name";
+            this.ConnectButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ConnectButton.Location = new System.Drawing.Point(115, 104);
+            this.ConnectButton.Name = "ConnectButton";
+            this.ConnectButton.Size = new System.Drawing.Size(150, 50);
+            this.ConnectButton.TabIndex = 4;
+            this.ConnectButton.Text = "Connect";
+            this.ConnectButton.UseVisualStyleBackColor = true;
+            this.ConnectButton.Click += new System.EventHandler(this.ConnectButton_Click);
             // 
             // ServerLabel
             // 
@@ -87,16 +72,31 @@
             this.ServerLabel.TabIndex = 3;
             this.ServerLabel.Text = "Server";
             // 
-            // ConnectButton
+            // NameLabel
             // 
-            this.ConnectButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ConnectButton.Location = new System.Drawing.Point(115, 104);
-            this.ConnectButton.Name = "ConnectButton";
-            this.ConnectButton.Size = new System.Drawing.Size(150, 50);
-            this.ConnectButton.TabIndex = 4;
-            this.ConnectButton.Text = "Connect";
-            this.ConnectButton.UseVisualStyleBackColor = true;
-            this.ConnectButton.Click += new System.EventHandler(this.ConnectButton_Click);
+            this.NameLabel.AutoSize = true;
+            this.NameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.NameLabel.Location = new System.Drawing.Point(3, 7);
+            this.NameLabel.Name = "NameLabel";
+            this.NameLabel.Size = new System.Drawing.Size(103, 37);
+            this.NameLabel.TabIndex = 2;
+            this.NameLabel.Text = "Name";
+            // 
+            // ServerTextBox
+            // 
+            this.ServerTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ServerTextBox.Location = new System.Drawing.Point(118, 54);
+            this.ServerTextBox.Name = "ServerTextBox";
+            this.ServerTextBox.Size = new System.Drawing.Size(259, 44);
+            this.ServerTextBox.TabIndex = 1;
+            // 
+            // NameTextBox
+            // 
+            this.NameTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.NameTextBox.Location = new System.Drawing.Point(118, 4);
+            this.NameTextBox.Name = "NameTextBox";
+            this.NameTextBox.Size = new System.Drawing.Size(259, 44);
+            this.NameTextBox.TabIndex = 0;
             // 
             // GamePanel
             // 
@@ -109,6 +109,7 @@
             this.GamePanel.TabIndex = 1;
             this.GamePanel.Visible = false;
             this.GamePanel.Paint += new System.Windows.Forms.PaintEventHandler(this.GamePanel_Paint);
+            this.GamePanel.Resize += new System.EventHandler(this.GamePanel_Resize);
             // 
             // GameForm
             // 

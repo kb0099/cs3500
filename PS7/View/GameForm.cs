@@ -97,7 +97,7 @@ namespace View
         {
             // calculate the parameters that affect the scale and location of rendering (so player is in center and magnified to a scale)
             Cube p = world.GetPlayerCube();
-            double percentPanel = 0.7; // the percentage the player's cube size should be in comparison to the panel size
+            double percentPanel = 0.4; // the percentage the player's cube size should be in comparison to the panel size
             double panelMinSize = (GamePanel.Width > GamePanel.Height) ? GamePanel.Height : GamePanel.Width; // the minimum dimension size of the game panel
             double multiplier = (panelMinSize*percentPanel)/p.Size; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
             double offsetX = p.CenterX * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
@@ -126,8 +126,12 @@ namespace View
                     e.Graphics.DrawString(c.Name, GamePanel.Font, black, new PointF(x, y));
                 }
             }
-            // TODO temp way to refresh panel
-            Invalidate();
+        }
+
+        private void GamePanel_Resize(object sender, EventArgs e)
+        {
+            // TODO temp way to test panel refresh in relation to resize
+            GamePanel.Refresh();
         }
     }
 }
