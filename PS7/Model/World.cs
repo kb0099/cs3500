@@ -27,12 +27,17 @@ namespace Model
         /// <summary>
         /// Collection of cubes in the world.
         /// </summary>
-        private SortedSet<Cube> Cubes;
+        private List<Cube> Cubes;
 
         /// <summary>
-        /// The player's cube, which updates as new cube collecitons are set.
+        /// The player's cubes, which updates when new cubes belong to player's team.
         /// </summary>
-        private HashSet<Cube> PlayerCubes;
+        private List<Cube> PlayerCubes;
+
+        /// <summary>
+        /// The comparer to sort the collection of cubes.
+        /// </summary>
+        private IComparer<Cube> Comparer;
 
         /// <summary>
         /// Constructor of a World object.
@@ -45,8 +50,9 @@ namespace Model
             this.Width = w;
             this.Height = h;
             this.PlayerID = id;
-            this.Cubes = new SortedSet<Cube>(new CubeMassComparer()); // the set will sort the smaller cubes above the larger cubes
-            this.PlayerCubes = new HashSet<Cube>();
+            this.Comparer = new CubeMassComparer();
+            this.Cubes = new List<Cube>(50);
+            this.PlayerCubes = new List<Cube>(6);
         }
 
         /// <summary>
@@ -55,17 +61,23 @@ namespace Model
         /// </summary>
         public void AddCube(Cube c)
         {
+            // check cube is not null; if it is, don't do anything
+            if (c == null) return;
             // remove cubes with the same unique ID in Cubes and PlayerCubes; this helps to remove old cube data to swap with new cube data
             Predicate<Cube> remover = (cb) => cb.uId == c.uId;
-            Cubes.RemoveWhere(remover);
-            PlayerCubes.RemoveWhere(remover);
-            // if the cube is alive (i.e. not mass 0), add it to Cubes and (if possible) PlayerCubes
+            Cubes.RemoveAll(remover);
+            PlayerCubes.RemoveAll(remover);
+            // if the cube is alive (i.e. not mass 0), add it to appropriate collections
             if (c.Mass != 0)
             {
+                // add cube to Cubes
                 Cubes.Add(c);
                 // if it is a player cube (player ID equals team ID), add it to PlayerCubes
                 if (c.teamId == PlayerID) PlayerCubes.Add(c);
+                // sort the Cubes
+                Cubes.Sort(Comparer);
             }
+            
         }
 
         /// <summary>
