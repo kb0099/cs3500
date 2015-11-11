@@ -32,7 +32,14 @@ namespace Model
         /// The unique ID.
         /// </summary>
         [JsonProperty]
-        public int uid;
+        public int uId;
+
+        /// <summary>
+        /// The team ID. When a player splits, the team ID is shared among the cubes. The player's original cube will
+        /// have the unique ID equal the team ID.
+        /// </summary>
+        [JsonProperty(PropertyName = "team_id")]
+        public int teamId;
 
         /// <summary>
         /// A condition to define the cube as food.
@@ -60,7 +67,7 @@ namespace Model
         /// <summary>
         /// The x coordinate location of the center.
         /// </summary>
-        public double CenterX { get { return X + Size/2; } }
+        public double CenterX { get { return X + Size / 2; } }
 
         /// <summary>
         /// The y coordinate location of the center.
@@ -74,19 +81,40 @@ namespace Model
         /// <param name="loc_y">The y location.</param>
         /// <param name="argb_color">An integer that can be fed into Color.FromArgb(int).</param>
         /// <param name="uid">A unique ID.</param>
+        /// <param name="team_id">A team ID.</param>
         /// <param name="food">A boolean to state if the cube is food.</param>
         /// <param name="Name">The name given to the cube.</param>
         /// <param name="Mass">The size of the cube.</param>
         [JsonConstructorAttribute]
-        public Cube(double loc_x, double loc_y, int argb_color, int uid, bool food, string Name, double Mass)
+        public Cube(double loc_x, double loc_y, int argb_color, int uid, int team_id, bool food, string Name, double Mass)
         {
             this.X = loc_x;
             this.Y = loc_y;
             this.argb_color = argb_color;
-            this.uid = uid;
+            this.uId = uid;
+            this.teamId = team_id;
             this.food = food;
             this.Name = Name;
             this.Mass = Mass;
+        }
+
+        /// <summary>
+        /// An Equals method for checking cube equality.
+        /// Cubes are equal if the unique ID's are equal.
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            return this.uId == ((Cube)obj).uId;
+        }
+
+        /// <summary>
+        /// A GetHashCode method to allow cubes to efficiently be used in a HashSet.
+        /// The hash code is the unique ID.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return uId;
         }
     }
 }

@@ -27,17 +27,12 @@ namespace Model
         /// <summary>
         /// Collection of cubes in the world.
         /// </summary>
-        private List<Cube> Cubes;
+        private SortedSet<Cube> Cubes;
 
         /// <summary>
         /// The player's cube, which updates as new cube collecitons are set.
         /// </summary>
-        private Cube Player;
-
-        /// <summary>
-        /// The comparer used to sort the collection of cubes.
-        /// </summary>
-        private IComparer<Cube> Comparer;
+        private HashSet<Cube> PlayerCubes;
 
         /// <summary>
         /// Constructor of a World object.
@@ -50,22 +45,27 @@ namespace Model
             this.Width = w;
             this.Height = h;
             this.PlayerID = id;
-            this.Cubes = new List<Cube>();
-            this.Comparer = new CubeMassComparer();
+            this.Cubes = new SortedSet<Cube>(new CubeMassComparer()); // the set will sort the smaller cubes above the larger cubes
+            this.PlayerCubes = new HashSet<Cube>();
         }
 
         /// <summary>
-        /// A method to set the cubes of the world.
-        /// The old collection of cubes will be replaced with the input.
+        /// A method to add a cube to the world. If the cube is already in the world, it's information is updated.
+        /// If the cube has 0 mass, it is removed from the world.
         /// </summary>
-        public void SetCubes(IEnumerable<Cube> cubes)
+        public void AddCube(Cube c)
         {
-            // create a new list containing the cubes
-            this.Cubes = new List<Cube>(cubes);
-            // sort the list based on the cube sizes
-            this.Cubes.Sort(Comparer);
-            // search Cubes to get the player's cube
-            Player = this.Cubes.Find(c => { return c.uid == PlayerID; });
+            // remove cubes with the same unique ID in Cubes and PlayerCubes; this helps to remove old cube data to swap with new cube data
+            Predicate<Cube> remover = (cb) => cb.uId == c.uId;
+            Cubes.RemoveWhere(remover);
+            PlayerCubes.RemoveWhere(remover);
+            // if the cube is alive (i.e. not mass 0), add it to Cubes and (if possible) PlayerCubes
+            if (c.Mass != 0)
+            {
+                Cubes.Add(c);
+                // if it is a player cube (player ID equals team ID), add it to PlayerCubes
+                if (c.teamId == PlayerID) PlayerCubes.Add(c);
+            }
         }
 
         /// <summary>
@@ -78,12 +78,11 @@ namespace Model
         }
 
         /// <summary>
-        /// A method to return the player's cube. The player is identified by the ID given to the world upon
-        /// construction.
+        /// A method to return cubes belonging to the player.
         /// </summary>
-        public Cube GetPlayerCube()
+        public IEnumerable<Cube> GetPlayerCubes()
         {
-            return Player;
+            return PlayerCubes;
         }
 
         /// <summary>
