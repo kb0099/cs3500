@@ -95,6 +95,10 @@
       <Project>{470f1873-8018-43be-ba9e-6a9f16188473}</Project>
       <Name>Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Network_Controller\Network_Controller.csproj">
+      <Project>{05422628-e258-43a5-b78f-cbe6d4ffaff0}</Project>
+      <Name>Network_Controller</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

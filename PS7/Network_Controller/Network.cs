@@ -97,6 +97,8 @@ namespace AgCubio
                 if (count <= 0)
                     return;
                 state.receivedData.Append(Encoding.UTF8.GetString(state.buffer, 0, count));
+
+                // invoke the current call back function
                 state.callback(state);
             }
             catch (Exception e)

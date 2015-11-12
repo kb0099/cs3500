@@ -21,7 +21,7 @@ namespace AgCubio
         public Action<PreservedState> callback;
 
         // Size of receive buffer.
-        public const int BUFFER_SIZE = 2;
+        public const int BUFFER_SIZE = 1024;
 
         // Receive buffer.
         public byte[] buffer = new byte[BUFFER_SIZE];

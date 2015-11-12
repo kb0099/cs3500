@@ -1,4 +1,4 @@
-﻿namespace View
+﻿namespace AgCubio
 {
     partial class LoginForm
     {
