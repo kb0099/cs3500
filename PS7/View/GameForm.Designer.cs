@@ -89,6 +89,7 @@
             this.serverTextBox.Name = "serverTextBox";
             this.serverTextBox.Size = new System.Drawing.Size(259, 44);
             this.serverTextBox.TabIndex = 1;
+            this.serverTextBox.Text = "localhost";
             // 
             // nameTextBox
             // 
@@ -97,6 +98,7 @@
             this.nameTextBox.Name = "nameTextBox";
             this.nameTextBox.Size = new System.Drawing.Size(259, 44);
             this.nameTextBox.TabIndex = 0;
+            this.nameTextBox.Text = "Jim";
             // 
             // GamePanel
             // 
@@ -123,6 +125,8 @@
             this.ConnectionPanel.ResumeLayout(false);
             this.ConnectionPanel.PerformLayout();
             this.ResumeLayout(false);
+
+            this.DoubleBuffered = true;
 
         }
 

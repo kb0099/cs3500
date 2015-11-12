@@ -43,7 +43,7 @@ namespace AgCubio
                 socket = pso.clientSocket;
                 // first get the player cube
                 // 1. send name
-                Network.Send(socket, nameTextBox.Name);
+                Network.Send(socket, nameTextBox.Text);
 
                 // 2. receive data
                 // 2.a. Indicate the first time call back funciton to handle player
@@ -83,6 +83,9 @@ namespace AgCubio
         /// <param name="ps">The preserved state object</param>
         private void ProcessReceivedData(PreservedState ps)
         {
+
+            //MessageBox.Show("receiving!");
+
             StringBuilder receivedData = ps.receivedData;
             // need to make the world thread safe
             lock (this.world)
@@ -98,9 +101,23 @@ namespace AgCubio
                     while (i < jsonCubes.Length)
                     {
                         // try to onverting to cube object
-                        Cube cube = JsonConvert.DeserializeObject<Cube>(jsonCubes[i]);
+                        string line = jsonCubes[i];
+
+                        // check it is not of the form: ${.*}^
+                        if( !(line.StartsWith("{") && line.EndsWith("}")))
+                        {
+                            // if this broken line is not the last line:
+                            if (i != jsonCubes.Length - 1)
+                            {
+                                success++; // there is no way to recover what was server saying, so, discard it as a success
+                                i++;
+                                continue;
+                            }
+                        }
                         
+                        Cube cube = JsonConvert.DeserializeObject<Cube>(jsonCubes[i]);                        
                         success++;
+
                         if (cube.food)
                         {
                             // food is eaten remove it.
@@ -126,29 +143,23 @@ namespace AgCubio
                     }
 
                 }
-                catch {
-                    // being here means we have now uncomplete cube object
-                    // check if the json string was not the last string (server may have have bugs)
-                    // if there is something in middle of other valid lines
-                    //if (success < jsonCubes.Length-1)   // indicates if end of loop was not reached
-                        //success += 1;           // ignore that part as a success                                                                    
+                catch {                         
                 }
+
+                // debug purpose
+                System.IO.File.WriteAllText("testfile.txt", 
+                    "# of converted cubes = " + success + "\n" + receivedData.ToString());
                 receivedData.Clear();
-                if(success > 0)        base.Invalidate();
-                // if all the json strings were not converted to cubes
-                // need to put back the unparsed json string
+                if (success > 0)        this.Invoke( (Action)(() => { }) );   
+                
+                // need to put back the last unparsed json string
                 if (success < jsonCubes.Length)
                     receivedData.Append(jsonCubes[success - 1]);
             }
             if (this.dead)
-            {
-                base.Invoke(new MethodInvoker(delegate
-                {
-                    MessageBox.Show("your cube died!");
-                }));
-                return;
-            }
+                base.Invoke((Action)(() => { MessageBox.Show("your cube died!"); }));
 
+            // Ready to receive more data!
             Network.WantMoreData(ps);
         }
 
@@ -216,102 +227,108 @@ namespace AgCubio
         /// <param name="e"></param>
         private void GamePanel_Paint(object sender, PaintEventArgs e)
         {
-            lock (this.world)
-            {
-                // calculate rough dimensions for player cubes
-                IEnumerable<Cube> pc = world.playerCubes.Values;
-                double pX = world.Width; // the farthest left edge of the player cubes
-                double pY = world.Height; // the farthest top edge of the player cubes
-                double farthestRight = 0, farthestBottom = 0; // helpers to find farthest right and bottom edges
-                double size; // helper to save a cube's size
-                foreach (Cube c in pc)
-                {
-                    // find minimum X
-                    if (c.X < pX) pX = c.X;
-                    // find minimum Y
-                    if (c.Y < pY) pY = c.Y;
-                    size = c.Size;
-                    // find maximum farthestRight (X+Size)
-                    if (c.X + size > farthestRight) farthestRight = c.X + size;
-                    // find maximum farthestBottom (Y+Size)
-                    if (c.Y + size > farthestBottom) farthestBottom = c.Y + size;
-                }
-                double pSizeX = farthestRight - pX;
-                double pSizeY = farthestBottom - pY;
-                double pMaxSize = Math.Max(pSizeX, pSizeY); // the largest size the cubes take up (e.g. Max(farthestRight-farthestLeft,farthestBottom-farthestTop))
-
-                // find values used for later calculations
-                double percentPanel = 0.2; // the percentage the player's cube size should be in comparison to the panel size
-                double panelMinSize = (GamePanel.Width > GamePanel.Height) ? GamePanel.Height : GamePanel.Width; // the minimum dimension size of the game panel
-
-                // calculate the parameters that affect the scale and location of rendering (so player cubes are in center and magnified to a scale)
-                double multiplier = (panelMinSize * percentPanel) / pMaxSize; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
-                double offsetX = (pX + pSizeX / 2) * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
-                double offsetY = (pY + pSizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
-
-                // loop through world's cubes, render each
-                SolidBrush brush = new SolidBrush(Color.White);
-                SolidBrush black = new SolidBrush(Color.Black);
-                int cSize;
-                int x;
-                int y;
-                foreach (Cube c in world.foodCubes.Values)
-                {
-                    // set brush color as given by cube
-                    brush.Color = Color.FromArgb(c.argb_color);
-                    // calculate size and location based on cube data in relation to multiplier and offsets
-                    cSize = (int)Math.Ceiling(c.Size * multiplier); // this will be the height and width of the square in rendering
-                    x = (int)Math.Ceiling(c.X * multiplier - offsetX); // this will be the x location in relation to the GamePanel's left edge
-                    y = (int)Math.Ceiling(c.Y * multiplier - offsetY); // this will be the y location in relation to the GamePanel's top edge
-                                                                       // render cube
-                    e.Graphics.FillRectangle(brush, new Rectangle(x, y, cSize, cSize));
-                    // if the cube is not food, render name
-                    if (!c.food)
-                    {
-                        // TODO how to use Graphics.DrawString() to center text?
-                        e.Graphics.DrawString(c.Name, GamePanel.Font, black, new PointF(x, y));
-                    }
-                }
-            }
-
-
-
-
-
-
-
-
             //lock (this.world)
             //{
-
-            //    foreach (Cube current in this.world.foods.Values)
+            //    // calculate rough dimensions for player cubes
+            //    IEnumerable<Cube> pc = world.playerCubes.Values;
+            //    double pX = world.Width; // the farthest left edge of the player cubes
+            //    double pY = world.Height; // the farthest top edge of the player cubes
+            //    double farthestRight = 0, farthestBottom = 0; // helpers to find farthest right and bottom edges
+            //    double size; // helper to save a cube's size
+            //    foreach (Cube c in pc)
             //    {
-            //        int num2 = Math.Max(current.Width, 5);
-            //        SolidBrush brush = new SolidBrush(Color.FromArgb(current.argb_color));
-            //        e.Graphics.FillRectangle(brush, (float)current.X, (float)current.Y, (float)num2, (float)num2);
+            //        // find minimum X
+            //        if (c.X < pX) pX = c.X;
+            //        // find minimum Y
+            //        if (c.Y < pY) pY = c.Y;
+            //        size = c.Size;
+            //        // find maximum farthestRight (X+Size)
+            //        if (c.X + size > farthestRight) farthestRight = c.X + size;
+            //        // find maximum farthestBottom (Y+Size)
+            //        if (c.Y + size > farthestBottom) farthestBottom = c.Y + size;
             //    }
-            //    foreach (Cube current2 in this.world.playerCubes.Values)
-            //    {
-            //        Font font = new Font("Arial", 16f);
-            //        int num3 = current2.Width / 2;
-            //        SolidBrush brush = new SolidBrush(Color.FromArgb(current2.argb_color));
-            //        e.Graphics.FillRectangle(brush, (float)current2.X - (float)num3, (float)current2.Y - (float)num3, (float)current2.Width, (float)current2.Width);
-            //        brush = new SolidBrush(Color.Yellow);
-            //        SizeF sizeF = e.Graphics.MeasureString(current2.Name, font);
-            //        e.Graphics.DrawString(current2.Name, font, brush, (float)current2.X - sizeF.Width / 2f, (float)current2.Y - sizeF.Height / 2f);
+            //    double pSizeX = farthestRight - pX;
+            //    double pSizeY = farthestBottom - pY;
+            //    double pMaxSize = Math.Max(pSizeX, pSizeY); // the largest size the cubes take up (e.g. Max(farthestRight-farthestLeft,farthestBottom-farthestTop))
 
+            //    // find values used for later calculations
+            //    double percentPanel = 0.2; // the percentage the player's cube size should be in comparison to the panel size
+            //    double panelMinSize = (GamePanel.Width > GamePanel.Height) ? GamePanel.Height : GamePanel.Width; // the minimum dimension size of the game panel
+
+            //    // calculate the parameters that affect the scale and location of rendering (so player cubes are in center and magnified to a scale)
+            //    double multiplier = (panelMinSize * percentPanel) / pMaxSize; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
+            //    double offsetX = (pX + pSizeX / 2) * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
+            //    double offsetY = (pY + pSizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
+
+            //    // loop through world's cubes, render each
+            //    SolidBrush brush = new SolidBrush(Color.White);
+            //    SolidBrush black = new SolidBrush(Color.Black);
+            //    int cSize;
+            //    int x;
+            //    int y;
+            //    foreach (Cube c in world.foodCubes.Values)
+            //    {
+            //        // set brush color as given by cube
+            //        brush.Color = Color.FromArgb(c.argb_color);
+            //        // calculate size and location based on cube data in relation to multiplier and offsets
+            //        cSize = (int)Math.Ceiling(c.Size * multiplier); // this will be the height and width of the square in rendering
+            //        x = (int)Math.Ceiling(c.X * multiplier - offsetX); // this will be the x location in relation to the GamePanel's left edge
+            //        y = (int)Math.Ceiling(c.Y * multiplier - offsetY); // this will be the y location in relation to the GamePanel's top edge
+            //                                                           // render cube
+            //        e.Graphics.FillRectangle(brush, new Rectangle(x, y, cSize, cSize));
+            //        // if the cube is not food, render name
+            //        if (!c.food)
+            //        {
+            //            // TODO how to use Graphics.DrawString() to center text?
+            //            e.Graphics.DrawString(c.Name, GamePanel.Font, black, new PointF(x, y));
+            //        }
             //    }
             //}
 
-            base.Invalidate();
-            base.Refresh();
-            base.Update();
+            this.Update();
+
+            // send move request
+            move();
+
+
+
+            lock (this.world)
+            {
+
+                foreach (Cube current in this.world.foodCubes.Values)
+                {
+                    int num2 = Math.Max(current.Width, 5);
+                    SolidBrush brush = new SolidBrush(Color.FromArgb(current.argb_color));
+                    e.Graphics.FillRectangle(brush, (float)current.X, (float)current.Y, (float)num2, (float)num2);
+                }
+                foreach (Cube current2 in this.world.playerCubes.Values)
+                {
+                    Font font = new Font("Arial", 16f);
+                    int num3 = current2.Width / 2;
+                    SolidBrush brush = new SolidBrush(Color.FromArgb(current2.argb_color));
+                    e.Graphics.FillRectangle(brush, (float)current2.X - (float)num3, (float)current2.Y - (float)num3, (float)current2.Width, (float)current2.Width);
+                    brush = new SolidBrush(Color.Yellow);
+                    SizeF sizeF = e.Graphics.MeasureString(current2.Name, font);
+                    e.Graphics.DrawString(current2.Name, font, brush, (float)current2.X - sizeF.Width / 2f, (float)current2.Y - sizeF.Height / 2f);
+
+                }
+            }
+            this.Update();
         }
 
         private void GamePanel_Resize(object sender, EventArgs e)
         {
             // TODO temp way to test panel refresh in relation to resize
-            GamePanel.Refresh();
+            this.Invalidate();
+        }
+
+
+        private void move()
+        {
+            Cube cube;
+            if (!this.world.playerCubes.TryGetValue(this.playerId, out cube))
+                return;
+            Network.Send(this.socket, new Tuple<string, int, int>("move", this.PointToClient(Control.MousePosition).X, this.PointToClient(Control.MousePosition).Y).ToString() + "\n");
         }
     }
 }
