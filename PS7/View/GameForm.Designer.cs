@@ -110,8 +110,8 @@
             this.GamePanel.Size = new System.Drawing.Size(1240, 657);
             this.GamePanel.TabIndex = 1;
             this.GamePanel.Visible = false;
-            this.GamePanel.Paint += new System.Windows.Forms.PaintEventHandler(this.GamePanel_Paint);
-            this.GamePanel.Resize += new System.EventHandler(this.GamePanel_Resize);
+            this.GamePanel.Paint += this.GamePanel_Paint;
+            this.GamePanel.Resize += GamePanel_Resize;
             // 
             // GameForm
             // 

@@ -16,13 +16,12 @@ namespace AgCubio
         // field declarations
         private World world;
         private System.Net.Sockets.Socket socket;
-        private long playerId;
+        private long playerId;      // todo: need to change to team
         private bool dead;
 
         public GameForm()
         {
             world = new World(800, 600);
-
             InitializeComponent();
         }
 
@@ -47,31 +46,37 @@ namespace AgCubio
 
                 // 2. receive data
                 // 2.a. Indicate the first time call back funciton to handle player
-                pso.callback = (ps) =>
-                {
-                    var playerStr = ps.receivedData.ToString().Substring(0, ps.receivedData.Length - 1);  // grabe the { ... } part except the new line
-                    var cube = JsonConvert.DeserializeObject<Cube>(playerStr);
-                    world.playerCubes[cube.uId] = cube;
-                    playerId = cube.uId;
-
-                    // remove the cube data
-                    ps.receivedData.Clear();
-
-                    // after the first player message, server is going to send cubes separated by a new line
-                    ps.callback = ProcessReceivedData;
-                    MessageBox.Show("Success in cubing the player!" + JsonConvert.SerializeObject(cube));
-
-                    // make the second call to receive data explicitly
-                    // ProcessReceivedData will be called now after data is received.
-                    Network.WantMoreData(ps);
-                };
+                pso.callback = HandleFirstMessageFromServer;
                 // 2.b. First time call to receive data (server will send the player which is handled by above callback)
+
                 Network.WantMoreData(pso);
             }
             , serverTextBox.Text);
 
 
             //TempWorldSetup();
+        }
+
+
+        private void HandleFirstMessageFromServer(PreservedState ps)
+        {
+            // grabe the { ... } part except the new line
+            var playerStr = ps.receivedData.ToString().Substring(0, ps.receivedData.Length - 1); 
+                var cube = JsonConvert.DeserializeObject<Cube>(playerStr);
+                world.playerCubes[cube.uId] = cube;
+                playerId = cube.uId;
+                this.Invalidate();
+    
+                // remove the cube data from the state
+                ps.receivedData.Clear();
+
+                // after the first player message, server is going to send cubes separated by a new line
+                ps.callback = ProcessReceivedData;
+                //MessageBox.Show("Success in cubing the player!" + JsonConvert.SerializeObject(cube));
+
+                // make the second call to receive data explicitly
+                // ProcessReceivedData will be called now after data is received.
+                Network.WantMoreData(ps);
         }
 
         /// <summary>
@@ -83,7 +88,7 @@ namespace AgCubio
         /// <param name="ps">The preserved state object</param>
         private void ProcessReceivedData(PreservedState ps)
         {
-
+            System.IO.File.AppendAllText("last.txt", ps.receivedData.ToString());
             //MessageBox.Show("receiving!");
 
             StringBuilder receivedData = ps.receivedData;
@@ -147,10 +152,12 @@ namespace AgCubio
                 }
 
                 // debug purpose
-                System.IO.File.WriteAllText("testfile.txt", 
-                    "# of converted cubes = " + success + "\n" + receivedData.ToString());
+                //System.IO.File.WriteAllText("testfile.txt",                     "# of converted cubes = " + success + "\n" + receivedData.ToString());
                 receivedData.Clear();
-                if (success > 0)        this.Invoke( (Action)(() => { }) );   
+
+                if (success > 0)        this.Invoke( (Action)(() => {
+                    this.Invalidate();
+                }) );   
                 
                 // need to put back the last unparsed json string
                 if (success < jsonCubes.Length)
@@ -227,69 +234,68 @@ namespace AgCubio
         /// <param name="e"></param>
         private void GamePanel_Paint(object sender, PaintEventArgs e)
         {
-            //lock (this.world)
-            //{
-            //    // calculate rough dimensions for player cubes
-            //    IEnumerable<Cube> pc = world.playerCubes.Values;
-            //    double pX = world.Width; // the farthest left edge of the player cubes
-            //    double pY = world.Height; // the farthest top edge of the player cubes
-            //    double farthestRight = 0, farthestBottom = 0; // helpers to find farthest right and bottom edges
-            //    double size; // helper to save a cube's size
-            //    foreach (Cube c in pc)
+            //MessageBox.Show(this.world.foodCubes.Count + "");
+
+            //    lock (this.world)
             //    {
-            //        // find minimum X
-            //        if (c.X < pX) pX = c.X;
-            //        // find minimum Y
-            //        if (c.Y < pY) pY = c.Y;
-            //        size = c.Size;
-            //        // find maximum farthestRight (X+Size)
-            //        if (c.X + size > farthestRight) farthestRight = c.X + size;
-            //        // find maximum farthestBottom (Y+Size)
-            //        if (c.Y + size > farthestBottom) farthestBottom = c.Y + size;
-            //    }
-            //    double pSizeX = farthestRight - pX;
-            //    double pSizeY = farthestBottom - pY;
-            //    double pMaxSize = Math.Max(pSizeX, pSizeY); // the largest size the cubes take up (e.g. Max(farthestRight-farthestLeft,farthestBottom-farthestTop))
-
-            //    // find values used for later calculations
-            //    double percentPanel = 0.2; // the percentage the player's cube size should be in comparison to the panel size
-            //    double panelMinSize = (GamePanel.Width > GamePanel.Height) ? GamePanel.Height : GamePanel.Width; // the minimum dimension size of the game panel
-
-            //    // calculate the parameters that affect the scale and location of rendering (so player cubes are in center and magnified to a scale)
-            //    double multiplier = (panelMinSize * percentPanel) / pMaxSize; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
-            //    double offsetX = (pX + pSizeX / 2) * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
-            //    double offsetY = (pY + pSizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
-
-            //    // loop through world's cubes, render each
-            //    SolidBrush brush = new SolidBrush(Color.White);
-            //    SolidBrush black = new SolidBrush(Color.Black);
-            //    int cSize;
-            //    int x;
-            //    int y;
-            //    foreach (Cube c in world.foodCubes.Values)
-            //    {
-            //        // set brush color as given by cube
-            //        brush.Color = Color.FromArgb(c.argb_color);
-            //        // calculate size and location based on cube data in relation to multiplier and offsets
-            //        cSize = (int)Math.Ceiling(c.Size * multiplier); // this will be the height and width of the square in rendering
-            //        x = (int)Math.Ceiling(c.X * multiplier - offsetX); // this will be the x location in relation to the GamePanel's left edge
-            //        y = (int)Math.Ceiling(c.Y * multiplier - offsetY); // this will be the y location in relation to the GamePanel's top edge
-            //                                                           // render cube
-            //        e.Graphics.FillRectangle(brush, new Rectangle(x, y, cSize, cSize));
-            //        // if the cube is not food, render name
-            //        if (!c.food)
+            //        // calculate rough dimensions for player cubes
+            //        IEnumerable<Cube> pc = world.playerCubes.Values;
+            //        double pX = world.Width; // the farthest left edge of the player cubes
+            //        double pY = world.Height; // the farthest top edge of the player cubes
+            //        double farthestRight = 0, farthestBottom = 0; // helpers to find farthest right and bottom edges
+            //        double size; // helper to save a cube's size
+            //        foreach (Cube c in pc)
             //        {
-            //            // TODO how to use Graphics.DrawString() to center text?
-            //            e.Graphics.DrawString(c.Name, GamePanel.Font, black, new PointF(x, y));
+            //            // find minimum X
+            //            if (c.X < pX) pX = c.X;
+            //            // find minimum Y
+            //            if (c.Y < pY) pY = c.Y;
+            //            size = c.Size;
+            //            // find maximum farthestRight (X+Size)
+            //            if (c.X + size > farthestRight) farthestRight = c.X + size;
+            //            // find maximum farthestBottom (Y+Size)
+            //            if (c.Y + size > farthestBottom) farthestBottom = c.Y + size;
+            //        }
+            //        double pSizeX = farthestRight - pX;
+            //        double pSizeY = farthestBottom - pY;
+            //        double pMaxSize = Math.Max(pSizeX, pSizeY); // the largest size the cubes take up (e.g. Max(farthestRight-farthestLeft,farthestBottom-farthestTop))
+
+            //        // find values used for later calculations
+            //        double percentPanel = 0.2; // the percentage the player's cube size should be in comparison to the panel size
+            //        double panelMinSize = (GamePanel.Width > GamePanel.Height) ? GamePanel.Height : GamePanel.Width; // the minimum dimension size of the game panel
+
+            //        // calculate the parameters that affect the scale and location of rendering (so player cubes are in center and magnified to a scale)
+            //        double multiplier = (panelMinSize * percentPanel) / pMaxSize; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
+            //        double offsetX = (pX + pSizeX / 2) * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
+            //        double offsetY = (pY + pSizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
+
+            //        // loop through world's cubes, render each
+            //        SolidBrush brush = new SolidBrush(Color.White);
+            //        SolidBrush black = new SolidBrush(Color.Black);
+            //        int cSize;
+            //        int x;
+            //        int y;
+            //        foreach (Cube c in world.foodCubes.Values)
+            //        {
+            //            // set brush color as given by cube
+            //            brush.Color = Color.FromArgb(c.argb_color);
+            //            // calculate size and location based on cube data in relation to multiplier and offsets
+            //            cSize = (int)Math.Ceiling(c.Size * multiplier); // this will be the height and width of the square in rendering
+            //            x = (int)Math.Ceiling(c.X * multiplier - offsetX); // this will be the x location in relation to the GamePanel's left edge
+            //            y = (int)Math.Ceiling(c.Y * multiplier - offsetY); // this will be the y location in relation to the GamePanel's top edge
+            //                                                               // render cube
+            //            e.Graphics.FillRectangle(brush, new Rectangle(x, y, cSize, cSize));
+            //            // if the cube is not food, render name
+            //            if (!c.food)
+            //            {
+            //                // TODO how to use Graphics.DrawString() to center text?
+            //                e.Graphics.DrawString(c.Name, GamePanel.Font, black, new PointF(x, y));
+            //            }
             //        }
             //    }
-            //}
 
-            this.Update();
-
-            // send move request
-            move();
-
+            //    // send move request
+            //   move();
 
 
             lock (this.world)
@@ -313,14 +319,17 @@ namespace AgCubio
 
                 }
             }
-            this.Update();
+            //this.Update();
+
+            this.Invalidate();
         }
 
         private void GamePanel_Resize(object sender, EventArgs e)
         {
             // TODO temp way to test panel refresh in relation to resize
-            this.Invalidate();
-        }
+            // this.Invalidate();
+            GamePanel.Invalidate();
+         }
 
 
         private void move()
@@ -328,7 +337,7 @@ namespace AgCubio
             Cube cube;
             if (!this.world.playerCubes.TryGetValue(this.playerId, out cube))
                 return;
-            Network.Send(this.socket, new Tuple<string, int, int>("move", this.PointToClient(Control.MousePosition).X, this.PointToClient(Control.MousePosition).Y).ToString() + "\n");
+            Network.Send(this.socket, "move," + this.PointToClient(Control.MousePosition).X + ", " + this.PointToClient(Control.MousePosition).Y + "\n");
         }
     }
 }
