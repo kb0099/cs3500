@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Model;
 
-namespace TestWindow
+namespace AgCubio
 {
     class Program
     {
@@ -14,10 +14,79 @@ namespace TestWindow
         {
             // TODO TestCube() is broken due to bad references to Json.NET
             // TestCube();
-            TestWorld();
+            //TestWorld();
 
-            Console.Read();
+            LinkedList<PreservedState> list = new LinkedList<PreservedState>();
+            string s = null;
+            while (true)
+            {
+                s = Console.ReadLine();
+                if (s == "exit") break;
+                switch (s)
+                {
+                    case "add":
+                        NetworkTest(list);
+                        break;
+                    case "sendName":
+                        Console.Write("\tName: ");
+                        list.Last.Value.clientSocket.Send(Encoding.UTF8.GetBytes(Console.ReadLine() + "\n"));
+                        break;
+                    case "close":
+                        list?.Last?.Value?.clientSocket?.Close();
+                        break;
+                    case "send":
+                        Console.Write("\tCommand: ");
+                        Network.Send(list.Last.Value.clientSocket, Console.ReadLine());
+                        break;
+                    case "receive":
+                        Network.WantMoreData(list.Last.Value);
+                        break;
+                    case "m":
+                        for(int i = 0; i < 500; i++)
+                        {
+
+                            Network.Send(list.Last.Value.clientSocket, "(move, 0, 0)\n");
+                        }
+                        break;
+                    case "repeat":
+                        Console.Write("Command to repeat 500 times: ");
+                        s = Console.ReadLine();
+                        for(int i = 0; i < 500; i++)
+                        {
+                            Network.Send(list.Last.Value.clientSocket, s + "\n");
+                        }
+                        break;
+                    case "u":
+                        Network.Send(list.Last.Value.clientSocket, "(move, 0, 2000)\n");
+                        break;
+                    case "d":
+                        Network.Send(list.Last.Value.clientSocket, "(move, 0, -2000)\n");
+                        break;
+                    case "l":
+                        Network.Send(list.Last.Value.clientSocket, "(move, -2000, 0)\n");
+                        break;
+                    case "4":
+                        Network.Send(list.Last.Value.clientSocket, "(move, +2000, 0)\n");
+                        break;
+                }
+                //System.Threading.Thread.Sleep(1000);
+                Console.Write("\nSwitch: ");
+            }
         }
+
+        static void NetworkTest(LinkedList<PreservedState> list)
+        {
+            Network.ConnectToServer((s) => {
+                Console.WriteLine("========Received Data==========");
+                Console.WriteLine(s.receivedData);
+                if(s.errorMsg != null)
+                    Console.WriteLine("Error: " + s.errorMsg);
+                list.AddLast(s);
+            }, "127.0.0.1");
+
+            Console.WriteLine("tried to connetc... ");
+        }
+
 
         /// <summary>
         /// Code to test the behavior of the Cube object.

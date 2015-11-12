@@ -25,7 +25,7 @@ namespace AgCubio
         /// connection is made</param>
         /// <param name="hostname">the name of the server to connect to</param>
         /// <returns></returns>
-        static Socket ConnectToServer(Action<PreservedState> callback, string hostname, int port = DEFAULT_PORT)
+        public static Socket ConnectToServer(Action<PreservedState> callback, string hostname, int port = DEFAULT_PORT)
         {
             try
             {
@@ -35,7 +35,7 @@ namespace AgCubio
                 IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
 
                 // Create a TCP/IP socket.
-                Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Socket clientSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 // Connect to the remote endpoint.
                 clientSocket.BeginConnect(remoteEP, new AsyncCallback(ConnectedToServer), new PreservedState() { clientSocket = clientSocket, callback = callback });
@@ -60,7 +60,7 @@ namespace AgCubio
         /// arrive (and provide the ReceiveCallback function for this purpose)
         /// </summary>
         /// <param name="ar"></param>
-        static void ConnectedToServer(IAsyncResult ar)
+        private static void ConnectedToServer(IAsyncResult ar)
         {
             // Retrieve the PreservedState object
             PreservedState stateObj = (PreservedState)ar.AsyncState;
@@ -69,7 +69,7 @@ namespace AgCubio
                 // Complete the connection.
                 stateObj.clientSocket.EndConnect(ar);
                 stateObj.callback(stateObj);
-                WantMoreData(stateObj);
+                //WantMoreData(stateObj);
             }
             catch (Exception ex)
             {
@@ -88,7 +88,7 @@ namespace AgCubio
         /// It is up to the code in the callback function above to request more data.
         /// </summary>
         /// <param name="ar"></param>
-        static void ReceiveCallback(IAsyncResult ar)
+        private static void ReceiveCallback(IAsyncResult ar)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace AgCubio
                 int count = state.clientSocket.EndReceive(ar);
                 if (count <= 0)
                     return;
-                state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, count));
+                state.receivedData.Append(Encoding.UTF8.GetString(state.buffer, 0, count));
                 state.callback(state);
             }
             catch (Exception e)
@@ -111,9 +111,9 @@ namespace AgCubio
         /// Note: the client will probably want more data every time it gets data.
         /// </summary>
         /// <param name="state"></param>
-        static void WantMoreData(PreservedState state)
+        public static void WantMoreData(PreservedState state)
         {
-            state.clientSocket.BeginReceive(state.buffer, 0, 1024, SocketFlags.None, new AsyncCallback(ReceiveCallback), (object)state);
+            state.clientSocket.BeginReceive(state.buffer, 0, PreservedState.BUFFER_SIZE, SocketFlags.None, new AsyncCallback(ReceiveCallback), (object)state);
         }
 
 
@@ -124,10 +124,10 @@ namespace AgCubio
         /// </summary>
         /// <param name="socket"></param>
         /// <param name="data"></param>
-        static void Send(Socket socket, String data)
+        public static void Send(Socket socket, String data)
         {
-            // Convert the string data to byte data using ASCII encoding.
-            byte[] byteData = Encoding.ASCII.GetBytes(data);
+            // Convert the string data to byte data using UTF8 encoding.
+            byte[] byteData = Encoding.UTF8.GetBytes(data);
             try
             {
                 // Begin sending the data to the remote device.
@@ -148,6 +148,7 @@ namespace AgCubio
         /// </summary>
         static void SendCallBack(IAsyncResult ar)
         {
+            // TODO: might need to arrange if more data
             try
             {
                 ((Socket)ar.AsyncState).EndSend(ar);

@@ -12,7 +12,7 @@ namespace AgCubio
     /// <summary>
     /// Represents a state object for receiving data from server.
     /// </summary>
-    class PreservedState
+    public class PreservedState
     {
         // Represents client socket.
         public Socket clientSocket = null;
@@ -21,13 +21,13 @@ namespace AgCubio
         public Action<PreservedState> callback;
 
         // Size of receive buffer.
-        public const int BUFFER_SIZE = 1024;
+        public const int BUFFER_SIZE = 2;
 
         // Receive buffer.
         public byte[] buffer = new byte[BUFFER_SIZE];
 
         // Received data string.
-        public StringBuilder sb = new StringBuilder();
+        public StringBuilder receivedData = new StringBuilder();
 
         // Represents error message in case of error
         public string errorMsg = null;
