@@ -18,6 +18,7 @@ namespace AgCubio
         private System.Net.Sockets.Socket socket;
         private long playerId;      // todo: need to change to team
         private bool dead;
+        private bool detectMouse;
 
         public GameForm()
         {
@@ -32,7 +33,7 @@ namespace AgCubio
         /// <param name="e"></param>
         private void ConnectButton_Click(object sender, EventArgs e)
         {
-            // TODO a test on being able to change panels displayed; the connect panel can be visible first, then when the connection works it is hidden and the game panel is shown (which will start painting)
+            // change panels displayed; the connect panel can be visible first, then when the connection works it is hidden and the game panel is shown (which will start painting)
             this.ConnectionPanel.Hide();
             this.GamePanel.Show();
 
@@ -57,26 +58,29 @@ namespace AgCubio
             //TempWorldSetup();
         }
 
-
+        /// <summary>
+        /// This method is used to handle the first message back from the server, which will be the player's cube JSON.
+        /// </summary>
+        /// <param name="ps"></param>
         private void HandleFirstMessageFromServer(PreservedState ps)
         {
-            // grabe the { ... } part except the new line
-            var playerStr = ps.receivedData.ToString().Substring(0, ps.receivedData.Length - 1); 
-                var cube = JsonConvert.DeserializeObject<Cube>(playerStr);
-                world.playerCubes[cube.uId] = cube;
-                playerId = cube.uId;
-                this.Invalidate();
-    
-                // remove the cube data from the state
-                ps.receivedData.Clear();
+            // grab the { ... } part except the new line
+            var playerStr = ps.receivedData.ToString().Substring(0, ps.receivedData.Length - 1);
+            var cube = JsonConvert.DeserializeObject<Cube>(playerStr);
+            world.playerCubes[cube.uId] = cube;
+            playerId = cube.uId;
+            this.Invalidate();
 
-                // after the first player message, server is going to send cubes separated by a new line
-                ps.callback = ProcessReceivedData;
-                //MessageBox.Show("Success in cubing the player!" + JsonConvert.SerializeObject(cube));
+            // remove the cube data from the state
+            ps.receivedData.Clear();
 
-                // make the second call to receive data explicitly
-                // ProcessReceivedData will be called now after data is received.
-                Network.WantMoreData(ps);
+            // after the first player message, server is going to send cubes separated by a new line
+            ps.callback = ProcessReceivedData;
+            //MessageBox.Show("Success in cubing the player!" + JsonConvert.SerializeObject(cube));
+
+            // make the second call to receive data explicitly
+            // ProcessReceivedData will be called now after data is received.
+            Network.WantMoreData(ps);
         }
 
         /// <summary>
@@ -109,7 +113,7 @@ namespace AgCubio
                         string line = jsonCubes[i];
 
                         // check it is not of the form: ${.*}^
-                        if( !(line.StartsWith("{") && line.EndsWith("}")))
+                        if (!(line.StartsWith("{") && line.EndsWith("}")))
                         {
                             // if this broken line is not the last line:
                             if (i != jsonCubes.Length - 1)
@@ -119,8 +123,8 @@ namespace AgCubio
                                 continue;
                             }
                         }
-                        
-                        Cube cube = JsonConvert.DeserializeObject<Cube>(jsonCubes[i]);                        
+
+                        Cube cube = JsonConvert.DeserializeObject<Cube>(jsonCubes[i]);
                         success++;
 
                         if (cube.food)
@@ -148,17 +152,19 @@ namespace AgCubio
                     }
 
                 }
-                catch {                         
+                catch
+                {
                 }
 
                 // debug purpose
                 //System.IO.File.WriteAllText("testfile.txt",                     "# of converted cubes = " + success + "\n" + receivedData.ToString());
                 receivedData.Clear();
 
-                if (success > 0)        this.Invoke( (Action)(() => {
-                    this.Invalidate();
-                }) );   
-                
+                if (success > 0) this.Invoke((Action)(() =>
+                {
+                    GamePanel.Invalidate();
+                }));
+
                 // need to put back the last unparsed json string
                 if (success < jsonCubes.Length)
                     receivedData.Append(jsonCubes[success - 1]);
@@ -324,20 +330,65 @@ namespace AgCubio
             this.Invalidate();
         }
 
+        /// <summary>
+        /// This method is run when the GamePanel changes size
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GamePanel_Resize(object sender, EventArgs e)
         {
             // TODO temp way to test panel refresh in relation to resize
             // this.Invalidate();
             GamePanel.Invalidate();
-         }
+        }
 
-
+        /// <summary>
+        /// This method is called to tell the server to move the player
+        /// </summary>
         private void move()
         {
             Cube cube;
             if (!this.world.playerCubes.TryGetValue(this.playerId, out cube))
                 return;
-            Network.Send(this.socket, "move," + this.PointToClient(Control.MousePosition).X + ", " + this.PointToClient(Control.MousePosition).Y + "\n");
+            // TODO need to figure out more accurate information on how to move in coordinates of the world, may need values from rendering
+            Network.Send(this.socket, "move," + GamePanel.PointToClient(Control.MousePosition).X + ", " + GamePanel.PointToClient(Control.MousePosition).Y + "\n");
+        }
+
+        /// <summary>
+        /// The method run when the mouse moves. This should handle moving the player.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GamePanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            // if the mouse should be detected, continue
+            if (detectMouse)
+            {
+                // call move
+                move();
+            }
+        }
+
+        /// <summary>
+        /// The method run when the mouse enters the range of the GamePanel.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GamePanel_MouseEnter(object sender, EventArgs e)
+        {
+            // set detectMouse to start allowing the player to move
+            detectMouse = true;
+        }
+
+        /// <summary>
+        /// The method run when the mouse leaves the range of the GamePanel.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GamePanel_MouseLeave(object sender, EventArgs e)
+        {
+            // set detectMouse to stop allowing the player to move
+            detectMouse = false;
         }
     }
 }

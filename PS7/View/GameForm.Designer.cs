@@ -110,8 +110,11 @@
             this.GamePanel.Size = new System.Drawing.Size(1240, 657);
             this.GamePanel.TabIndex = 1;
             this.GamePanel.Visible = false;
-            this.GamePanel.Paint += this.GamePanel_Paint;
-            this.GamePanel.Resize += GamePanel_Resize;
+            this.GamePanel.Paint += new System.Windows.Forms.PaintEventHandler(this.GamePanel_Paint);
+            this.GamePanel.MouseEnter += new System.EventHandler(this.GamePanel_MouseEnter);
+            this.GamePanel.MouseLeave += new System.EventHandler(this.GamePanel_MouseLeave);
+            this.GamePanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GamePanel_MouseMove);
+            this.GamePanel.Resize += new System.EventHandler(this.GamePanel_Resize);
             // 
             // GameForm
             // 
@@ -120,13 +123,12 @@
             this.ClientSize = new System.Drawing.Size(1264, 681);
             this.Controls.Add(this.ConnectionPanel);
             this.Controls.Add(this.GamePanel);
+            this.DoubleBuffered = true;
             this.Name = "GameForm";
             this.Text = "AgCubio";
             this.ConnectionPanel.ResumeLayout(false);
             this.ConnectionPanel.PerformLayout();
             this.ResumeLayout(false);
-
-            this.DoubleBuffered = true;
 
         }
 

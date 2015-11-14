@@ -137,7 +137,7 @@ namespace AgCubio
             }
             catch
             {
-                socket.Shutdown(SocketShutdown.Both);
+                socket.Shutdown(SocketShutdown.Both); // TODO exception being thrown
                 socket.Close();
             }
         }
