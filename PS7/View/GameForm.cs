@@ -40,6 +40,12 @@ namespace AgCubio
             // Create and connect to socket
             Network.ConnectToServer((pso) =>
             {
+                // check the connection
+                if (pso.errorMsg != null)
+                {
+                    MessageBox.Show("Cannot connect to the server at: " + serverTextBox.Text + "\nPlease, make sure your server is reachable.");
+                    return;
+                }
                 socket = pso.clientSocket;
                 // first get the player cube
                 // 1. send name

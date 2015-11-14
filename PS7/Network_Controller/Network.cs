@@ -45,7 +45,7 @@ namespace AgCubio
             catch (Exception e)
             {
                 callback(new PreservedState() { errorMsg = e.Message });
-                Console.WriteLine(e.ToString());
+                //Console.WriteLine(e.ToString());
                 return null;
             }
         }
@@ -137,7 +137,8 @@ namespace AgCubio
             }
             catch
             {
-                socket.Shutdown(SocketShutdown.Both); // TODO exception being thrown
+                if (socket.Connected)
+                    socket.Shutdown(SocketShutdown.Both);
                 socket.Close();
             }
         }
