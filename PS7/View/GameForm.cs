@@ -150,6 +150,8 @@ namespace AgCubio
                                 i++;
                                 continue;
                             }
+                            else
+                                break;
                         }
 
                         Cube cube = JsonConvert.DeserializeObject<Cube>(jsonCubes[i]);
