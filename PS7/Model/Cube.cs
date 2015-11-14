@@ -59,8 +59,6 @@ namespace AgCubio
         [JsonProperty]
         public double Mass;
 
-        public int Width { get { return (int)Math.Sqrt(Mass); } private set { } }
-
         /// <summary>
         /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.
         /// </summary>
