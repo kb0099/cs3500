@@ -160,17 +160,15 @@ namespace AgCubio
                 //System.IO.File.WriteAllText("testfile.txt",                     "# of converted cubes = " + success + "\n" + receivedData.ToString());
                 receivedData.Clear();
 
-                if (success > 0) this.Invoke((Action)(() =>
-                {
+                if (success > 0)
                     GamePanel.Invalidate();
-                }));
 
                 // need to put back the last unparsed json string
                 if (success < jsonCubes.Length)
                     receivedData.Append(jsonCubes[success - 1]);
             }
             if (this.dead)
-                base.Invoke((Action)(() => { MessageBox.Show("your cube died!"); }));
+                MessageBox.Show("TODO: Player Died! Restart the Game.");
 
             // Ready to receive more data!
             Network.WantMoreData(ps);
@@ -326,7 +324,7 @@ namespace AgCubio
                 }
             }
             //this.Update();
-
+            move();
             this.Invalidate();
         }
 
