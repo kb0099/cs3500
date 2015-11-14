@@ -100,11 +100,8 @@ namespace AgCubio
 
             // make the second call to receive data explicitly
             // ProcessReceivedData will be called now after data is received.
-            //Network.WantMoreData(ps);
-
-
-            //Task.Factory.StartNew(() => GetData());    
-            System.Threading.Timer t = new System.Threading.Timer(GetData, null, 0, 50);
+            Network.WantMoreData(ps);
+            
         }
 
         /// <summary>
@@ -192,7 +189,7 @@ namespace AgCubio
                 ps.receivedData.Clear();
 
                 if (success > 0)
-                    this.Invalidate();
+                    GamePanel.Invalidate();
 
                 // need to put back the last unparsed json string
                 if ( (success < jsonCubes.Length) && (jsonCubes.Length > 1) )
@@ -205,21 +202,13 @@ namespace AgCubio
                 return;
             }
 
-            // this.Invoke( (Action)(() => { move(); }));
 
             // Ready to receive more data!
-            // Network.WantMoreData(ps);
+            Network.WantMoreData(ps);
+
+            // FOR_DEBUG
+            // this.Invoke( (Action)(() => { move(); }));
             // System.Threading.Timer t = new System.Threading.Timer(GetData, null, 0, 400);
-        }
-
-
-        private void GetData(Object s)
-        {
-                lock (this.world)
-                {
-                //if (this.dead) need to stop                        
-                    Network.WantMoreData(_ps);
-                }
         }
 
         /// <summary>
@@ -289,18 +278,17 @@ namespace AgCubio
             //        }
             //    }
 
-
-
-            //    // send move request
-            //Network.WantMoreData(_ps);
+            
             //move();
+            ++this.frameCount;
+
             this.Update();
 
-            ++this.frameCount;
             TimeSpan elapsed = this.frameWatch.Elapsed;
             if (elapsed.Seconds > 0)
             {
-                this.fpsLabel.Text = String.Empty + (this.frameCount / elapsed.Seconds);
+                int fps = (this.frameCount / elapsed.Seconds);
+                this.fpsLabel.Text = String.Empty + fps;
                 this.fpsLabel.Refresh();
             }
             // reset frameCount/watch around every 10 seconds
@@ -329,10 +317,6 @@ namespace AgCubio
                     e.Graphics.DrawString(current2.Name, font, brush, (float)current2.X - sizeF.Width / 2f, (float)current2.Y - sizeF.Height / 2f);
                 }
             }
-            GamePanel.Invalidate();
-            //this.Update();
-            // move();
-            // if (_ps != null && !this.dead)                Network.WantMoreData(_ps);
         }
 
         /// <summary>
