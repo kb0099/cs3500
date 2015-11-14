@@ -52,6 +52,7 @@
             this.GamePanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
+            this.detectMouse = true;
             // 
             // ConnectionPanel
             // 

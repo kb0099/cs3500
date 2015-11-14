@@ -90,20 +90,22 @@ namespace AgCubio
         /// <param name="ar"></param>
         private static void ReceiveCallback(IAsyncResult ar)
         {
+            PreservedState state = (PreservedState)ar.AsyncState;
             try
             {
-                PreservedState state = (PreservedState)ar.AsyncState;
                 int count = state.clientSocket.EndReceive(ar);
                 if (count <= 0)
                     return;
-                state.receivedData.Append(Encoding.UTF8.GetString(state.buffer, 0, count));
+                string data = Encoding.UTF8.GetString(state.buffer, 0, count);
+                state.receivedData.Append(data);
 
                 // invoke the current call back function
                 state.callback(state);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                state.errorMsg = e.ToString();   
+                //Console.WriteLine(e.ToString());
             }
         }
 
@@ -137,9 +139,11 @@ namespace AgCubio
             }
             catch
             {
-                if (socket.Connected)
+                if (socket != null)
+                {
                     socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
+                    socket.Close();
+                }
             }
         }
 
