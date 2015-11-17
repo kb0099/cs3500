@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace AgCubio
 {
@@ -27,6 +28,8 @@ namespace AgCubio
         public GameForm()
         {
             InitializeComponent();
+            // a possible way to have GamePanel double buffer
+            typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null, GamePanel, new object[] { true });
         }
 
         /// <summary>
@@ -218,6 +221,11 @@ namespace AgCubio
         }
 
         /// <summary>
+        /// the percentage the player's cube size should be in comparison to the panel's smallest dimension.
+        /// </summary>
+        private static double percentPanel = 0.3;
+
+        /// <summary>
         /// The paint method run to paint the game content.
         /// </summary>
         /// <param name="sender"></param>
@@ -235,8 +243,7 @@ namespace AgCubio
                 double pMaxSize = Math.Max(pSizeX, pSizeY); // the largest size the cubes take up (e.g. Max(farthestRight-farthestLeft,farthestBottom-farthestTop))
 
                 // find values used for later calculations
-                double percentPanel = 0.3; // the percentage the player's cube size should be in comparison to the panel size
-                double panelMinSize = (GamePanel.Width > GamePanel.Height) ? GamePanel.Height : GamePanel.Width; // the minimum dimension size of the game panel
+                double panelMinSize = Math.Min(GamePanel.Width, GamePanel.Height); // the minimum dimension size of the game panel
 
                 // calculate the parameters that affect the scale and location of rendering (so player cubes are in center and magnified to a scale)
                 double multiplier = (panelMinSize * percentPanel) / pMaxSize; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
@@ -331,7 +338,7 @@ namespace AgCubio
             // TODO temp way to test panel refresh in relation to resize
             // this.Invalidate();
             GamePanel.Invalidate();
-            this.Update();
+            //this.Update();
         }
 
         /// <summary>
@@ -348,18 +355,19 @@ namespace AgCubio
             }
             // TODO need to figure out more accurate information on how to move in coordinates of the world, may need values from rendering
             Point point = GamePanel.PointToClient(Control.MousePosition);
-            double delta = Math.Min(GamePanel.Width, GamePanel.Height) * 0.05; // this is used to create a dead zone if the cursor is in the center
+            double delta = Math.Min(GamePanel.Width, GamePanel.Height) * 0.05; // this is used to create a dead zone if the cursor is near the center
             if ((point.X > GamePanel.Width / 2 - delta && point.X < GamePanel.Width / 2 + delta) && (point.Y > GamePanel.Height / 2 - delta && point.Y < GamePanel.Height / 2 + delta)) return; // the cursor was in the dead zone
+            double offset = 5; // a way to offset the movement from the cube's current coordinates
             double moveX;
-            if (point.X < GamePanel.Width / 2) moveX = x - (GamePanel.Width / 2 - point.X);
-            else if (point.X > GamePanel.Width / 2) moveX = x + (point.X - GamePanel.Width / 2);
+            if (point.X < GamePanel.Width / 2) moveX = x - offset;
+            else if (point.X > GamePanel.Width / 2) moveX = x + offset;
             else moveX = x;
             double moveY;
-            if (point.Y < GamePanel.Height / 2) moveY = y - (GamePanel.Height / 2 - point.Y);
-            else if (point.Y > GamePanel.Height / 2) moveY = y + (point.Y - GamePanel.Height / 2);
+            if (point.Y < GamePanel.Height / 2) moveY = x - offset;
+            else if (point.Y > GamePanel.Height / 2) moveY = x + offset;
             else moveY = y;
-            string msg = "move, " + moveX + ", " + moveY + "\n";
-            //Network.Send(this.socket, msg);
+            string msg = "(move, " + (int)moveX + ", " + (int)moveY + ")\n";
+            Network.Send(this.socket, msg);
             // FOR_DEBUG
             serverNameLabel.Text = msg;
         }
