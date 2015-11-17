@@ -116,5 +116,14 @@ namespace AgCubio
         {
             return uId;
         }
+
+        /// <summary>
+        /// A ToString method to more easily read debug data.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return "Food: " + food + ", Name: " + Name + ", ID: " + uId + ", Team: " + teamId;
+        }
     }
 }

@@ -134,6 +134,7 @@ namespace AgCubio
             byte[] byteData = Encoding.UTF8.GetBytes(data);
             try
             {
+                Console.WriteLine("sent");
                 // Begin sending the data to the remote device.
                 socket.BeginSend(byteData, 0, byteData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), socket);
             }

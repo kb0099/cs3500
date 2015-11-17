@@ -84,9 +84,7 @@ namespace AgCubio
                 // add cube to Cubes
                 Cubes.Add(c);
                 // if it is a player cube (player ID equals team ID), add it to PlayerCubes
-                if (c.teamId == PlayerID) PlayerCubes.Add(c);
-                // sort the Cubes
-                Cubes.Sort(Comparer);
+                if (c.teamId == PlayerID || c.uId == PlayerID) PlayerCubes.Add(c);
             }
 
         }
@@ -97,7 +95,19 @@ namespace AgCubio
         /// </summary>
         public IEnumerable<Cube> GetCubes()
         {
+            // sort the Cubes
+            Cubes.Sort(Comparer);
+            // return the cubes
             return Cubes;
+        }
+
+        /// <summary>
+        /// A method to get the number of cubes in the world.
+        /// </summary>
+        /// <returns></returns>
+        public int NumberCubes()
+        {
+            return Cubes.Count;
         }
 
         /// <summary>
@@ -106,6 +116,15 @@ namespace AgCubio
         public IEnumerable<Cube> GetPlayerCubes()
         {
             return PlayerCubes;
+        }
+
+        /// <summary>
+        /// A method to get the number of player-owned cubes in the world.
+        /// </summary>
+        /// <returns></returns>
+        public int NumberPlayerCubes()
+        {
+            return PlayerCubes.Count;
         }
 
         /// <summary>
@@ -131,6 +150,16 @@ namespace AgCubio
             }
             sizeX = farthestRight - x;
             sizeY = farthestBottom - y;
+        }
+
+        /// <summary>
+        /// A method to check if a cube is a recognizable player-owned cube.
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        public bool IsPlayerCube(Cube c)
+        {
+            return PlayerCubes.Contains(c);
         }
 
         /// <summary>
