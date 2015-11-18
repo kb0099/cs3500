@@ -161,27 +161,6 @@ namespace AgCubio
 
                         Cube cube = JsonConvert.DeserializeObject<Cube>(jsonCubes[i]);
                         success++;
-                        //if (cube.food)
-                        //{
-                        //    // food is eaten remove it.
-                        //    if (cube.Mass == 0.0)
-                        //        this.world.foodCubes.Remove(cube.uId);
-                        //    else
-                        //        this.world.foodCubes[cube.uId] = cube;
-                        //}
-                        //else if (cube.Mass == 0.0)
-                        //{
-                        //    // if some player cube dies remove it.
-                        //    this.world.playerCubes.Remove(cube.uId);
-                        //    // indicate the death if the current player cube died!
-                        //    if (cube.uId == this.playerId)
-                        //        this.dead = true;
-                        //}
-                        //else
-                        //{
-                        //    // if it is not food, it must be a player cube!
-                        //    this.world.playerCubes[cube.uId] = cube;
-                        //}
                         world.AddCube(cube);
                         i++;
                     }
