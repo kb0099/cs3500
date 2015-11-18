@@ -13,6 +13,9 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            brush.Dispose();
+            fontBrush.Dispose();
+
             if (disposing && (components != null))
             {
                 components.Dispose();
@@ -38,20 +41,17 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.serverNameLabel = new System.Windows.Forms.Label();
             this.foodsLabel = new System.Windows.Forms.Label();
-            this.timeSpentLabel = new System.Windows.Forms.Label();
             this.playersLabel = new System.Windows.Forms.Label();
             this.massLabel = new System.Windows.Forms.Label();
             this.fpsLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.ConnectionPanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
-            this.KeyPreview = true;
             // 
             // ConnectionPanel
             // 
@@ -137,13 +137,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.serverNameLabel);
             this.groupBox1.Controls.Add(this.foodsLabel);
-            this.groupBox1.Controls.Add(this.timeSpentLabel);
             this.groupBox1.Controls.Add(this.playersLabel);
             this.groupBox1.Controls.Add(this.massLabel);
             this.groupBox1.Controls.Add(this.fpsLabel);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.label2);
@@ -157,7 +155,7 @@
             // serverNameLabel
             // 
             this.serverNameLabel.AutoSize = true;
-            this.serverNameLabel.Location = new System.Drawing.Point(81, 164);
+            this.serverNameLabel.Location = new System.Drawing.Point(81, 139);
             this.serverNameLabel.Name = "serverNameLabel";
             this.serverNameLabel.Size = new System.Drawing.Size(49, 13);
             this.serverNameLabel.TabIndex = 4;
@@ -166,25 +164,16 @@
             // foodsLabel
             // 
             this.foodsLabel.AutoSize = true;
-            this.foodsLabel.Location = new System.Drawing.Point(81, 115);
+            this.foodsLabel.Location = new System.Drawing.Point(81, 91);
             this.foodsLabel.Name = "foodsLabel";
             this.foodsLabel.Size = new System.Drawing.Size(13, 13);
             this.foodsLabel.TabIndex = 4;
             this.foodsLabel.Text = "0";
             // 
-            // timeSpentLabel
-            // 
-            this.timeSpentLabel.AutoSize = true;
-            this.timeSpentLabel.Location = new System.Drawing.Point(81, 140);
-            this.timeSpentLabel.Name = "timeSpentLabel";
-            this.timeSpentLabel.Size = new System.Drawing.Size(13, 13);
-            this.timeSpentLabel.TabIndex = 4;
-            this.timeSpentLabel.Text = "0";
-            // 
             // playersLabel
             // 
             this.playersLabel.AutoSize = true;
-            this.playersLabel.Location = new System.Drawing.Point(81, 91);
+            this.playersLabel.Location = new System.Drawing.Point(81, 114);
             this.playersLabel.Name = "playersLabel";
             this.playersLabel.Size = new System.Drawing.Size(13, 13);
             this.playersLabel.TabIndex = 4;
@@ -226,19 +215,10 @@
             this.label4.TabIndex = 3;
             this.label4.Text = "Mass";
             // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(16, 140);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(58, 13);
-            this.label10.TabIndex = 2;
-            this.label10.Text = "TimeSpent";
-            // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(16, 164);
+            this.label9.Location = new System.Drawing.Point(16, 139);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(38, 13);
             this.label9.TabIndex = 1;
@@ -247,7 +227,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 91);
+            this.label3.Location = new System.Drawing.Point(16, 114);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(41, 13);
             this.label3.TabIndex = 2;
@@ -256,7 +236,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 115);
+            this.label2.Location = new System.Drawing.Point(16, 91);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(36, 13);
             this.label2.TabIndex = 1;
@@ -271,6 +251,7 @@
             this.Controls.Add(this.ConnectionPanel);
             this.Controls.Add(this.GamePanel);
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Name = "GameForm";
             this.Text = "AgCubio";
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.GameForm_KeyPress);
@@ -301,8 +282,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label serverNameLabel;
-        private System.Windows.Forms.Label timeSpentLabel;
-        private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label9;
     }
 }
