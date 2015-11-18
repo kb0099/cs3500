@@ -253,7 +253,7 @@ namespace AgCubio
         private static void PrintWorldCubes(World w)
         {
             Console.WriteLine("World Cubes {");
-            foreach (Cube c in w.foodCubes.Values)
+            foreach (Cube c in w.GetCubes())
             {
                 Console.Write("\t");
                 PrintCubeData(c);
@@ -269,7 +269,7 @@ namespace AgCubio
         private static void PrintPlayerCubes(World w)
         {
             Console.WriteLine("Player cubes {");
-            foreach (Cube c in w.foodCubes.Values)
+            foreach (Cube c in w.GetCubes()) 
             {
                 Console.Write("\t");
                 PrintCubeData(c);

@@ -127,9 +127,6 @@ namespace AgCubio
                 this.Invoke((Action)(() => { MessageBox.Show("Unexpected error while receiveing from server" + ps.errorMsg); }));
                 ps.errorMsg = null;
             }
-            // TODO DEBUG
-            //System.IO.File.AppendAllText("last.txt", ps.receivedData.ToString());
-            //MessageBox.Show("receiving!");
 
             StringBuilder receivedData = ps.receivedData;
             if (receivedData.Length < 1)
@@ -176,8 +173,6 @@ namespace AgCubio
                 }
 
                 this.dead = world.PlayerDeath();
-                // TODO debug purpose
-                //System.IO.File.WriteAllText("testfile.txt",                     "# of converted cubes = " + success + "\n" + receivedData.ToString());
                 ps.receivedData.Clear();
 
                 if (success > 0) GamePanel.Invalidate();
@@ -208,10 +203,6 @@ namespace AgCubio
 
             // Ready to receive more data!
             Network.WantMoreData(ps);
-
-            // TODO FOR_DEBUG
-            // this.Invoke( (Action)(() => { move(); }));
-            // System.Threading.Timer t = new System.Threading.Timer(GetData, null, 0, 400);
         }
 
         /// <summary>
