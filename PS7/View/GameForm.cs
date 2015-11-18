@@ -23,7 +23,6 @@ namespace AgCubio
         private PreservedState _ps;
         private System.Diagnostics.Stopwatch frameWatch = new System.Diagnostics.Stopwatch();
         private int frameCount;
-        private System.Threading.Timer timer;
 
         public GameForm()
         {
