@@ -308,26 +308,6 @@ namespace AgCubio
                 this.frameWatch.Restart();
                 this.frameCount = 0;
             }
-
-            //lock (this.world)
-            //{
-            //    foreach (Cube current in this.world.foodCubes.Values)
-            //    {
-            //        int num2 = Math.Max(current.Width, 5);
-            //        SolidBrush brush = new SolidBrush(Color.FromArgb(current.argb_color));
-            //        e.Graphics.FillRectangle(brush, (float)current.X, (float)current.Y, (float)num2, (float)num2);
-            //    }
-            //    foreach (Cube current2 in this.world.playerCubes.Values)
-            //    {
-            //        Font font = new Font("Arial", 16f);
-            //        int num3 = current2.Width / 2;
-            //        SolidBrush brush = new SolidBrush(Color.FromArgb(current2.argb_color));
-            //        e.Graphics.FillRectangle(brush, (float)current2.X - (float)num3, (float)current2.Y - (float)num3, (float)current2.Width, (float)current2.Width);
-            //        brush = new SolidBrush(Color.Yellow);
-            //        SizeF sizeF = e.Graphics.MeasureString(current2.Name, font);
-            //        e.Graphics.DrawString(current2.Name, font, brush, (float)current2.X - sizeF.Width / 2f, (float)current2.Y - sizeF.Height / 2f);
-            //    }
-            //}
         }
 
         /// <summary>
