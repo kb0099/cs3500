@@ -119,6 +119,7 @@
             this.GamePanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.GamePanel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.GamePanel.Location = new System.Drawing.Point(12, 12);
             this.GamePanel.Name = "GamePanel";
             this.GamePanel.Size = new System.Drawing.Size(1073, 657);
@@ -127,7 +128,6 @@
             this.GamePanel.Paint += new System.Windows.Forms.PaintEventHandler(this.GamePanel_Paint);
             this.GamePanel.MouseEnter += new System.EventHandler(this.GamePanel_MouseEnter);
             this.GamePanel.MouseLeave += new System.EventHandler(this.GamePanel_MouseLeave);
-            this.GamePanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GamePanel_MouseMove);
             this.GamePanel.Resize += new System.EventHandler(this.GamePanel_Resize);
             // 
             // groupBox1

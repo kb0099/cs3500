@@ -17,7 +17,7 @@ namespace AgCubio
         // field declarations
         private World world;
         private System.Net.Sockets.Socket socket;
-        private long playerId;      // todo: need to change to team
+        private long playerId;
         private bool dead;
         private bool detectMouse;
         private PreservedState _ps;
@@ -28,7 +28,7 @@ namespace AgCubio
         public GameForm()
         {
             InitializeComponent();
-            // a possible way to have GamePanel double buffer
+            // a way to have GamePanel double buffer (DoubleBuffered is a private method of Panel)
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null, GamePanel, new object[] { true });
         }
 
@@ -123,6 +123,7 @@ namespace AgCubio
                 this.Invoke((Action)(() => { MessageBox.Show("Unexpected error while receiveing from server" + ps.errorMsg); }));
                 ps.errorMsg = null;
             }
+            // TODO DEBUG
             //System.IO.File.AppendAllText("last.txt", ps.receivedData.ToString());
             //MessageBox.Show("receiving!");
 
@@ -161,7 +162,6 @@ namespace AgCubio
 
                         Cube cube = JsonConvert.DeserializeObject<Cube>(jsonCubes[i]);
                         success++;
-
                         //if (cube.food)
                         //{
                         //    // food is eaten remove it.
@@ -193,7 +193,7 @@ namespace AgCubio
                 }
 
                 this.dead = world.PlayerDeath();
-                // debug purpose
+                // TODO debug purpose
                 //System.IO.File.WriteAllText("testfile.txt",                     "# of converted cubes = " + success + "\n" + receivedData.ToString());
                 ps.receivedData.Clear();
 
@@ -205,17 +205,17 @@ namespace AgCubio
             }
             if (this.dead)
             {
+                // TODO Mitch: an approach would be to have the message box ask the user to restart or end game; if clicked yes, hide GamePanel and show ConnectionPanel (which can start the connection process again); otherwise, close the program
                 MessageBox.Show("Player Died! Restart the Game.");
-                this.dead = false;
+                // TODO GamePanel doesn't paint if this is true, setting false causes wierd rendering when the window resizes after player death; it doesn't seem to be helpful to set dead to false here
+                //this.dead = false;
                 return;
             }
-
-            //this.Invoke((Action)(() => { this.Update(); }));
 
             // Ready to receive more data!
             Network.WantMoreData(ps);
 
-            // FOR_DEBUG
+            // TODO FOR_DEBUG
             // this.Invoke( (Action)(() => { move(); }));
             // System.Threading.Timer t = new System.Threading.Timer(GetData, null, 0, 400);
         }
@@ -223,7 +223,7 @@ namespace AgCubio
         /// <summary>
         /// the percentage the player's cube size should be in comparison to the panel's smallest dimension.
         /// </summary>
-        private static double percentPanel = 0.3;
+        private static double percentPanel = 0.1;
 
         /// <summary>
         /// The paint method run to paint the game content.
@@ -238,8 +238,8 @@ namespace AgCubio
             lock (this.world)
             {
                 // calculate rough dimensions for player cubes
-                double pX, pY, pSizeX, pSizeY;
-                world.GetPlayerCubesParameters(out pX, out pY, out pSizeX, out pSizeY);
+                double pLeft, pTop, pSizeX, pSizeY;
+                world.GetPlayerCubesParameters(out pLeft, out pTop, out pSizeX, out pSizeY);
                 double pMaxSize = Math.Max(pSizeX, pSizeY); // the largest size the cubes take up (e.g. Max(farthestRight-farthestLeft,farthestBottom-farthestTop))
 
                 // find values used for later calculations
@@ -247,15 +247,15 @@ namespace AgCubio
 
                 // calculate the parameters that affect the scale and location of rendering (so player cubes are in center and magnified to a scale)
                 double multiplier = (panelMinSize * percentPanel) / pMaxSize; // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
-                double offsetX = (pX + pSizeX / 2) * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
-                double offsetY = (pY + pSizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
+                double offsetX = (pLeft + pSizeX / 2) * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
+                double offsetY = (pTop + pSizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
 
                 // loop through world's cubes, render each
                 SolidBrush brush = new SolidBrush(Color.White);
-                SolidBrush black = new SolidBrush(Color.Black);
+                SolidBrush fontBrush = new SolidBrush(Color.Black);
                 int cSize;
-                int x;
-                int y;
+                int left;
+                int top;
                 int numberPlayers = 0;
                 foreach (Cube c in world.GetCubes())
                 {
@@ -263,15 +263,19 @@ namespace AgCubio
                     brush.Color = Color.FromArgb(c.argb_color);
                     // calculate size and location based on cube data in relation to multiplier and offsets
                     cSize = (int)Math.Ceiling(c.Size * multiplier); // this will be the height and width of the square in rendering
-                    x = (int)Math.Ceiling(c.X * multiplier - offsetX); // this will be the x location in relation to the GamePanel's left edge
-                    y = (int)Math.Ceiling(c.Y * multiplier - offsetY); // this will be the y location in relation to the GamePanel's top edge
+                    left = (int)Math.Ceiling(c.LeftEdge * multiplier - offsetX); // this will be the left location in relation to the GamePanel's left edge
+                    top = (int)Math.Ceiling(c.TopEdge * multiplier - offsetY); // this will be the top location in relation to the GamePanel's top edge
                     // render cube
-                    e.Graphics.FillRectangle(brush, new Rectangle(x, y, cSize, cSize));
+                    e.Graphics.FillRectangle(brush, new Rectangle(left, top, cSize, cSize));
                     // if the cube is not food, render name
                     if (!c.food)
                     {
-                        // TODO how to use Graphics.DrawString() to center text?
-                        e.Graphics.DrawString(c.Name, GamePanel.Font, black, new PointF(x, y));
+                        // Set brush color to be contrasted enough to cube color to be readable
+                        if (brush.Color.GetBrightness() > 0.6) fontBrush.Color = Color.Black;
+                        else fontBrush.Color = Color.LightGray;
+                        // draw the text
+                        // TODO how to use Graphics.DrawString() to center text? are we fine if the text isn't centered?
+                        e.Graphics.DrawString(c.Name, GamePanel.Font, fontBrush, new PointF(left, top));
                         numberPlayers++;
                     }
                 }
@@ -288,10 +292,8 @@ namespace AgCubio
             }
 
 
-            //move();
+            if (detectMouse) move();
             ++this.frameCount;
-
-            //this.Update();
 
             TimeSpan elapsed = this.frameWatch.Elapsed;
             if (elapsed.Seconds > 0)
@@ -335,10 +337,8 @@ namespace AgCubio
         /// <param name="e"></param>
         private void GamePanel_Resize(object sender, EventArgs e)
         {
-            // TODO temp way to test panel refresh in relation to resize
-            // this.Invalidate();
+            // ensure panel repaints when window resizes
             GamePanel.Invalidate();
-            //this.Update();
         }
 
         /// <summary>
@@ -347,44 +347,22 @@ namespace AgCubio
         private void move()
         {
             if (this.world == null) return;
-            double x, y, sizeX, sizeY;
+            double left, top, sizeX, sizeY;
             lock (this.world)
             {
                 if (world == null || world.PlayerDeath()) return;
-                world.GetPlayerCubesParameters(out x, out y, out sizeX, out sizeY);
+                world.GetPlayerCubesParameters(out left, out top, out sizeX, out sizeY);
             }
-            // TODO need to figure out more accurate information on how to move in coordinates of the world, may need values from rendering
             Point point = GamePanel.PointToClient(Control.MousePosition);
-            double delta = Math.Min(GamePanel.Width, GamePanel.Height) * 0.05; // this is used to create a dead zone if the cursor is near the center
-            if ((point.X > GamePanel.Width / 2 - delta && point.X < GamePanel.Width / 2 + delta) && (point.Y > GamePanel.Height / 2 - delta && point.Y < GamePanel.Height / 2 + delta)) return; // the cursor was in the dead zone
-            double offset = 5; // a way to offset the movement from the cube's current coordinates
-            double moveX;
-            if (point.X < GamePanel.Width / 2) moveX = x - offset;
-            else if (point.X > GamePanel.Width / 2) moveX = x + offset;
-            else moveX = x;
-            double moveY;
-            if (point.Y < GamePanel.Height / 2) moveY = x - offset;
-            else if (point.Y > GamePanel.Height / 2) moveY = x + offset;
-            else moveY = y;
+            double multiplier = (Math.Min(GamePanel.Width, GamePanel.Height) * percentPanel) / Math.Max(sizeX, sizeY); // how many times the world is magnified; calculate in relation to player size and GamePanel minSize(lesser of width or height) (finalSize = p.Size*multiplier = GamePanel.MinSize*A%; multiplier = (GamePanel.MinSize*A%)/p.Size; A < 100%)
+            double offsetX = (left + sizeX / 2) * multiplier - GamePanel.Width / 2; // how many units to subtract in the x-axis to center the player; calculate in relation to player x location, GamePanel width, and multiplier (OffsetX = p.CenterX*multiplier - GamePanel.Width/2)
+            double offsetY = (top + sizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
+            double moveX = (point.X + offsetX) / multiplier;
+            double moveY = (point.Y + offsetY) / multiplier;
             string msg = "(move, " + (int)moveX + ", " + (int)moveY + ")\n";
             Network.Send(this.socket, msg);
-            // FOR_DEBUG
+            // TODO FOR_DEBUG
             serverNameLabel.Text = msg;
-        }
-
-        /// <summary>
-        /// The method run when the mouse moves. This should handle moving the player.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void GamePanel_MouseMove(object sender, MouseEventArgs e)
-        {
-            // if the mouse should be detected, continue
-            if (detectMouse && !dead)
-            {
-                // call move
-                move();
-            }
         }
 
         /// <summary>

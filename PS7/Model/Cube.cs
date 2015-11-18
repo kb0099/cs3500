@@ -11,13 +11,13 @@ namespace AgCubio
     public class Cube
     {
         /// <summary>
-        /// The x location. It is assumed to be the left edge of the cube.
+        /// The x location. It is assumed to be part of the center.
         /// </summary>
         [JsonProperty(PropertyName = "loc_x")]
         public double X;
 
         /// <summary>
-        /// The y location. It is assumed to be the top edge of the cube.
+        /// The y location. It is assumed to be part of the center.
         /// </summary>
         [JsonProperty(PropertyName = "loc_y")]
         public double Y;
@@ -62,17 +62,25 @@ namespace AgCubio
         /// <summary>
         /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.
         /// </summary>
-        public double Size { get { return Math.Sqrt(Mass); } }
+        public double Size { get { return Math.Pow(Mass,0.65); } } //math.sqrt(mass)
 
         /// <summary>
-        /// The x coordinate location of the center.
+        /// The x coordinate location of the left edge of the cube.
         /// </summary>
-        public double CenterX { get { return X + Size / 2; } }
+        public double LeftEdge { get { return X - Size / 2; } }
 
         /// <summary>
-        /// The y coordinate location of the center.
+        /// The x coordinate location of the right edge of the cube.
         /// </summary>
-        public double CenterY { get { return Y + Size / 2; } }
+        public double RightEdge { get { return X + Size / 2; } }
+
+        /// <summary>
+        /// The y coordinate location of the top edge of the cube.
+        /// </summary>
+        public double TopEdge { get { return Y - Size / 2; } }
+
+
+        public double BottomEdge { get { return Y + Size / 2; } }
 
         /// <summary>
         /// A constructor to fill all parameters of the cube. This is most useful for deserializing a JSON.

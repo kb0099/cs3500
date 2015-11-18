@@ -45,7 +45,6 @@ namespace AgCubio
             catch (Exception e)
             {
                 callback(new PreservedState() { errorMsg = e.Message });
-                //Console.WriteLine(e.ToString());
                 return null;
             }
         }
@@ -75,7 +74,6 @@ namespace AgCubio
             {
                 stateObj.errorMsg = ex.Message;
                 stateObj.callback(stateObj);
-                Console.WriteLine(ex.ToString());
             }
         }
 
@@ -105,7 +103,6 @@ namespace AgCubio
             catch (Exception e)
             {
                 state.errorMsg = e.ToString();   
-                //Console.WriteLine(e.ToString());
             }
         }
 
@@ -134,7 +131,6 @@ namespace AgCubio
             byte[] byteData = Encoding.UTF8.GetBytes(data);
             try
             {
-                Console.WriteLine("sent");
                 // Begin sending the data to the remote device.
                 socket.BeginSend(byteData, 0, byteData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), socket);
             }

@@ -130,26 +130,26 @@ namespace AgCubio
         /// <summary>
         /// Gets the leftmost x coordinate, topmost y coordinate, and maximum size dimension.
         /// </summary>
-        public void GetPlayerCubesParameters(out double x, out double y, out double sizeX, out double sizeY)
+        public void GetPlayerCubesParameters(out double left, out double top, out double sizeX, out double sizeY)
         {
-            x = Width; // the farthest left edge of the player cubes
-            y = Height; // the farthest top edge of the player cubes
+            left = Width; // the farthest left edge of the player cubes
+            top = Height; // the farthest top edge of the player cubes
             double farthestRight = 0, farthestBottom = 0; // helpers to find farthest right and bottom edges
             double size; // helper to save a cube's size
             foreach (Cube c in PlayerCubes)
             {
                 // find minimum X
-                if (c.X < x) x = c.X;
+                if (c.LeftEdge < left) left = c.LeftEdge;
                 // find minimum Y
-                if (c.Y < y) y = c.Y;
+                if (c.TopEdge < top) top = c.TopEdge;
                 size = c.Size;
                 // find maximum farthestRight (X+Size)
-                if (c.X + size > farthestRight) farthestRight = c.X + size;
+                if (c.RightEdge > farthestRight) farthestRight = c.RightEdge;
                 // find maximum farthestBottom (Y+Size)
-                if (c.Y + size > farthestBottom) farthestBottom = c.Y + size;
+                if (c.BottomEdge > farthestBottom) farthestBottom = c.BottomEdge;
             }
-            sizeX = farthestRight - x;
-            sizeY = farthestBottom - y;
+            sizeX = farthestRight - left;
+            sizeY = farthestBottom - top;
         }
 
         /// <summary>
