@@ -38,12 +38,12 @@ namespace AgCubio
         /// <summary>
         /// Collection of cubes in the world.
         /// </summary>
-        private List<Cube> Cubes;
+        private Dictionary<int, Cube> Cubes;
 
         /// <summary>
         /// The player's cubes, which updates when new cubes belong to player's team.
         /// </summary>
-        private List<Cube> PlayerCubes;
+        private Dictionary<int, Cube> PlayerCubes;
 
         /// <summary>
         /// The comparer to sort the collection of cubes.
@@ -62,8 +62,8 @@ namespace AgCubio
             this.Height = h;
             this.PlayerID = id;
             this.Comparer = new CubeMassComparer();
-            this.Cubes = new List<Cube>(50);
-            this.PlayerCubes = new List<Cube>(6);
+            this.Cubes = new Dictionary<int, Cube>(50);
+            this.PlayerCubes = new Dictionary<int, Cube>(6);
         }
 
         /// <summary>
@@ -75,16 +75,15 @@ namespace AgCubio
             // check cube is not null; if it is, don't do anything
             if (c == null) return;
             // remove cubes with the same unique ID in Cubes and PlayerCubes; this helps to remove old cube data to swap with new cube data
-            Predicate<Cube> remover = (cb) => cb.uId == c.uId;
-            Cubes.RemoveAll(remover);
-            PlayerCubes.RemoveAll(remover);
+            Cubes.Remove(c.uId);
+            PlayerCubes.Remove(c.uId);
             // if the cube is alive (i.e. not mass 0), add it to appropriate collections
             if (c.Mass != 0)
             {
                 // add cube to Cubes
-                Cubes.Add(c);
+                Cubes.Add(c.uId, c);
                 // if it is a player cube (player ID equals team ID), add it to PlayerCubes
-                if (c.teamId == PlayerID || c.uId == PlayerID) PlayerCubes.Add(c);
+                if (c.teamId == PlayerID || c.uId == PlayerID) PlayerCubes.Add(c.uId, c);
             }
 
         }
@@ -96,9 +95,10 @@ namespace AgCubio
         public IEnumerable<Cube> GetCubes()
         {
             // sort the Cubes
-            Cubes.Sort(Comparer);
+            List<Cube> cs = new List<Cube>(Cubes.Values);
+            cs.Sort(Comparer);
             // return the cubes
-            return Cubes;
+            return cs;
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace AgCubio
         /// </summary>
         public IEnumerable<Cube> GetPlayerCubes()
         {
-            return PlayerCubes;
+            return PlayerCubes.Values;
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace AgCubio
             top = Height; // the farthest top edge of the player cubes
             double farthestRight = 0, farthestBottom = 0; // helpers to find farthest right and bottom edges
             double size; // helper to save a cube's size
-            foreach (Cube c in PlayerCubes)
+            foreach (Cube c in PlayerCubes.Values)
             {
                 // find minimum X
                 if (c.LeftEdge < left) left = c.LeftEdge;
@@ -150,16 +150,6 @@ namespace AgCubio
             }
             sizeX = farthestRight - left;
             sizeY = farthestBottom - top;
-        }
-
-        /// <summary>
-        /// A method to check if a cube is a recognizable player-owned cube.
-        /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        public bool IsPlayerCube(Cube c)
-        {
-            return PlayerCubes.Contains(c);
         }
 
         /// <summary>
