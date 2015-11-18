@@ -62,6 +62,7 @@ namespace AgCubio
                 {
                     this.ConnectionPanel.Hide();
                     this.GamePanel.Show();
+                    this.serverNameLabel.Text = this.serverTextBox.Text;
                     frameWatch.Start();
                 }));
             _ps = pso;
@@ -183,10 +184,17 @@ namespace AgCubio
             }
             if (this.dead)
             {
-                // TODO Mitch: an approach would be to have the message box ask the user to restart or end game; if clicked yes, hide GamePanel and show ConnectionPanel (which can start the connection process again); otherwise, close the program
-                MessageBox.Show("Player Died! Restart the Game.");
-                // TODO GamePanel doesn't paint if this is true, setting false causes wierd rendering when the window resizes after player death; it doesn't seem to be helpful to set dead to false here
-                //this.dead = false;
+                // an approach would be to have the message box ask the user to restart or end game; 
+                // if clicked yes, hide GamePanel and show ConnectionPanel (which can start the connection process again); otherwise, close the program
+                switch(MessageBox.Show("Your cube Died! Restart the Game?", "Cube Died", MessageBoxButtons.YesNo))
+                {
+                    case DialogResult.Yes:
+                        socket.Close();
+                        _ps = null;
+                        this.dead = false;
+                        Network.ConnectToServer(OnConnectedToServer, serverTextBox.Text);
+                        return;
+                }
                 return;
             }
 
@@ -201,7 +209,7 @@ namespace AgCubio
         /// <summary>
         /// the percentage the player's cube size should be in comparison to the panel's smallest dimension.
         /// </summary>
-        private static double percentPanel = 0.1;
+        private static double percentPanel = .2;
 
         /// <summary>
         /// The paint method run to paint the game content.
