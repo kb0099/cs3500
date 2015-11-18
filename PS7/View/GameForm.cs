@@ -194,8 +194,12 @@ namespace AgCubio
                         this.dead = false;
                         Network.ConnectToServer(OnConnectedToServer, serverTextBox.Text);
                         return;
+                    default:
+                        this.ConnectionPanel.Show();
+                        this.GamePanel.Hide();
+                        frameWatch.Stop();
+                        return;
                 }
-                return;
             }
 
             // Ready to receive more data!
@@ -340,8 +344,6 @@ namespace AgCubio
             double moveY = (point.Y + offsetY) / multiplier;
             string msg = "(move, " + (int)moveX + ", " + (int)moveY + ")\n";
             Network.Send(this.socket, msg);
-            // TODO FOR_DEBUG
-            serverNameLabel.Text = msg;
         }
 
         /// <summary>
