@@ -258,7 +258,7 @@ namespace AgCubio
                         else fontBrush.Color = Color.LightGray;
 
                         // centers the text
-                        Rectangle rect1 = new Rectangle(left, top, cSize, cSize);
+                        Rectangle textRect = new Rectangle(left, top, cSize, cSize);
                         using (Font f = new Font("Arial", 12, FontStyle.Bold, GraphicsUnit.Point))
                         {
 
@@ -267,8 +267,8 @@ namespace AgCubio
                             stringFormat.LineAlignment = StringAlignment.Center;
 
                             // Draw the text and the surrounding rectangle.
-                            e.Graphics.DrawString(c.Name, f, Brushes.Blue, rect1, stringFormat);
-                            e.Graphics.DrawRectangle(Pens.Black, rect1);
+                            e.Graphics.DrawString(c.Name, f, Brushes.Blue, textRect, stringFormat);
+                            e.Graphics.DrawRectangle(Pens.Black, textRect);
                         }
                         numberPlayers++;
                     }
