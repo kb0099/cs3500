@@ -24,6 +24,10 @@ namespace AgCubio
         private System.Diagnostics.Stopwatch frameWatch = new System.Diagnostics.Stopwatch();
         private int frameCount;
 
+        SolidBrush brush = new SolidBrush(Color.White);
+        SolidBrush fontBrush = new SolidBrush(Color.Black);
+
+
         public GameForm()
         {
             InitializeComponent();
@@ -241,8 +245,6 @@ namespace AgCubio
                 double offsetY = (pTop + pSizeY / 2) * multiplier - GamePanel.Height / 2; // how many units to subtract in the y-axis to center the player; calculate in relation to player y location, GamePanel height, and multiplier (OffsetY = p.CenterY*multiplier - GamePanel.Height/2)
 
                 // loop through world's cubes, render each
-                SolidBrush brush = new SolidBrush(Color.White);
-                SolidBrush fontBrush = new SolidBrush(Color.Black);
                 int cSize;
                 int left;
                 int top;
@@ -266,7 +268,7 @@ namespace AgCubio
 
                         // centers the text
                         Rectangle rect1 = new Rectangle(left, top, cSize, cSize);
-                        using (Font font1 = new Font("Arial", 12, FontStyle.Bold, GraphicsUnit.Point))
+                        using (Font f = new Font("Arial", 12, FontStyle.Bold, GraphicsUnit.Point))
                         {
 
                             StringFormat stringFormat = new StringFormat();
@@ -274,7 +276,7 @@ namespace AgCubio
                             stringFormat.LineAlignment = StringAlignment.Center;
 
                             // Draw the text and the surrounding rectangle.
-                            e.Graphics.DrawString(c.Name, font1, Brushes.Blue, rect1, stringFormat);
+                            e.Graphics.DrawString(c.Name, f, Brushes.Blue, rect1, stringFormat);
                             e.Graphics.DrawRectangle(Pens.Black, rect1);
                         }
                         numberPlayers++;
