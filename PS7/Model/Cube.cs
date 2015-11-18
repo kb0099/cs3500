@@ -79,7 +79,9 @@ namespace AgCubio
         /// </summary>
         public double TopEdge { get { return Y - Size / 2; } }
 
-
+        /// <summary>
+        /// The y coordinate location of the bottom edge of the cube.
+        /// </summary>
         public double BottomEdge { get { return Y + Size / 2; } }
 
         /// <summary>
