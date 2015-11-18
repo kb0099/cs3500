@@ -275,13 +275,26 @@ namespace AgCubio
                         else fontBrush.Color = Color.LightGray;
                         // draw the text
                         // TODO how to use Graphics.DrawString() to center text? are we fine if the text isn't centered?
-                        e.Graphics.DrawString(c.Name, GamePanel.Font, fontBrush, new PointF(left, top));
+                        // e.Graphics.DrawString(c.Name, GamePanel.Font, fontBrush, new PointF(left, top));
+                        Rectangle rect1 = new Rectangle(left, top, cSize, cSize);
+
+                        using (Font font1 = new Font("Arial", 12, FontStyle.Bold, GraphicsUnit.Point))
+                        {
+
+                            StringFormat stringFormat = new StringFormat();
+                            stringFormat.Alignment = StringAlignment.Center;
+                            stringFormat.LineAlignment = StringAlignment.Center;
+
+                            // Draw the text and the surrounding rectangle.
+                            e.Graphics.DrawString(c.Name, font1, Brushes.Blue, rect1, stringFormat);
+                            e.Graphics.DrawRectangle(Pens.Black, rect1);
+                        }
                         numberPlayers++;
                     }
+                    playersLabel.Text = numberPlayers.ToString();
                 }
 
                 // display cube info
-                playersLabel.Text = numberPlayers.ToString();
                 foodsLabel.Text = (world.NumberCubes() - numberPlayers).ToString();
                 double playerMass = 0;
                 foreach (Cube c in world.GetPlayerCubes())
