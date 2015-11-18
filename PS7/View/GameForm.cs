@@ -263,11 +263,9 @@ namespace AgCubio
                         // Set brush color to be contrasted enough to cube color to be readable
                         if (brush.Color.GetBrightness() > 0.6) fontBrush.Color = Color.Black;
                         else fontBrush.Color = Color.LightGray;
-                        // draw the text
-                        // TODO how to use Graphics.DrawString() to center text? are we fine if the text isn't centered?
-                        // e.Graphics.DrawString(c.Name, GamePanel.Font, fontBrush, new PointF(left, top));
-                        Rectangle rect1 = new Rectangle(left, top, cSize, cSize);
 
+                        // centers the text
+                        Rectangle rect1 = new Rectangle(left, top, cSize, cSize);
                         using (Font font1 = new Font("Arial", 12, FontStyle.Bold, GraphicsUnit.Point))
                         {
 
