@@ -51,6 +51,7 @@
             this.ConnectionPanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
+            this.KeyPreview = true;
             // 
             // ConnectionPanel
             // 
@@ -272,6 +273,7 @@
             this.DoubleBuffered = true;
             this.Name = "GameForm";
             this.Text = "AgCubio";
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.GameForm_KeyPress);
             this.ConnectionPanel.ResumeLayout(false);
             this.ConnectionPanel.PerformLayout();
             this.groupBox1.ResumeLayout(false);

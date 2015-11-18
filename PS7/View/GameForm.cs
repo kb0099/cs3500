@@ -366,5 +366,13 @@ namespace AgCubio
             // set detectMouse to stop allowing the player to move
             detectMouse = false;
         }
+
+        private void GameForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 32)
+            {
+                Network.Send(socket, "(split, " + this.PointToClient(Control.MousePosition).X + ", " + this.PointToClient(Control.MousePosition).Y + ")\n");
+            }
+        }
     }
 }
