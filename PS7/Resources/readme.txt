@@ -1,0 +1,9 @@
+﻿Mitchell Terry and Kedar Bastakoti 11/17/2015
+Using an extention called Json.NET
+
+The client starts with  controls to take in a player name and server IP. When the 'Connect' button is pressed, the client connets to the server and starts running the game.
+If there is an issue connecting to the player, a dialog pops up to tell the user that a connection could not be made.
+If there is an issue recieving server data, a dialog pops up with the exception stack.
+The client centers the player in a panel that renders the world. The player cube (or cubes) are scaled to occupy a percentage of the screen, which can be shown as the cubes shrinking when the window is smaller and cubes growing as the window is bigger.
+The user can point to a location on the panel to move the cube. When the cursor exits the panel, the cube will stop moving.
+When a player is eaten, a dialog pops up to inform of player death.
