@@ -20,6 +20,61 @@ namespace AgCubio
         public double Height { get; private set; }
 
         /// <summary>
+        /// The rate of updates per second the world should do.
+        /// </summary>
+        public object HeartbeatsPerSecond { get; private set; } // TODO: figure out the type and use case, implement in construction and methods
+
+        /// <summary>
+        /// The rate at which cubes can move at their smallest mass.
+        /// </summary>
+        public double TopSpeed { get; private set; } // TODO: figure out type, implement in code
+
+        /// <summary>
+        /// The rate at which cubes can move at their largest mass.
+        /// </summary>
+        public double LowSpeed { get; private set; } // TODO: figure out type, implement in code
+
+        /// <summary>
+        /// The rate at which cubes lose mass.
+        /// </summary>
+        public double AttritionRate { get; private set; } // TODO: figure out type, implement in code
+
+        /// <summary>
+        /// The default mass of food.
+        /// </summary>
+        public double FoodValue { get; private set; } // TODO: implement in code
+
+        /// <summary>
+        /// The initial mass of players.
+        /// </summary>
+        public double PlayerStartMass { get; private set; } // TODO: implement in code
+
+        /// <summary>
+        /// The maximum amount of food for the world. When world has less food, 1 food should be added per heartbeat.
+        /// </summary>
+        public int MaxFood { get; private set; } // TODO: implement in code
+
+        /// <summary>
+        /// The mass that should not allow splitting when below this value.
+        /// </summary>
+        public double MinimumSplitMass { get; private set; } // TODO: implement in code
+
+        /// <summary>
+        /// The distance a cube can be "thrown" when split.
+        /// </summary>
+        public double MaximumSplitDistance { get; private set; } // TODO: implement in code
+
+        /// <summary>
+        /// The amount of cubes a player can split to at most.
+        /// </summary>
+        public int MaximumSplits { get; private set; } // TODO: implement in code
+
+        /// <summary>
+        /// The distance cubes must be to have the larger eat the smaller.
+        /// </summary>
+        public double AbsorbDistanceDelta { get; private set; } // TODO: implement in code
+
+        /// <summary>
         /// The player's unique ID.
         /// </summary>
         private int PlayerID;
@@ -51,7 +106,7 @@ namespace AgCubio
         private IComparer<Cube> Comparer;
 
         /// <summary>
-        /// Constructor of a World object.
+        /// Client-based constructor of a World object.
         /// </summary>
         /// <param name="w">The width of the world.</param>
         /// <param name="h">The height of the world</param>
