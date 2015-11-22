@@ -162,5 +162,25 @@ namespace AgCubio
                 Console.WriteLine(e.ToString());
             }
         }
+
+        /// <summary>
+        /// This method should ask the OS to listen for a connection and save the callback function with that request.
+        /// Upon a connection request, the OS should invoke AcceptANewClient().
+        /// </summary>
+        /// <param name="callback"></param>
+        static void ServerAwaitingClientLoop(Action<PreservedState> callback)
+        {
+
+        }
+
+        /// <summary>
+        /// This method should be invoked when a connection request comes in. It should create a new socket, call the
+        /// callback provided in ServerAwaitingClientLoop(), and await a new connection request.
+        /// </summary>
+        /// <param name="ar"></param>
+        static void AcceptANewClient(IAsyncResult ar)
+        {
+
+        }
     }
 }
