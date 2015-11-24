@@ -212,7 +212,7 @@ namespace AgCubio
 
         /// <summary>
         /// A method to return cubes belonging to a player. Cubes with the same unique id or team id as the given id
-        /// will belong to the player.
+        /// will belong to the player. The cubes will be sorted with the smallest first.
         /// This method is only allowed for server operation; it will throw an exception if the world was not
         /// constructed for server use.
         /// </summary>
@@ -234,11 +234,13 @@ namespace AgCubio
                 // decrement i to next largest cube
                 i--;
             }
+            // reverse output to keep sorting order
+            output.Reverse();
             return output;
         }
 
         /// <summary>
-        /// A method to return cubes that are player cubes.
+        /// A method to return cubes that are player cubes. The cubes will be sorted with the smallest first.
         /// This method is only allowed for server operation; it will throw an exception if the world was not
         /// constructed for server use.
         /// </summary>
@@ -259,6 +261,8 @@ namespace AgCubio
                 // decrement i to next largest cube
                 i--;
             }
+            // reverse output to keep sorting order
+            output.Reverse();
             return output;
         }
 
