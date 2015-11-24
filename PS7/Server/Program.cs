@@ -4,10 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Server
+namespace AgCubio
 {
-    class Program
+    class Server
     {
+        private World world;
+        private string configFilePath;
+
         /// <summary>
         /// When the program starts, this function is run first.
         /// It should build a new world and start the server.
@@ -15,7 +18,7 @@ namespace Server
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-
+            
         }
 
         /// <summary>
