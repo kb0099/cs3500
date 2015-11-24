@@ -151,6 +151,7 @@ namespace AgCubio
             this.MaximumSplits = maxSplits;
             this.AbsorbDistanceDelta = absorbDelta;
             this.Cubes = new Dictionary<int, Cube>(maxFood); // the amount of cubes can initialize to how many food cubes will be managed
+            InitializeFood();
         }
 
         /// <summary>
@@ -173,7 +174,6 @@ namespace AgCubio
                 // if it is a player cube (player ID equals team ID), add it to PlayerCubes
                 if (!IsServer && (c.teamId == PlayerID || c.uId == PlayerID)) PlayerCubes.Add(c.uId, c);
             }
-
         }
 
         /// <summary>
@@ -208,6 +208,58 @@ namespace AgCubio
         {
             if (IsServer) throw new Exception("The world was constructed for server use, but a client-based method was called."); // TODO: determine exception type to use
             return PlayerCubes.Values;
+        }
+
+        /// <summary>
+        /// A method to return cubes belonging to a player. Cubes with the same unique id or team id as the given id
+        /// will belong to the player.
+        /// This method is only allowed for server operation; it will throw an exception if the world was not
+        /// constructed for server use.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IEnumerable<Cube> GetPlayerCubes(int id)
+        {
+            if (!IsServer) throw new Exception("The world was constructed for client use, but a server-based method was called."); // TODO: determine exception type to use
+            // utilize GetCubes() to check from the bottom up until food cubes start (food should be smaller than the minimum player size)
+            List<Cube> c = new List<Cube>(GetCubes());
+            List<Cube> output = new List<Cube>();
+            int i = c.Count - 1;
+            Cube temp;
+            while (i >= 0 && c[i].food == false)
+            {
+                temp = c[i];
+                // add cube to return list if teamId or uId match
+                if (temp.teamId == id || temp.uId == id) output.Add(temp);
+                // decrement i to next largest cube
+                i--;
+            }
+            return output;
+        }
+
+        /// <summary>
+        /// A method to return cubes that are player cubes.
+        /// This method is only allowed for server operation; it will throw an exception if the world was not
+        /// constructed for server use.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Cube> GetAllPlayerCubes()
+        {
+            if (!IsServer) throw new Exception("The world was constructed for client use, but a server-based method was called."); // TODO: determine exception type to use
+            // utilize GetCubes() to check from the bottom up until food cubes start (food should be smaller than the minimum player size)
+            List<Cube> c = new List<Cube>(GetCubes());
+            List<Cube> output = new List<Cube>();
+            int i = c.Count - 1;
+            Cube temp;
+            while (i >= 0 && c[i].food == false)
+            {
+                temp = c[i];
+                // add cube to return list
+                output.Add(temp);
+                // decrement i to next largest cube
+                i--;
+            }
+            return output;
         }
 
         /// <summary>
