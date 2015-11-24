@@ -48,7 +48,7 @@ namespace AgCubio
                            Network.ConnectToServer((pso) =>
                            {
 
-                               Network.Send(pso.clientSocket, "MyNameIsGood");
+                               Network.Send(pso.socket, "MyNameIsGood");
                                StringBuilder toFile = new StringBuilder();
                                pso.callback = (p) => {
                                    var str = pso.receivedData.ToString();
@@ -94,14 +94,14 @@ namespace AgCubio
                         break;
                     case "sendName":
                         Console.Write("\tName: ");
-                        list.Last.Value.clientSocket.Send(Encoding.UTF8.GetBytes(Console.ReadLine() + "\n"));
+                        list.Last.Value.socket.Send(Encoding.UTF8.GetBytes(Console.ReadLine() + "\n"));
                         break;
                     case "close":
-                        list?.Last?.Value?.clientSocket?.Close();
+                        list?.Last?.Value?.socket?.Close();
                         break;
                     case "send":
                         Console.Write("\tCommand: ");
-                        Network.Send(list.Last.Value.clientSocket, Console.ReadLine());
+                        Network.Send(list.Last.Value.socket, Console.ReadLine());
                         break;
                     case "receive":
                         list.Last.Value.receivedData = new StringBuilder();
@@ -110,7 +110,7 @@ namespace AgCubio
                     case "m":
                         for(int i = 0; i < 500; i++)
                         {
-                            Network.Send(list.Last.Value.clientSocket, "(move, 0, 0)\n");
+                            Network.Send(list.Last.Value.socket, "(move, 0, 0)\n");
                         }
                         break;
                     case "repeat":
@@ -118,20 +118,20 @@ namespace AgCubio
                         s = Console.ReadLine();
                         for(int i = 0; i < 500; i++)
                         {
-                            Network.Send(list.Last.Value.clientSocket, s + "\n");
+                            Network.Send(list.Last.Value.socket, s + "\n");
                         }
                         break;
                     case "u":
-                        Network.Send(list.Last.Value.clientSocket, "(move, 0, 2000)\n");
+                        Network.Send(list.Last.Value.socket, "(move, 0, 2000)\n");
                         break;
                     case "d":
-                        Network.Send(list.Last.Value.clientSocket, "(move, 0, -2000)\n");
+                        Network.Send(list.Last.Value.socket, "(move, 0, -2000)\n");
                         break;
                     case "l":
-                        Network.Send(list.Last.Value.clientSocket, "(move, -2000, 0)\n");
+                        Network.Send(list.Last.Value.socket, "(move, -2000, 0)\n");
                         break;
                     case "4":
-                        Network.Send(list.Last.Value.clientSocket, "(move, +2000, 0)\n");
+                        Network.Send(list.Last.Value.socket, "(move, +2000, 0)\n");
                         break;
                 }
                 System.Threading.Thread.Sleep(1000);

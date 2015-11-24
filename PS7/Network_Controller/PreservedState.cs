@@ -15,7 +15,7 @@ namespace AgCubio
     public class PreservedState
     {
         // Represents client socket.
-        public Socket clientSocket = null;
+        public Socket socket = null;
 
         // Represents a callback delegate
         public Action<PreservedState> callback;

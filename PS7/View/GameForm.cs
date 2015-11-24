@@ -70,7 +70,7 @@ namespace AgCubio
                     frameWatch.Start();
                 }));
             _ps = pso;
-            socket = pso.clientSocket;
+            socket = pso.socket;
             // first get the player cube
             // 1. send name
             Network.Send(socket, nameTextBox.Text);

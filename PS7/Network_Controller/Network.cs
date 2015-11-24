@@ -38,7 +38,7 @@ namespace AgCubio
                 Socket clientSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 // Connect to the remote endpoint.
-                clientSocket.BeginConnect(remoteEP, new AsyncCallback(ConnectedToServer), new PreservedState() { clientSocket = clientSocket, callback = callback });
+                clientSocket.BeginConnect(remoteEP, new AsyncCallback(ConnectedToServer), new PreservedState() { socket = clientSocket, callback = callback });
 
                 return clientSocket;
             }
@@ -66,7 +66,7 @@ namespace AgCubio
             try
             {
                 // Complete the connection.
-                stateObj.clientSocket.EndConnect(ar);
+                stateObj.socket.EndConnect(ar);
                 stateObj.callback(stateObj);
                 //WantMoreData(stateObj);
             }
@@ -91,7 +91,7 @@ namespace AgCubio
             PreservedState state = (PreservedState)ar.AsyncState;
             try
             {
-                int count = state.clientSocket.EndReceive(ar);
+                int count = state.socket.EndReceive(ar);
                 if (count <= 0)
                     return;
                 string data = Encoding.UTF8.GetString(state.buffer, 0, count);
@@ -114,7 +114,7 @@ namespace AgCubio
         /// <param name="state"></param>
         public static void WantMoreData(PreservedState state)
         {
-            state.clientSocket.BeginReceive(state.buffer, 0, PreservedState.BUFFER_SIZE, SocketFlags.None, new AsyncCallback(ReceiveCallback), (object)state);
+            state.socket.BeginReceive(state.buffer, 0, PreservedState.BUFFER_SIZE, SocketFlags.None, new AsyncCallback(ReceiveCallback), (object)state);
         }
 
 
@@ -170,7 +170,6 @@ namespace AgCubio
         /// <param name="callback"></param>
         static void ServerAwaitingClientLoop(Action<PreservedState> callback)
         {
-
         }
 
         /// <summary>

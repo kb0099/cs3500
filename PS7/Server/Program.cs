@@ -8,8 +8,8 @@ namespace AgCubio
 {
     class Server
     {
-        private World world;
-        private string configFilePath;
+        private static World world;
+        private static string configFilePath;
 
         /// <summary>
         /// When the program starts, this function is run first.
@@ -18,7 +18,7 @@ namespace AgCubio
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            
+            world = new World(1000, 1000, 0);            
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace AgCubio
         /// </summary>
         private static void Start()
         {
-
+            
         }
 
         /// <summary>
