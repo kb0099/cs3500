@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -11,6 +12,8 @@ namespace AgCubio
     {
         private static World world;
         private static string configFilePath;
+
+        private static List<Socket> clientSockets = new List<Socket>();
 
         /// <summary>
         /// When the program starts, this function is run first.
@@ -29,6 +32,10 @@ namespace AgCubio
         /// </summary>
         private static void Start()
         {
+            Console.WriteLine("========== Server ============");
+            Console.WriteLine("Type quit and press return/enter to stop the server.");
+            Start();
+            while (Console.ReadLine() != "quit") ;
         }
 
         /// <summary>
