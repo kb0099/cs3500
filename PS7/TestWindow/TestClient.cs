@@ -12,13 +12,26 @@ namespace AgCubio
         public static void Main()
         {
             //JsonTesting();
-            //SocketTesting();
-            ListTest();
+            SocketTesting();
+            //ListTest2();
         }
 
+
+        public static void ListTest2()
+        {
+            // invalid
+            List<int> list = new List<int> { 0, 1, 2, 3, 4, 5 };
+            foreach (var x in list)
+            {
+                Console.WriteLine(" count: " + list.Count);
+                list.Remove(x);
+            }
+
+        }
         public static void ListTest()
         {
             List<int> list = new List<int> { 0, 1, 2, 3, 4, 5 };
+
             int n = list.Count;
             for (int i = 0; i < n; i++)
             {
@@ -118,7 +131,7 @@ namespace AgCubio
                         Network.Send(list.Last.Value.socket, Console.ReadLine());
                         break;
                     case "receive":
-                        list.Last.Value.receivedData = new StringBuilder();
+                        list.Last.Value.receivedData.Clear();
                         Network.WantMoreData(list.Last.Value);
                         break;
                     case "m":
@@ -157,7 +170,7 @@ namespace AgCubio
         {
             Network.ConnectToServer((s) => {
                 //Console.WriteLine("========Received Data==========");
-                //Console.WriteLine(s.receivedData);
+                Console.WriteLine(s.receivedData);
                if(s.errorMsg != null)
                     Console.WriteLine("Error: " + s.errorMsg);
                 list.AddLast(s);

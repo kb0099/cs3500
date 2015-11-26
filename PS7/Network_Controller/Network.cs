@@ -13,6 +13,9 @@ namespace AgCubio
         // Represents a default port (const are static by default!)
         public const int DEFAULT_PORT = 11000;
 
+        // Only one state for main server socket
+        private static PreservedState serverPS = new PreservedState();
+
         /// <summary>
         /// This function should attempt to connect to the server via a provided hostname. 
         /// It should save the callback function (in a state object) for use when data arrives.
@@ -170,26 +173,24 @@ namespace AgCubio
         /// This method should ask the OS to listen for a connection and save the callback function with that request.
         /// Upon a connection request, the OS should invoke AcceptANewClient().
         /// </summary>
-        /// <param name="callback"></param>
-        public static void ServerAwaitingClientLoop(Action<PreservedState> callback)
+        /// <param name="onNewClient">This callback will be called after a new client is connected.</param>
+        public static void ServerAwaitingClientLoop(Action<PreservedState> onNewClient)
         {
             // create and bind the listening socket to the port
-            IPAddress serverIP = (Dns.GetHostEntry(IPAddress.Any.ToString())).AddressList[0];
-            IPEndPoint serverEP = new IPEndPoint(serverIP, 11000);
+            IPEndPoint iep = new IPEndPoint(IPAddress.IPv6Any, 11000);
 
             // create the server socket
-            Socket sock = new Socket(serverEP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            Socket sock = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
 
+            sock.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
             try
             {
-                sock.Bind(serverEP);
-                sock.Listen(20);       // start listening: max pending connections 20
-
-                while (true)
-                {
-                    Console.WriteLine("Waiting for a connection...");
-                    sock.BeginAccept(AcceptANewClient, sock);
-                }
+                sock.Bind(iep);
+                sock.Listen(2);       // start listening: max pending connections 20
+                Console.WriteLine("Waiting for a connection...");
+                serverPS.callback = onNewClient;
+                serverPS.socket = sock;
+                sock.BeginAccept(AcceptANewClient, null);
             }
             catch (Exception e)
             {
