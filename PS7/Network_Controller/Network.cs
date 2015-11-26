@@ -125,7 +125,7 @@ namespace AgCubio
         /// </summary>
         /// <param name="socket"></param>
         /// <param name="data"></param>
-        public static void Send(Socket socket, String data)
+        public static bool Send(Socket socket, String data)
         {
             // Convert the string data to byte data using UTF8 encoding.
             byte[] byteData = Encoding.UTF8.GetBytes(data);
@@ -133,6 +133,8 @@ namespace AgCubio
             {
                 // Begin sending the data to the remote device.
                 socket.BeginSend(byteData, 0, byteData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), socket);
+                return true;
+                        
             }
             catch
             {
@@ -141,6 +143,7 @@ namespace AgCubio
                     socket.Shutdown(SocketShutdown.Both);
                     socket.Close();
                 }
+                return false;
             }
         }
 
@@ -168,8 +171,30 @@ namespace AgCubio
         /// Upon a connection request, the OS should invoke AcceptANewClient().
         /// </summary>
         /// <param name="callback"></param>
-        static void ServerAwaitingClientLoop(Action<PreservedState> callback)
+        public static void ServerAwaitingClientLoop(Action<PreservedState> callback)
         {
+            // create and bind the listening socket to the port
+            IPAddress serverIP = (Dns.GetHostEntry(IPAddress.Any.ToString())).AddressList[0];
+            IPEndPoint serverEP = new IPEndPoint(serverIP, 11000);
+
+            // create the server socket
+            Socket sock = new Socket(serverEP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                sock.Bind(serverEP);
+                sock.Listen(20);       // start listening: max pending connections 20
+
+                while (true)
+                {
+                    Console.WriteLine("Waiting for a connection...");
+                    sock.BeginAccept(AcceptANewClient, sock);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
 
         /// <summary>
@@ -177,9 +202,9 @@ namespace AgCubio
         /// callback provided in ServerAwaitingClientLoop(), and await a new connection request.
         /// </summary>
         /// <param name="ar"></param>
-        static void AcceptANewClient(IAsyncResult ar)
+        public static void AcceptANewClient(IAsyncResult ar)
         {
-
+            Console.WriteLine("AcceptANewClient:" + Task.CurrentId);
         }
     }
 }

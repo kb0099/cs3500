@@ -11,7 +11,21 @@ namespace AgCubio
     {
         public static void Main()
         {
-            JsonTesting();
+            //JsonTesting();
+            //SocketTesting();
+            ListTest();
+        }
+
+        public static void ListTest()
+        {
+            List<int> list = new List<int> { 0, 1, 2, 3, 4, 5 };
+            int n = list.Count;
+            for (int i = 0; i < n; i++)
+            {
+                Console.WriteLine(" i = " + i + ", count: " + list.Count);
+                list.RemoveAt(0);
+            }
+            Console.WriteLine(" i = " + n + ", count: " + list.Count);
         }
 
         public static void JsonTesting()
@@ -144,10 +158,10 @@ namespace AgCubio
             Network.ConnectToServer((s) => {
                 //Console.WriteLine("========Received Data==========");
                 //Console.WriteLine(s.receivedData);
-                //if(s.errorMsg != null)
-                //    Console.WriteLine("Error: " + s.errorMsg);
+               if(s.errorMsg != null)
+                    Console.WriteLine("Error: " + s.errorMsg);
                 list.AddLast(s);
-            }, "127.0.0.1");
+            }, "localhost");
 
             Console.WriteLine("tried to connetc... ");
         }
