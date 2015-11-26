@@ -74,6 +74,20 @@ namespace AgCubio
         /// </summary>
         private void Update(object o, ElapsedEventArgs e)
         {
+            (o as Timer).Stop();
+
+            // handle eat food, eat players
+            // remove dead connections
+            // lock on world and clients
+
+            for (int i = clientSockets.Count - 1; i >= 0; i--)
+            {
+                if (!Network.Send(clientSockets[i], "todo: update from server!"))
+                {
+                    clientSockets.RemoveAt(i);
+                }
+            }
+            (o as Timer).Start();
         }
     }
 }
