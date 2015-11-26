@@ -22,8 +22,10 @@ namespace AgCubio
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            //world = new World(1000, 1000, 0);  
-            Start();                         
+            Console.WriteLine("========== Server ============");
+            Console.WriteLine("Type quit and press return/enter to stop the server.");
+            Start();
+            while (Console.ReadLine() != "quit") ;
         }
 
         /// <summary>
@@ -32,17 +34,20 @@ namespace AgCubio
         /// </summary>
         private static void Start()
         {
-            Console.WriteLine("========== Server ============");
-            Console.WriteLine("Type quit and press return/enter to stop the server.");
-            Start();
-            while (Console.ReadLine() != "quit") ;
+            System.Timers.Timer timer = new Timer();
+            timer.Interval = 500; // 1/heartbeat*1000
+            timer.Elapsed += new ElapsedEventHandler(Update);
+            timer.Start();
+            // grow food
+
+            Network.ServerAwaitingClientLoop(NewClientConnects);
         }
 
         /// <summary>
         /// This method should be a callback function for the networking code. It should setup a callback to recieve a
         /// player name, then request more data from the connection.
         /// </summary>
-        private void NewClientConnects(PreservedState ps)
+        private static void NewClientConnects(PreservedState ps)
         {
             Console.WriteLine("Handling a new Client in thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
             clientSockets.Add(ps.socket);
@@ -116,7 +121,7 @@ namespace AgCubio
         /// handle player cube attrition, and handle sending the current state of the world to every client.
         /// Also, if a client disconnected, this method should clean it up.
         /// </summary>
-        private void Update(object o, ElapsedEventArgs e)
+        private static void Update(object o, ElapsedEventArgs e)
         {
             (o as Timer).Stop();
 
