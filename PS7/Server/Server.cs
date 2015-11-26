@@ -38,8 +38,11 @@ namespace AgCubio
         public static void InitWorld()
         {
             // if file is not present in current director get from user
-            //if(System.IO.File.Exists(configFilePath))
-            GetFileFromUser();        
+            string path = System.IO.Path.Combine(cwd, configFilePath);
+            if (System.IO.File.Exists(path))
+                MessageBox.Show("file found!");
+            else
+                GetFileFromUser();        
         }
 
         /// <summary>
