@@ -35,6 +35,12 @@ namespace AgCubio
             while (Console.ReadLine() != "quit") ;
         }
 
+        /// <summary>
+        /// Tries to initialize the server world from a config file.
+        /// First checks for file named "world_parameters.xml" in executable's directory.
+        /// If it cannot loate it will ask the user to locate the file.
+        /// </summary>
+        /// <returns>True if successful false otherwise.</returns>
         public static bool InitWorld()
         {
             // if file is not present in current director get from user
