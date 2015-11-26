@@ -62,9 +62,39 @@ namespace AgCubio
         /// This method should be a callback function for the networking code. It should interpret that a client
         /// wants to move/split and respond accordingly.
         /// </summary>
-        private void ReceiveClientData()
+        private static void ProcessClientData(PreservedState ps)
         {
+            int x = 0, y = 0;
+            try
+            {
+                string[] cmds = ps.receivedData.ToString().Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var cmdStr in cmds)
+                {
+                    string[] tokens = cmdStr.Split(new char[] { ' ', '(', ')', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (tokens.Length != 3) continue;
 
+                    // get params
+                    int.TryParse(tokens[1], out x);
+                    int.TryParse(tokens[2], out y);
+
+                    switch (tokens[0])
+                    {
+                        case "move":
+                            Console.WriteLine("ToDo: Moving!");
+                            break;
+
+                        case "split":
+                            Console.WriteLine("ToDo: Splits!");
+                            break;
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nException occurred while processing client message.\n" + ex.Message + "\n");
+            }
+            ps.receivedData.Clear();
         }
 
         /// <summary>
