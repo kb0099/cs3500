@@ -12,12 +12,12 @@ namespace AgCubio
         /// <summary>
         /// The width of the world.
         /// </summary>
-        public double Width { get; private set; }
+        public int Width { get; private set; }
 
         /// <summary>
         /// The height of the world.
         /// </summary>
-        public double Height { get; private set; }
+        public int Height { get; private set; }
 
         /// <summary>
         /// The rate of updates per second the world should do.

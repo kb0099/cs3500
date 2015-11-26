@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 
 namespace AgCubio
 {
@@ -15,6 +16,7 @@ namespace AgCubio
         private static World world;
         private static string configFilePath = "world_parameters.xml";
         private static List<Socket> clientSockets = new List<Socket>();
+        private static Random r = new Random();
 
         // current working directory
         private static string cwd = AppDomain.CurrentDomain.BaseDirectory;
@@ -110,7 +112,7 @@ namespace AgCubio
             timer.Interval = 500; // 1/heartbeat*1000
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
-            // grow food
+            // grow/populate some food or to the max_food
 
             Network.ServerAwaitingClientLoop(NewClientConnects);
         }
@@ -138,8 +140,25 @@ namespace AgCubio
             Console.WriteLine("Receiving a new Client data.");
             Console.WriteLine("Client sent name: " + ps.receivedData);
 
-            // after getting name should send the player cube
-            Network.Send(ps.socket, "{}");
+            // after getting name world should generate a new cube
+            Cube player = new Cube(r.Next(world.Width), 
+                r.Next(world.Height), 
+                NextPlayerColor(),
+                NextUID(),
+                0,               
+                false, 
+                ps.receivedData.ToString().TrimEnd(new char[] { ' ', '\n'}),
+                world.PlayerStartMass);  
+            lock (world)
+            {
+                
+            }
+            // need to link this cube with this socket
+            // possibility: dictionary<uid, socket> 
+        
+
+            // send the player cube
+            Network.Send(ps.socket, JsonConvert.SerializeObject(player));
 
             // should clear the received data
             ps.receivedData.Clear();
@@ -147,6 +166,15 @@ namespace AgCubio
             // Ready to receive commands
             ps.callback = ProcessClientData;
             Network.WantMoreData(ps);
+        }
+        private static int NextPlayerColor()
+        {
+            return 0;
+        }
+
+        private static int NextUID()
+        {
+            return 0;
         }
 
         /// <summary>
