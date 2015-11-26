@@ -205,7 +205,12 @@ namespace AgCubio
         /// <param name="ar"></param>
         public static void AcceptANewClient(IAsyncResult ar)
         {
-            Console.WriteLine("AcceptANewClient:" + Task.CurrentId);
+            Console.WriteLine("Accepted a new Client in thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+            PreservedState clientPS = new PreservedState { socket = serverPS.socket.EndAccept(ar) };
+            serverPS.callback(clientPS);
+
+            // wait for another client
+            serverPS.socket.BeginAccept(new AsyncCallback(AcceptANewClient), null);
         }
     }
 }
