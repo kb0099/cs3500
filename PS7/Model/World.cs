@@ -110,8 +110,8 @@ namespace AgCubio
         public World(double w, double h, int id)
         {
             this.IsServer = false;
-            this.Width = w;
-            this.Height = h;
+            this.Width = (int)w;
+            this.Height = (int)h;
             this.PlayerID = id;
             this.Cubes = new Dictionary<int, Cube>(50);
             this.PlayerCubes = new Dictionary<int, Cube>(6);
@@ -137,8 +137,8 @@ namespace AgCubio
         public World(double w, double h, object heartbeat, double topSpeed, double lowSpeed, double attrition, double foodMass, double playerStartMass, int maxFood, double minSplitMass, double maxSplitDist, int maxSplits, double absorbDelta)
         {
             this.IsServer = true;
-            this.Width = w;
-            this.Height = h;
+            this.Width = (int)w;
+            this.Height = (int)h;
             this.HeartbeatsPerSecond = heartbeat;
             this.TopSpeed = topSpeed;
             this.LowSpeed = lowSpeed;
