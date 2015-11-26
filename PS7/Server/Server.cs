@@ -53,9 +53,20 @@ namespace AgCubio
         /// It should also set up a callback for handling move/split requests and request new data from the socket.
         /// Finally, it should send the current stat of the world to the player.
         /// </summary>
-        private void ReceivePlayerName()
+        static private void ReceivePlayerName(PreservedState ps)
         {
+            Console.WriteLine("Receiving a new Client data.");
+            Console.WriteLine("Client sent name: " + ps.receivedData);
 
+            // after getting name should send the player cube
+            Network.Send(ps.socket, "{}");
+
+            // should clear the received data
+            ps.receivedData.Clear();
+
+            // Ready to receive commands
+            ps.callback = ProcessClientData;
+            Network.WantMoreData(ps);
         }
 
         /// <summary>
