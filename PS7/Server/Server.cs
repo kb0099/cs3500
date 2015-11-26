@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace AgCubio
 {
@@ -26,23 +27,51 @@ namespace AgCubio
         [STAThread]
         static void Main(string[] args)
         {
-            InitWorld();
-            return;
-            
+            if(!InitWorld())                return;
+
             Console.WriteLine("========== Server ============");
             Console.WriteLine("Type quit and press return/enter to stop the server.");
             Start();
             while (Console.ReadLine() != "quit") ;
         }
 
-        public static void InitWorld()
+        public static bool InitWorld()
         {
             // if file is not present in current director get from user
             string path = System.IO.Path.Combine(cwd, configFilePath);
-            if (System.IO.File.Exists(path))
-                MessageBox.Show("file found!");
-            else
-                GetFileFromUser();        
+            if (!System.IO.File.Exists(path))
+                path = GetFileFromUser();
+
+            XDocument xmlDoc;
+            string name = string.Empty,
+                val = string.Empty;
+            try
+            {
+                xmlDoc = XDocument.Load(path);
+                XElement p = xmlDoc.Element("parameters");
+
+                world = new World(
+                    int.Parse(p.Element("width").Value),
+                    int.Parse(p.Element("height").Value),
+                    int.Parse(p.Element("heartbeats_per_second").Value),
+                    int.Parse(p.Element("top_speed").Value),
+                    int.Parse(p.Element("low_speed").Value),
+                    int.Parse(p.Element("attrition_rate").Value),
+                    int.Parse(p.Element("food_value").Value),
+                    int.Parse(p.Element("player_start_mass").Value),
+                    int.Parse(p.Element("max_food").Value),
+                    int.Parse(p.Element("min_split_mass").Value),
+                    int.Parse(p.Element("max_split_dist").Value),
+                    int.Parse(p.Element("max_splits").Value),
+                    double.Parse(p.Element("absorb_constant").Value)
+                );
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error while parsing: " + path + "\n" + ex.ToString());
+                return false;
+            }
         }
 
         /// <summary>
@@ -163,11 +192,11 @@ namespace AgCubio
             (o as System.Timers.Timer).Stop();
 
             // handle eat food, eat players
-            
+
             // remove dead connections
             // lock on world and clients
 
-            lock(world)
+            lock (world)
             {
                 lock (clientSockets)
                 {
