@@ -5,27 +5,61 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Forms;
 
 namespace AgCubio
 {
     class Server
     {
         private static World world;
-        private static string configFilePath;
-
+        private static string configFilePath = "world_parameters.xml";
         private static List<Socket> clientSockets = new List<Socket>();
+
+        // current working directory
+        private static string cwd = AppDomain.CurrentDomain.BaseDirectory;
 
         /// <summary>
         /// When the program starts, this function is run first.
         /// It should build a new world and start the server.
         /// </summary>
         /// <param name="args"></param>
+        [STAThread]
         static void Main(string[] args)
         {
+            InitWorld();
+            return;
+            
             Console.WriteLine("========== Server ============");
             Console.WriteLine("Type quit and press return/enter to stop the server.");
             Start();
             while (Console.ReadLine() != "quit") ;
+        }
+
+        public static void InitWorld()
+        {
+            // if file is not present in current director get from user
+            //if(System.IO.File.Exists(configFilePath))
+            GetFileFromUser();        
+        }
+
+        /// <summary>
+        /// This method will open a Open File dialog and retrieve the file path the user provides.
+        /// If the dialog does not successfully retrieve a file path, the method returns null.
+        /// </summary>
+        private static string GetFileFromUser()
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.InitialDirectory = cwd;
+            openFileDialog1.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
+            openFileDialog1.FilterIndex = 1; // uses .xml filter when opened
+            openFileDialog1.RestoreDirectory = true;
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                return openFileDialog1.FileName;
+            }
+            else
+                return null;
         }
 
         /// <summary>
@@ -34,7 +68,7 @@ namespace AgCubio
         /// </summary>
         private static void Start()
         {
-            System.Timers.Timer timer = new Timer();
+            System.Timers.Timer timer = new System.Timers.Timer();
             timer.Interval = 500; // 1/heartbeat*1000
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
@@ -49,7 +83,7 @@ namespace AgCubio
         /// </summary>
         private static void NewClientConnects(PreservedState ps)
         {
-            Console.WriteLine("Handling a new Client in thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+            //Console.WriteLine("Handling a new Client in thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
             clientSockets.Add(ps.socket);
             ps.callback = ReceivePlayerName;
             Network.WantMoreData(ps);
@@ -123,20 +157,27 @@ namespace AgCubio
         /// </summary>
         private static void Update(object o, ElapsedEventArgs e)
         {
-            (o as Timer).Stop();
+            (o as System.Timers.Timer).Stop();
 
             // handle eat food, eat players
+            
             // remove dead connections
             // lock on world and clients
 
-            for (int i = clientSockets.Count - 1; i >= 0; i--)
+            lock(world)
             {
-                if (!Network.Send(clientSockets[i], "todo: update from server!"))
+                lock (clientSockets)
                 {
-                    clientSockets.RemoveAt(i);
+                    for (int i = clientSockets.Count - 1; i >= 0; i--)
+                    {
+                        if (!Network.Send(clientSockets[i], "todo: update from server!"))
+                        {
+                            clientSockets.RemoveAt(i);
+                        }
+                    }
                 }
             }
-            (o as Timer).Start();
+            (o as System.Timers.Timer).Start();
         }
     }
 }
