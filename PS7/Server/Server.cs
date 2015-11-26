@@ -42,9 +42,12 @@ namespace AgCubio
         /// This method should be a callback function for the networking code. It should setup a callback to recieve a
         /// player name, then request more data from the connection.
         /// </summary>
-        private void NewClientConnects()
+        private void NewClientConnects(PreservedState ps)
         {
-
+            Console.WriteLine("Handling a new Client in thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+            clientSockets.Add(ps.socket);
+            ps.callback = ReceivePlayerName;
+            Network.WantMoreData(ps);
         }
 
         /// <summary>
