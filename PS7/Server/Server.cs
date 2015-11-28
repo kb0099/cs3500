@@ -17,7 +17,6 @@ namespace AgCubio
         private static World world;
         private static string configFilePath = "world_parameters.xml";
         private static Dictionary<Socket, int> clientSockets = new Dictionary<Socket, int>();
-        private static Random r = new Random();
 
         // current working directory
         private static string cwd = AppDomain.CurrentDomain.BaseDirectory;
@@ -148,23 +147,6 @@ namespace AgCubio
             // Ready to receive commands
             ps.callback = ProcessClientData;
             Network.WantMoreData(ps);
-        }
-
-
-        private static readonly Color[] PLAYER_COLORS = {
-            Color.Red, Color.Blue, Color.Black, Color.Violet, Color.LightPink, Color.Yellow, Color.Orange, Color.Pink
-        };
-        private static int nextColor = 0;
-        private static int nextUID = -1;
-        private static readonly Color VIRUS_COLOR = Color.Green;
-        private static int NextPlayerColor()
-        {
-            return PLAYER_COLORS[(nextColor++) % (PLAYER_COLORS.Length)].ToArgb();
-        }
-
-        private static int NextUID()
-        {
-            return System.Threading.Interlocked.Increment(ref nextUID);
         }
 
         /// <summary>
