@@ -12,7 +12,7 @@ using System.Drawing;
 
 namespace AgCubio
 {
-    class Server
+    partial class Server
     {
         private static World world;
         private static string configFilePath = "world_parameters.xml";
