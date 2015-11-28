@@ -131,8 +131,8 @@ namespace AgCubio
                 clientSockets[ps.socket] = player.uId;
 
             // add this player to world
-            lock (world)
-                world.playerCubes[player.uId] = player;
+            //lock (world)
+            //    world.playerCubes[player.uId] = player;
 
 
             // should clear the received data
@@ -168,7 +168,7 @@ namespace AgCubio
                     switch (tokens[0])
                     {
                         case "move":
-                            Console.WriteLine("ToDo: Moving!");
+                            world.MovePlayer(world.playerCubes[clientSockets[ps.socket]], x, y);
                             break;
 
                         case "split":
@@ -183,6 +183,7 @@ namespace AgCubio
                 Console.WriteLine("\nException occurred while processing client message.\n" + ex.Message + "\n");
             }
             ps.receivedData.Clear();
+            Network.WantMoreData(ps);
         }
 
         /// <summary>
@@ -193,6 +194,9 @@ namespace AgCubio
         private static void Update(object o, ElapsedEventArgs e)
         {
             (o as System.Timers.Timer).Stop();
+
+            // temp: move
+            SendCubes(world.playerCubes.Values);
 
             // handle eat food, then, update clients.
             //LinkedList<Cube> eatenFood = world.EatFood();

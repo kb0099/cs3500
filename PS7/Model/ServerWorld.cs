@@ -83,7 +83,10 @@ namespace AgCubio
         /// <returns>Newly generated cube.</returns>
         public Cube NextPlayer(string name)
         {
-            return new Cube(r.Next(Width),
+            Cube c;
+            lock (this)
+            {
+                c = new Cube(r.Next(Width),
                 r.Next(Height),
                 NextPlayerColor(),
                 NextUID(),
@@ -91,6 +94,9 @@ namespace AgCubio
                 false,
                 name,
                 PlayerStartMass);
+                playerCubes[c.uId] = c;
+            }
+            return c;
         }
 
         /// <summary>
@@ -106,6 +112,21 @@ namespace AgCubio
             food = new Cube(r.Next() % this.Width, r.Next() % this.Height,  Color.FromArgb(r.Next(256), r.Next(256), r.Next(256)).ToArgb(), NextUID(), 0, true, "", FoodValue);
             foodCubes[food.uId] = food;
             return true;
+        }
+
+        /// <summary>
+        /// Moves player towards the given point and not to that point.
+        /// </summary>
+        /// <param name="c">The player</param>
+        /// <param name="toX">Towards X co-ordinate</param>
+        /// <param name="toY">Towards Y co-oprdinate</param>
+        public void MovePlayer(Cube c, int toX, int toY)
+        {
+            double h = Math.Sqrt(toX * toX + toY * toY);
+            double speed = TopSpeed - c.Mass / 600;
+            if (speed < LowSpeed) speed = LowSpeed;
+            c.X = (toX - c.X) / h * speed * 20;
+            c.Y = (toY - c.Y) / h * speed *20;
         }
     }
 }
