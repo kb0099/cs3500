@@ -101,7 +101,7 @@ namespace AgCubio
         public bool AddFood(out Cube food)
         {
             food = null;
-            if (this.foodCubes.Count > this.MaxFood)
+            if (this.foodCubes.Count >= this.MaxFood)
                 return false;
             food = new Cube(r.Next() % this.Width, r.Next() % this.Height,  Color.FromArgb(r.Next(256), r.Next(256), r.Next(256)).ToArgb(), NextUID(), 0, true, "", FoodValue);
             foodCubes[food.uId] = food;

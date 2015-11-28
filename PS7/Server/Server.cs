@@ -124,7 +124,7 @@ namespace AgCubio
             Cube player = world.NextPlayer(ps.receivedData.ToString().TrimEnd(new char[] { ' ', '\n' }));
 
             // send the player cube
-            Network.Send(ps.socket, JsonConvert.SerializeObject(player));
+            Network.Send(ps.socket, JsonConvert.SerializeObject(player) + "\n");
 
             // add to update queue after receiving name
             lock (clientSockets)
@@ -220,7 +220,7 @@ namespace AgCubio
                         foreach (Cube c in cubes)
                         {
                             // the connection is dead, safe to remove the socket, but the cube remains in the world
-                            if (!Network.Send(s, JsonConvert.SerializeObject(c)))
+                            if (!Network.Send(s, JsonConvert.SerializeObject(c) + "\n"))
                             {
                                 clientSockets.Remove(s);
                             }
@@ -244,7 +244,7 @@ namespace AgCubio
                 {
                         foreach (Cube c in cubes)
                         {
-                            if (!Network.Send(s, JsonConvert.SerializeObject(c)))
+                            if (!Network.Send(s, JsonConvert.SerializeObject(c) +"\n"))
                             {
                                 clientSockets.Remove(s);
                             }

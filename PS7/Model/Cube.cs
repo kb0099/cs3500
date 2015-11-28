@@ -31,7 +31,7 @@ namespace AgCubio
         /// <summary>
         /// The unique ID.
         /// </summary>
-        [JsonProperty]
+        [JsonProperty(PropertyName ="uid")]
         public int uId;
 
         /// <summary>
