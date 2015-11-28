@@ -148,11 +148,8 @@ namespace AgCubio
                 0,               
                 false, 
                 ps.receivedData.ToString().TrimEnd(new char[] { ' ', '\n'}),
-                world.PlayerStartMass);  
-            lock (world)
-            {
-                
-            }
+                world.PlayerStartMass); 
+
             // need to link this cube with this socket for move|split commands
             // possibility: dictionary<uid, socket> 
         
@@ -161,7 +158,12 @@ namespace AgCubio
             Network.Send(ps.socket, JsonConvert.SerializeObject(player));
 
             // add to update queue after receiving name
-            clientSockets[player.uId] = ps.socket;
+            lock(clientSockets)
+                clientSockets[player.uId] = ps.socket;
+            
+            // add this player to world
+            lock (world)
+                world.AddCube(player);
 
 
             // should clear the received data
@@ -241,16 +243,17 @@ namespace AgCubio
 
             // remove dead connections
             // lock on world and clients
-
             lock (world)
             {
                 lock (clientSockets)
                 {
-                    for (int i = clientSockets.Count - 1; i >= 0; i--)
+                    var keys = clientSockets.Keys.ToArray<int>();
+                    foreach(int uid in keys)
                     {
-                        if (!Network.Send(clientSockets[i], "todo: update from server!"))
+                        // the connection is dead, safe to remove the socket, but the cube remains in the world
+                        if (!Network.Send(clientSockets[uid], "Update from server"))
                         {
-                            clientSockets.RemoveAt(i);
+                            clientSockets.Remove(uid);
                         }
                     }
                 }
