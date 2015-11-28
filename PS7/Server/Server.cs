@@ -215,7 +215,11 @@ namespace AgCubio
         {
             (o as System.Timers.Timer).Stop();
 
-            // handle eat food, eat players
+            // handle eat food, then, update clients.
+            //LinkedList<Cube> eatenFood = world.EatFood();
+
+            // handle eat players, then, send update to clients
+            //LinkedList<Cube> 
            
             // update and remove dead connections
             // lock on world and clients
