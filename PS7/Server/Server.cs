@@ -16,7 +16,7 @@ namespace AgCubio
     {
         private static World world;
         private static string configFilePath = "world_parameters.xml";
-        private static Dictionary<int, Socket> clientSockets = new Dictionary<int, Socket>();
+        private static Dictionary<Socket, int> clientSockets = new Dictionary<Socket, int>();
         private static Random r = new Random();
 
         // current working directory
@@ -113,8 +113,9 @@ namespace AgCubio
             timer.Interval = 500; // 1/heartbeat*1000
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
-            // grow/populate some food or to the max_food
-
+            // grow/populate some food to the max_food
+            while (world.AddFood()) { /* just grow food till it reaches max */ }
+            // set up connections
             Network.ServerAwaitingClientLoop(NewClientConnects);
         }
 
@@ -150,16 +151,12 @@ namespace AgCubio
                 ps.receivedData.ToString().TrimEnd(new char[] { ' ', '\n'}),
                 world.PlayerStartMass); 
 
-            // need to link this cube with this socket for move|split commands
-            // possibility: dictionary<uid, socket> 
-        
-
             // send the player cube
             Network.Send(ps.socket, JsonConvert.SerializeObject(player));
 
             // add to update queue after receiving name
             lock(clientSockets)
-                clientSockets[player.uId] = ps.socket;
+                clientSockets[ps.socket] = player.uId;
             
             // add this player to world
             lock (world)
@@ -179,7 +176,7 @@ namespace AgCubio
             Color.Red, Color.Blue, Color.Black, Color.Violet, Color.LightPink, Color.Yellow, Color.Orange, Color.Pink
         };
         private static int nextColor = 0;
-        private static int nextUID = 0;
+        private static int nextUID = -1;
         private static readonly Color VIRUS_COLOR = Color.Green;
         private static int NextPlayerColor()
         {
@@ -188,7 +185,7 @@ namespace AgCubio
 
         private static int NextUID()
         {
-            return nextUID++;
+            return System.Threading.Interlocked.Increment(ref nextUID);
         }
 
         /// <summary>
@@ -240,25 +237,36 @@ namespace AgCubio
             (o as System.Timers.Timer).Stop();
 
             // handle eat food, eat players
-
-            // remove dead connections
+           
+            // update and remove dead connections
             // lock on world and clients
+           
+            (o as System.Timers.Timer).Start();
+        }
+        /// <summary>
+        /// Helper for Update function.
+        /// </summary>
+        /// <param name="cubes">The updated cubes to send to the client.</param>
+        private static void SendCubes(List<Cube> cubes)
+        {
             lock (world)
             {
                 lock (clientSockets)
                 {
-                    var keys = clientSockets.Keys.ToArray<int>();
-                    foreach(int uid in keys)
+                    foreach (Socket s in clientSockets.Keys)
                     {
-                        // the connection is dead, safe to remove the socket, but the cube remains in the world
-                        if (!Network.Send(clientSockets[uid], "Update from server"))
+                        foreach (Cube c in cubes)
                         {
-                            clientSockets.Remove(uid);
+                            // the connection is dead, safe to remove the socket, but the cube remains in the world
+                            if (!Network.Send(s, JsonConvert.SerializeObject(c)))
+                            {
+                                clientSockets.Remove(s);
+                            }
                         }
                     }
                 }
             }
-            (o as System.Timers.Timer).Start();
+
         }
     }
 }
