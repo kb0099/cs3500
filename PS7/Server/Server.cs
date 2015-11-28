@@ -120,14 +120,7 @@ namespace AgCubio
             Console.WriteLine("Client sent name: " + ps.receivedData);
 
             // after getting name world should generate a new cube
-            Cube player = new Cube(r.Next(world.Width), 
-                r.Next(world.Height), 
-                NextPlayerColor(),
-                NextUID(),
-                0,               
-                false, 
-                ps.receivedData.ToString().TrimEnd(new char[] { ' ', '\n'}),
-                world.PlayerStartMass); 
+            Cube player = world.NextPlayer(ps.receivedData.ToString().TrimEnd(new char[] { ' ', '\n' }));
 
             // send the player cube
             Network.Send(ps.socket, JsonConvert.SerializeObject(player));
