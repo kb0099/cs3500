@@ -8,6 +8,7 @@ using System.Timers;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using System.Drawing;
 
 namespace AgCubio
 {
@@ -167,14 +168,22 @@ namespace AgCubio
             ps.callback = ProcessClientData;
             Network.WantMoreData(ps);
         }
+
+
+        private static readonly Color[] PLAYER_COLORS = {
+            Color.Red, Color.Blue, Color.Black, Color.Violet, Color.LightPink, Color.Yellow, Color.Orange, Color.Pink
+        };
+        private static int nextColor = 0;
+        private static int nextUID = 0;
+        private static readonly Color VIRUS_COLOR = Color.Green;
         private static int NextPlayerColor()
         {
-            return 0;
+            return PLAYER_COLORS[(nextColor++) % (PLAYER_COLORS.Length)].ToArgb();
         }
 
         private static int NextUID()
         {
-            return 0;
+            return nextUID++;
         }
 
         /// <summary>
