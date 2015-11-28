@@ -49,31 +49,10 @@ namespace AgCubio
             // if file is not present in current director get from user
             string path = System.IO.Path.Combine(cwd, configFilePath);
             if (!System.IO.File.Exists(path))
-                path = GetFileFromUser();
-
-            XDocument xmlDoc;
-            string name = string.Empty,
-                val = string.Empty;
+                path = GetFileFromUser();           
             try
             {
-                xmlDoc = XDocument.Load(path);
-                XElement p = xmlDoc.Element("parameters");
-
-                world = new World(
-                    int.Parse(p.Element("width").Value),
-                    int.Parse(p.Element("height").Value),
-                    int.Parse(p.Element("heartbeats_per_second").Value),
-                    int.Parse(p.Element("top_speed").Value),
-                    int.Parse(p.Element("low_speed").Value),
-                    int.Parse(p.Element("attrition_rate").Value),
-                    int.Parse(p.Element("food_value").Value),
-                    int.Parse(p.Element("player_start_mass").Value),
-                    int.Parse(p.Element("max_food").Value),
-                    int.Parse(p.Element("min_split_mass").Value),
-                    int.Parse(p.Element("max_split_dist").Value),
-                    int.Parse(p.Element("max_splits").Value),
-                    double.Parse(p.Element("absorb_constant").Value)
-                );
+                world = new World(path);
                 return true;
             }
             catch (Exception ex)
