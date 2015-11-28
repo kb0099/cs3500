@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AgCubio
 {
-    public class World
+    public partial class World
     {
         /// <summary>
         /// The width of the world.

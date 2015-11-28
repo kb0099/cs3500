@@ -29,7 +29,7 @@ namespace AgCubio
         [STAThread]
         static void Main(string[] args)
         {
-            if(!InitWorld())                return;
+            if (!InitWorld()) return;
 
             Console.WriteLine("========== Server ============");
             Console.WriteLine("Type quit and press return/enter to stop the server.");
@@ -48,7 +48,7 @@ namespace AgCubio
             // if file is not present in current director get from user
             string path = System.IO.Path.Combine(cwd, configFilePath);
             if (!System.IO.File.Exists(path))
-                path = GetFileFromUser();           
+                path = GetFileFromUser();
             try
             {
                 world = new World(path);
@@ -92,7 +92,8 @@ namespace AgCubio
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
             // grow/populate some food to the max_food
-            while (world.AddFood()) { /* just grow food till it reaches max */ }
+            Cube tempFood;  // will be ignored.
+            while (world.AddFood(out tempFood)) { /* just grow food till it reaches max */ }
             // set up connections
             Network.ServerAwaitingClientLoop(NewClientConnects);
         }
@@ -126,9 +127,9 @@ namespace AgCubio
             Network.Send(ps.socket, JsonConvert.SerializeObject(player));
 
             // add to update queue after receiving name
-            lock(clientSockets)
+            lock (clientSockets)
                 clientSockets[ps.socket] = player.uId;
-            
+
             // add this player to world
             lock (world)
                 world.playerCubes[player.uId] = player;
@@ -136,6 +137,9 @@ namespace AgCubio
 
             // should clear the received data
             ps.receivedData.Clear();
+
+            // send the initial world only to this socket
+            SendCubes(world.foodCubes.Values, ps.socket);
 
             // Ready to receive commands
             ps.callback = ProcessClientData;
@@ -195,17 +199,17 @@ namespace AgCubio
 
             // handle eat players, then, send update to clients
             //LinkedList<Cube> 
-           
+
             // update and remove dead connections
             // lock on world and clients
-           
+
             (o as System.Timers.Timer).Start();
         }
         /// <summary>
-        /// Helper for Update function.
+        /// Helper for Update function to send cubes to all clients.
         /// </summary>
-        /// <param name="cubes">The updated cubes to send to the client.</param>
-        private static void SendCubes(List<Cube> cubes)
+        /// <param name="cubes">The updated cubes to send to all clients.</param>
+        private static void SendCubes(IEnumerable<Cube> cubes)
         {
             lock (world)
             {
@@ -225,6 +229,29 @@ namespace AgCubio
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Sends the <paramref name="cubes"/> through a specific socket <paramref name="s"/>
+        /// </summary>
+        /// <param name="cubes">Cube to send to.</param>
+        /// <param name="s">Socket to send through.</param>
+        private static void SendCubes(IEnumerable<Cube> cubes, Socket s)
+        {
+            lock (world)
+            {
+                lock (clientSockets)
+                {
+                        foreach (Cube c in cubes)
+                        {
+                            if (!Network.Send(s, JsonConvert.SerializeObject(c)))
+                            {
+                                clientSockets.Remove(s);
+                            }
+                        }
+                }
+
+            }
         }
     }
 }
