@@ -160,7 +160,7 @@ namespace AgCubio
             
             // add this player to world
             lock (world)
-                world.AddCube(player);
+                world.playerCubes[player.uId] = player;
 
 
             // should clear the received data
