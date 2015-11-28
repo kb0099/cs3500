@@ -16,7 +16,7 @@ namespace AgCubio
     {
         private static World world;
         private static string configFilePath = "world_parameters.xml";
-        private static List<Socket> clientSockets = new List<Socket>();
+        private static Dictionary<int, Socket> clientSockets = new Dictionary<int, Socket>();
         private static Random r = new Random();
 
         // current working directory
@@ -125,7 +125,6 @@ namespace AgCubio
         private static void NewClientConnects(PreservedState ps)
         {
             //Console.WriteLine("Handling a new Client in thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-            clientSockets.Add(ps.socket);
             ps.callback = ReceivePlayerName;
             Network.WantMoreData(ps);
         }
@@ -154,12 +153,16 @@ namespace AgCubio
             {
                 
             }
-            // need to link this cube with this socket
+            // need to link this cube with this socket for move|split commands
             // possibility: dictionary<uid, socket> 
         
 
             // send the player cube
             Network.Send(ps.socket, JsonConvert.SerializeObject(player));
+
+            // add to update queue after receiving name
+            clientSockets[player.uId] = ps.socket;
+
 
             // should clear the received data
             ps.receivedData.Clear();
