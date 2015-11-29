@@ -88,7 +88,7 @@ namespace AgCubio
         private static void Start()
         {
             System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 1/world.HeartbeatsPerSecond * 1000;
+            timer.Interval = 1.0/world.HeartbeatsPerSecond * 1000;
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
             // grow/populate some food to the max_food
