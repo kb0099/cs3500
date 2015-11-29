@@ -88,7 +88,7 @@ namespace AgCubio
         private static void Start()
         {
             System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 500; // 1/heartbeat*1000
+            timer.Interval = 1/world.HeartbeatsPerSecond * 1000;
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
             // grow/populate some food to the max_food
@@ -196,7 +196,8 @@ namespace AgCubio
             (o as System.Timers.Timer).Stop();
 
             // handle eat food, then, update clients.
-            //LinkedList<Cube> eatenFood = world.EatFood();
+            IEnumerable<Cube> eatenFood = world.EatFoods();
+            SendCubes(eatenFood);
 
             world.ApplyAttrition();
             // handle eat players, then, send deaad cubes

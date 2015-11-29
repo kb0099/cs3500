@@ -116,7 +116,7 @@ namespace AgCubio
 
         /// <summary>
         /// Moves the cube towards the given point and not to that point.
-        /// The cube could be either player or food or virus or anything.
+        /// The cube could be either player or food or virus.
         /// </summary>
         /// <param name="c">The cube</param>
         /// <param name="toX">Towards X co-ordinate</param>

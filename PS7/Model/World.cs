@@ -22,7 +22,7 @@ namespace AgCubio
         /// <summary>
         /// The rate of updates per second the world should do.
         /// </summary>
-        public object HeartbeatsPerSecond { get; private set; } // TODO: figure out the type and use case
+        public int HeartbeatsPerSecond { get; private set; }
 
         /// <summary>
         /// The rate at which cubes can move at their smallest mass.
