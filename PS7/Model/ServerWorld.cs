@@ -115,18 +115,79 @@ namespace AgCubio
         }
 
         /// <summary>
-        /// Moves player towards the given point and not to that point.
+        /// Moves the cube towards the given point and not to that point.
+        /// The cube could be either player or food or virus or anything.
         /// </summary>
-        /// <param name="c">The player</param>
+        /// <param name="c">The cube</param>
         /// <param name="toX">Towards X co-ordinate</param>
         /// <param name="toY">Towards Y co-oprdinate</param>
-        public void MovePlayer(Cube c, int toX, int toY)
+        public void MoveCube(Cube c, int toX, int toY)
         {
             double h = Math.Sqrt(toX * toX + toY * toY);
             double speed = TopSpeed - c.Mass / 600;
             if (speed < LowSpeed) speed = LowSpeed;
             c.X = (toX - c.X) / h * speed * 20;
             c.Y = (toY - c.Y) / h * speed *20;
+        }
+
+        /// <summary>
+        /// Handles eating of food cubes by the world player cubes.
+        /// Side effect: Removes the food cubes which have been eaten from the world.
+        /// </summary>
+        /// <returns>All the cubes that are eaten.</returns>
+        public IEnumerable<Cube> EatFoods()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Handles players eating other players. Also, removes dead players from world.
+        /// </summary>
+        /// <returns>All the players those have been eaten.</returns>
+        public IEnumerable<Cube> EatPlayers()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Splits the cube honoring the requirements.
+        /// Side effect: Should add the splitted cubes to the  teamCubes.
+        /// </summary>
+        /// <param name="c">Cube to split</param>
+        /// <param name="toX">Split towards X</param>
+        /// <param name="toY">Split towards Y</param>
+        public void SplitCube(Cube c, int toX, int toY)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// A method to apply attrition (or lose mass) to all player cubes. Larger cubes should lose mass faster than
+        /// smaller cubes. There should be a minimum mass where attrition will not apply.
+        /// This method is only allowed for server operation; it will throw an exception if the world was not
+        /// constructed for server use.
+        /// </summary>
+        public void ApplyAttrition()
+        {
+            // TODO: 
+            // While it was an excellent idea of throwing exception if it is called by client.
+            // It should not be our concern, since, placing this check in every single call is going to
+            // negatively impact the performance.
+            // So, I would recommend removing these extra checks, because it adds no extra benefit
+            // Reason: 1) It's the failure of the  assignment specification itself.
+            //         2) Exceptions will be automatically thrown when world is not properly initialized.
+            //         3) Since, we had most variables like playerCubes from PS7 -- client-centric, I had to use
+            //            new variables to represent playerCubes, foodCubes, and teamCubes the server has.
+            //            This ensures that NullReferenceException is automatically thrown if unauthorized calls are made.
+            //            So, manual checking and throwing should not be required.
+            // 
+            // One better way would probably have one World class independent of client and world.
+            // Then, ClientWorld class and ServerWorld class can deerive from parent World class.
+            // It should not be a big concern, now, since client was already completed.
+
+
+            // TODO: implement
+            if (!IsServer) throw new Exception("The world was constructed for client use, but a server-based method was called."); // TODO: determine exception type to use
         }
     }
 }

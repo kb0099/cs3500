@@ -168,14 +168,14 @@ namespace AgCubio
                     switch (tokens[0])
                     {
                         case "move":
-                            world.MovePlayer(world.playerCubes[clientSockets[ps.socket]], x, y);
+                            world.MoveCube(world.playerCubes[clientSockets[ps.socket]], x, y);
                             break;
 
                         case "split":
-                            Console.WriteLine("ToDo: Splits!");
+                            //Console.WriteLine("ToDo: Splits!");
+                            world.SplitCube(world.playerCubes[clientSockets[ps.socket]], x, y);
                             break;
                     }
-
                 }
             }
             catch (Exception ex)
@@ -195,17 +195,16 @@ namespace AgCubio
         {
             (o as System.Timers.Timer).Stop();
 
-            // temp: move
-            SendCubes(world.playerCubes.Values);
-
             // handle eat food, then, update clients.
             //LinkedList<Cube> eatenFood = world.EatFood();
 
-            // handle eat players, then, send update to clients
-            //LinkedList<Cube> 
+            world.ApplyAttrition();
+            // handle eat players, then, send deaad cubes
+            IEnumerable<Cube> eatenPlayers = world.EatPlayers();
+            SendCubes(eatenPlayers);
 
-            // update and remove dead connections
-            // lock on world and clients
+            // Finally, send remaining player cubes.
+            SendCubes(world.playerCubes.Values);
 
             (o as System.Timers.Timer).Start();
         }

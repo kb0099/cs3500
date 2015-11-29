@@ -399,19 +399,7 @@ namespace AgCubio
             // generate cube with random color and position, default food mass, and unique id
             // add cube to world
             return false;
-        }
-
-        /// <summary>
-        /// A method to apply attrition (or lose mass) to all player cubes. Larger cubes should lose mass faster than
-        /// smaller cubes. There should be a minimum mass where attrition will not apply.
-        /// This method is only allowed for server operation; it will throw an exception if the world was not
-        /// constructed for server use.
-        /// </summary>
-        public void ApplyAttrition()
-        {
-            // TODO: implement
-            if (!IsServer) throw new Exception("The world was constructed for client use, but a server-based method was called."); // TODO: determine exception type to use
-        }
+        }       
 
         /// <summary>
         /// The private IComparer used for sorting cubes by their mass.
