@@ -14,9 +14,10 @@ namespace AgCubio
 {
     class Server
     {
+        // this is the server world!
         private static World world;
-        private static string configFilePath = "world_parameters.xml";
-        private static Dictionary<Socket, int> clientSockets = new Dictionary<Socket, int>();
+        private static string configFilePath = "world_parameters.xml";      // default location
+        private static Dictionary<Socket, int> clientSockets = new Dictionary<Socket, int>();   // socket to player uid mapping
 
         // current working directory
         private static string cwd = AppDomain.CurrentDomain.BaseDirectory;
@@ -129,11 +130,6 @@ namespace AgCubio
             // add to update queue after receiving name
             lock (clientSockets)
                 clientSockets[ps.socket] = player.uId;
-
-            // add this player to world
-            //lock (world)
-            //    world.playerCubes[player.uId] = player;
-
 
             // should clear the received data
             ps.receivedData.Clear();
