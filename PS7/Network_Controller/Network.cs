@@ -13,7 +13,11 @@ namespace AgCubio
         // Represents a default port (const are static by default!)
         public const int DEFAULT_PORT = 11000;
 
-        // Only one state for main server socket
+        // Only one state for main server socket will suffice, since, it is a single server.
+        // Justification for static field:
+        // Server port is heard coded to listen at port 11000.
+        // Which means only a single instance of server can run at the machine at any given time.
+        // Hence, the state of this serverPS object is well maintained between calls.
         private static PreservedState serverPS = new PreservedState();
 
         /// <summary>

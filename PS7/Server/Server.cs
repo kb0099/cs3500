@@ -56,9 +56,9 @@ namespace AgCubio
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error while parsing: " + path + "\n" + ex.ToString());
-                return false;
+                MessageBox.Show("Unable to create world from file: " + path + "\n" + ex.ToString());
             }
+            return false;
         }
 
         /// <summary>
