@@ -193,20 +193,31 @@ namespace AgCubio
         /// </summary>
         private static void Update(object o, ElapsedEventArgs e)
         {
+            // Stop raising further events until this call is done!
             (o as System.Timers.Timer).Stop();
 
-            // handle eat food, then, update clients.
+            // grow one food in each update according to the spec
+            Cube fd;
+            world.AddFood(out fd);
+            // try sending that food to all clients
+            if(fd != null)
+            {
+                SendCubes(new Cube[] { fd });
+            }
+
+            // handle eat food, then, send to clients
             IEnumerable<Cube> eatenFood = world.EatFoods();
             SendCubes(eatenFood);
 
             world.ApplyAttrition();
-            // handle eat players, then, send deaad cubes
+            // handle eat players, then, send dead cubes
             IEnumerable<Cube> eatenPlayers = world.EatPlayers();
             SendCubes(eatenPlayers);
 
             // Finally, send remaining player cubes.
             SendCubes(world.playerCubes.Values);
 
+            // okay to raise another event
             (o as System.Timers.Timer).Start();
         }
         /// <summary>

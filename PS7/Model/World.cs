@@ -134,11 +134,11 @@ namespace AgCubio
         /// <param name="maxSplitDist">How far cubes are "thrown" when split.</param>
         /// <param name="maxSplits">How many cubes a player can split to.</param>
         /// <param name="absorbDelta">How close cubes should be to have the larger eat the smaller.</param>
-        public World(double w, double h, object heartbeat, double topSpeed, double lowSpeed, double attrition, double foodMass, double playerStartMass, int maxFood, double minSplitMass, double maxSplitDist, int maxSplits, double absorbDelta)
+        public World(int w, int h, int heartbeat, double topSpeed, double lowSpeed, double attrition, double foodMass, double playerStartMass, int maxFood, double minSplitMass, double maxSplitDist, int maxSplits, double absorbDelta)
         {
             this.IsServer = true;
-            this.Width = (int)w;
-            this.Height = (int)h;
+            this.Width = w;
+            this.Height = h;
             this.HeartbeatsPerSecond = heartbeat;
             this.TopSpeed = topSpeed;
             this.LowSpeed = lowSpeed;
