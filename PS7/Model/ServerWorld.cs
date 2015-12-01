@@ -14,6 +14,61 @@ namespace AgCubio
     /// </summary>
     partial class World
     {
+        /// <summary>
+        /// The rate of updates per second the world should do.
+        /// </summary>
+        public int HeartbeatsPerSecond { get; private set; }
+
+        /// <summary>
+        /// The rate at which cubes can move at their smallest mass.
+        /// </summary>
+        public double TopSpeed { get; private set; } // TODO: figure out type, implement in code
+
+        /// <summary>
+        /// The rate at which cubes can move at their largest mass.
+        /// </summary>
+        public double LowSpeed { get; private set; } // TODO: figure out type, implement in code
+
+        /// <summary>
+        /// The rate at which cubes lose mass.
+        /// </summary>
+        public double AttritionRate { get; private set; } // TODO: figure out type, implement in code
+
+        /// <summary>
+        /// The default mass of food.
+        /// </summary>
+        public double FoodValue { get; private set; }
+
+        /// <summary>
+        /// The initial mass of players.
+        /// </summary>
+        public double PlayerStartMass { get; private set; }
+
+        /// <summary>
+        /// The maximum amount of food for the world. When world has less food, 1 food should be added per heartbeat.
+        /// </summary>
+        public int MaxFood { get; private set; }
+
+        /// <summary>
+        /// The mass that should not allow splitting when below this value.
+        /// </summary>
+        public double MinimumSplitMass { get; private set; }
+
+        /// <summary>
+        /// The distance a cube can be "thrown" when split.
+        /// </summary>
+        public double MaximumSplitDistance { get; private set; }
+
+        /// <summary>
+        /// The amount of cubes a player can split to at most.
+        /// </summary>
+        public int MaximumSplits { get; private set; }
+
+        /// <summary>
+        /// The distance cubes must be to have the larger eat the smaller.
+        /// </summary>
+        public double AbsorbDistanceDelta { get; private set; }
+
         private Random r = new Random();
 
         // Represents all the foods on the server
@@ -50,8 +105,6 @@ namespace AgCubio
             int.Parse(p.Element("max_split_dist").Value);
             int.Parse(p.Element("max_splits").Value);
             double.Parse(p.Element("absorb_constant").Value);
-
-            IsServer = true;
         }
 
 
@@ -187,7 +240,6 @@ namespace AgCubio
 
 
             // TODO: implement
-            if (!IsServer) throw new Exception("The world was constructed for client use, but a server-based method was called."); // TODO: determine exception type to use
         }
     }
 }
