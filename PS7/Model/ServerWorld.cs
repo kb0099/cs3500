@@ -14,25 +14,29 @@ namespace AgCubio
     /// </summary>
     partial class World
     {
+        // TODO: define units in seconds to help in determining use in equations
         /// <summary>
         /// The rate of updates per second the world should do.
         /// </summary>
         public int HeartbeatsPerSecond { get; private set; }
 
+        // TODO: figure out units
         /// <summary>
         /// The rate at which cubes can move at their smallest mass.
         /// </summary>
-        public double TopSpeed { get; private set; } // TODO: figure out type, implement in code
+        public double TopSpeed { get; private set; }
 
+        // TODO: figure out units
         /// <summary>
         /// The rate at which cubes can move at their largest mass.
         /// </summary>
-        public double LowSpeed { get; private set; } // TODO: figure out type, implement in code
+        public double LowSpeed { get; private set; }
 
+        // TODO: figure out units
         /// <summary>
         /// The rate at which cubes lose mass.
         /// </summary>
-        public double AttritionRate { get; private set; } // TODO: figure out type, implement in code
+        public double AttritionRate { get; private set; }
 
         /// <summary>
         /// The default mass of food.
@@ -69,16 +73,28 @@ namespace AgCubio
         /// </summary>
         public double AbsorbDistanceDelta { get; private set; }
 
-        private Random r = new Random();
+        /// <summary>
+        /// A random number generator used for random locations of cubes.
+        /// </summary>
+        private Random r;
 
-        // Represents all the foods on the server
-        public Dictionary<int, Cube> foodCubes = new Dictionary<int, Cube>();
+        /// <summary>
+        /// A dictionary that represents all the foods on the server. The keys are unique id's, and the values are
+        /// the cubes.
+        /// </summary>
+        public Dictionary<int, Cube> foodCubes;
 
-        // Represents all the player cubes on the server
-        public Dictionary<int, Cube> playerCubes = new Dictionary<int, Cube>();
+        /// <summary>
+        /// A dictionary that represents all the player cubes on the server. The keys are the unique id's, and the
+        /// values are the cubes.
+        /// </summary>
+        public Dictionary<int, Cube> playerCubes;
 
-        // Represents all the splitted cubes that belong to a single team/player.
-        public Dictionary<int, LinkedList<Cube>> teamCubes = new Dictionary<int, LinkedList<Cube>>();
+        /// <summary>
+        /// A dictionary that represents all the splitted cubes that belong to a single team/player. The keys are
+        /// the unique id's, and the values are the collection of cubes belonging to the team.
+        /// </summary>
+        public Dictionary<int, LinkedList<Cube>> teamCubes;
 
         /// <summary>
         /// Initializes a world from a config file.
@@ -105,14 +121,33 @@ namespace AgCubio
             int.Parse(p.Element("max_split_dist").Value);
             int.Parse(p.Element("max_splits").Value);
             double.Parse(p.Element("absorb_constant").Value);
+
+            this.r = new Random();
+            this.foodCubes = new Dictionary<int, Cube>(this.MaxFood); // initializing capacity will cut down on times the object will have to resize
+            this.playerCubes = new Dictionary<int, Cube>(10); // assuming an initial capacity of 10 will work here
+            this.teamCubes = new Dictionary<int, LinkedList<Cube>>(10); // assuming an initial capacity of 10 will work here
         }
 
-
+        /// <summary>
+        /// A constant array of colors that are used to set player cube colors.
+        /// </summary>
         private static readonly Color[] PLAYER_COLORS = {
             Color.Red, Color.Blue, Color.Black, Color.Violet, Color.LightPink, Color.Yellow, Color.Orange, Color.Pink
         };
+
+        /// <summary>
+        /// A counter to help iterate through colors available when setting player cube color.
+        /// </summary>
         private static int nextColor = 0;
+
+        /// <summary>
+        /// A counter to help track available unique id's.
+        /// </summary>
         private static int nextUID = -1;
+
+        /// <summary>
+        /// A constant to set the color of virus cubes.
+        /// </summary>
         private static readonly Color VIRUS_COLOR = Color.Green;
 
         /// <summary>
@@ -124,6 +159,10 @@ namespace AgCubio
             return PLAYER_COLORS[(nextColor++) % (PLAYER_COLORS.Length)].ToArgb();
         }
 
+        /// <summary>
+        /// Returns the next unique id.
+        /// </summary>
+        /// <returns></returns>
         private static int NextUID()
         {
             return System.Threading.Interlocked.Increment(ref nextUID);
@@ -176,6 +215,9 @@ namespace AgCubio
         /// <param name="toY">Towards Y co-oprdinate</param>
         public void MoveCube(Cube c, int toX, int toY)
         {
+            // TODO: this method will not apply to moving teams of cubes, may need to make a method that will wrap around this method to move team cubes
+            // TODO: handle cube collisions to team cubes
+            // TODO: handle collisions to world edges
             double h = Math.Sqrt(toX * toX + toY * toY);
             double speed = TopSpeed - c.Mass / 600;
             if (speed < LowSpeed) speed = LowSpeed;
@@ -190,6 +232,7 @@ namespace AgCubio
         /// <returns>All the cubes that are eaten.</returns>
         public IEnumerable<Cube> EatFoods()
         {
+            // TODO: implement
             throw new NotImplementedException();
         }
 
@@ -199,6 +242,7 @@ namespace AgCubio
         /// <returns>All the players those have been eaten.</returns>
         public IEnumerable<Cube> EatPlayers()
         {
+            // TODO: implement
             throw new NotImplementedException();
         }
 
@@ -211,6 +255,7 @@ namespace AgCubio
         /// <param name="toY">Split towards Y</param>
         public void SplitCube(Cube c, int toX, int toY)
         {
+            // TODO: implement
             throw new NotImplementedException();
         }
 
