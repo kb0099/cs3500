@@ -92,7 +92,7 @@ namespace AgCubio
 
         /// <summary>
         /// A dictionary that represents all the splitted cubes that belong to a single team/player. The keys are
-        /// the unique id's, and the values are the collection of cubes belonging to the team.
+        /// the team id's, and the values are the collection of cubes belonging to the team.
         /// </summary>
         public Dictionary<int, LinkedList<Cube>> teamCubes;
 
@@ -232,8 +232,25 @@ namespace AgCubio
         /// <returns>All the cubes that are eaten.</returns>
         public IEnumerable<Cube> EatFoods()
         {
-            // TODO: implement
-            throw new NotImplementedException();
+            // initialize the output
+            List<Cube> output = new List<Cube>();
+            // iterate through players
+            foreach (Cube c in playerCubes.Values)
+            {
+                // iterate through food
+                foreach (Cube f in foodCubes.Values)
+                {
+                    // if IsAbsorbable() is true, add food cube to output and manage consumption
+                    if (IsAbsorbable(c, f))
+                    {
+                        output.Add(f);
+                        // consumption involves removing the food and adding to the cube's mass
+                        foodCubes.Remove(f.uId);
+                        c.Mass += f.Mass;
+                    }
+                }
+            }
+            return output;
         }
 
         /// <summary>
@@ -241,6 +258,54 @@ namespace AgCubio
         /// </summary>
         /// <returns>All the players those have been eaten.</returns>
         public IEnumerable<Cube> EatPlayers()
+        {
+            // initialize the output
+            List<Cube> output = new List<Cube>();
+            // Format the player cubes into a sorted list by mass
+            List<Cube> sorted = new List<Cube>(playerCubes.Values);
+            sorted.Sort(Comparer);
+            // TODO: iteration style will affect game behavior; a special case of large can absorb medium, medium can absorb small, large can absorb small, but in what order can they absorb?
+            Cube a, b;
+            // iterate from second to smallest cube to largest cube
+            for (int i = 1; i < sorted.Count; i++)
+            {
+                a = sorted[i];
+                // iterate through all cubes smaller than i, in order of smallest to largest
+                for (int j = 0; j < i; j++)
+                {
+                    b = sorted[j];
+                    // if IsAbsorbable() is true, add smaller cube to output and manage consumtion
+                    if (IsAbsorbable(a, b))
+                    {
+                        output.Add(b);
+                        // consumption involves removing the smaller cube (from dictionary and list) and adding to the larger cube's mass
+                        playerCubes.Remove(b.uId);
+                        sorted.RemoveAt(j);
+                        a.Mass += b.Mass;
+                        // The change in a's mass could ruin the sorting order of the list, so re-sort
+                        sorted.Sort(Comparer); // if the cube mass did ruin sorting, it will jump up higher on the list, so the order of cubes below it should not be affected
+                        // since the list was modified, i, j, and a need to be modified to have loop consistency
+                        // to fix it so the for loops are consistent:
+                        //      j is set to -1 (in case of re-sorting changing a) to have next loop start from beginning of list; a's increased size or changed cube could affect all smaller cubes, so need to start over
+                        //      i is decremented in relation to the removal in the list shifting cubes to the left
+                        //      a is re-obtained (in case of previous re-sorting changing a)
+                        j = -1;
+                        i--;
+                        a = sorted[i];
+                    }
+                }
+            }
+            return output;
+        }
+
+        /// <summary>
+        /// A helper method to determine if the smaller cube can be absorbed by the larger cube due to proximity to
+        /// each other.
+        /// </summary>
+        /// <param name="c1">The first cube.</param>
+        /// <param name="c2">The second cube.</param>
+        /// <returns></returns>
+        private bool IsAbsorbable(Cube c1, Cube c2)
         {
             // TODO: implement
             throw new NotImplementedException();
