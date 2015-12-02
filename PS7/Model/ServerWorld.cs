@@ -70,6 +70,7 @@ namespace AgCubio
 
         /// <summary>
         /// The distance cubes must be to have the larger eat the smaller.
+        /// This value is a percentage of how much of the smaller cube is overlapped by the larger cube in an axis.
         /// </summary>
         public double AbsorbDistanceDelta { get; private set; }
 
@@ -309,6 +310,30 @@ namespace AgCubio
         {
             // TODO: implement
             throw new NotImplementedException();
+            // the cube sizes must be determined
+            Cube large, small;
+            if (c1.Mass == c2.Mass)
+            {
+                return false; // masses are too close to be absorbable
+            }
+            else if (c1.Mass > c2.Mass)
+            {
+                large = c1;
+                small = c2;
+            }
+            else
+            {
+                large = c2;
+                small = c1;
+            }
+            // determine max difference for absorbtion
+            double maxD = 0.5*large.Size + small.Size*(0.5-AbsorbDistanceDelta); // max diffference = 1/2 * large size - small size * absorb percentage + 1/2 * small size
+            // determine differences in axes
+            double dx = Math.Abs(large.X-small.X);
+            double dy = Math.Abs(large.Y - small.Y);
+            // if the differences are in range, they are absorbable
+            if (maxD >= dx && maxD >= dy) return true;
+            else return false;
         }
 
         /// <summary>
