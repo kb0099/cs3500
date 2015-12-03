@@ -98,7 +98,7 @@ namespace AgCubio
             PreservedState state = (PreservedState)ar.AsyncState;
             try
             {
-                int count = state.socket.EndReceive(ar);
+                int count = state.socket.EndReceive(ar); // TODO: SocketException occured when client disconnects
                 if (count <= 0)
                     return;
                 string data = Encoding.UTF8.GetString(state.buffer, 0, count);

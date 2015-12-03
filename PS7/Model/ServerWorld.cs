@@ -235,6 +235,7 @@ namespace AgCubio
         {
             // initialize the output
             List<Cube> output = new List<Cube>();
+            List<int> removal = new List<int>();
             // iterate through players
             foreach (Cube c in playerCubes.Values)
             {
@@ -245,11 +246,18 @@ namespace AgCubio
                     if (IsAbsorbable(c, f))
                     {
                         output.Add(f);
-                        // consumption involves removing the food and adding to the cube's mass
-                        foodCubes.Remove(f.uId);
+                        // consumption involves removing the food and adding to the cube's mass, then setting food to 0 mass to kill it
+                        removal.Add(f.uId);
                         c.Mass += f.Mass;
+                        f.Mass = 0;
                     }
                 }
+                // removal of cubes must be done here to avoid foreach exception of changing IEnumerable
+                foreach (int removeId in removal)
+                {
+                    foodCubes.Remove(removeId);
+                }
+                removal.Clear();
             }
             return output;
         }
@@ -279,10 +287,11 @@ namespace AgCubio
                     if (IsAbsorbable(a, b))
                     {
                         output.Add(b);
-                        // consumption involves removing the smaller cube (from dictionary and list) and adding to the larger cube's mass
+                        // consumption involves removing the smaller cube (from dictionary and list) and adding to the larger cube's mass, then setting player to 0 mass to kill it
                         playerCubes.Remove(b.uId);
                         sorted.RemoveAt(j);
                         a.Mass += b.Mass;
+                        b.Mass = 0;
                         // The change in a's mass could ruin the sorting order of the list, so re-sort
                         sorted.Sort(Comparer); // if the cube mass did ruin sorting, it will jump up higher on the list, so the order of cubes below it should not be affected
                         // since the list was modified, i, j, and a need to be modified to have loop consistency
@@ -308,8 +317,6 @@ namespace AgCubio
         /// <returns></returns>
         private bool IsAbsorbable(Cube c1, Cube c2)
         {
-            // TODO: implement
-            throw new NotImplementedException();
             // the cube sizes must be determined
             Cube large, small;
             if (c1.Mass == c2.Mass)

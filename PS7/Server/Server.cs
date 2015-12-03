@@ -135,7 +135,8 @@ namespace AgCubio
             ps.receivedData.Clear();
 
             // send the initial world only to this socket
-            SendCubes(world.foodCubes.Values, ps.socket);
+            List<Cube> sendFood = new List<Cube>(world.foodCubes.Values); // TODO: SendCubes() is able to have exception if food cubes are removed while it is trying to send them; this is temp way to try separating the collections while food is sent over, would be better to set up locks for foodCubes
+            SendCubes(sendFood, ps.socket);
 
             // Ready to receive commands
             ps.callback = ProcessClientData;
@@ -226,6 +227,7 @@ namespace AgCubio
             {
                 lock (clientSockets)
                 {
+                    List<Socket> removal = new List<Socket>();
                     foreach (Socket s in clientSockets.Keys)
                     {
                         foreach (Cube c in cubes)
@@ -233,9 +235,15 @@ namespace AgCubio
                             // the connection is dead, safe to remove the socket, but the cube remains in the world
                             if (!Network.Send(s, JsonConvert.SerializeObject(c) + "\n"))
                             {
-                                clientSockets.Remove(s);
+                                //clientSockets.Remove(s);
+                                removal.Add(s);
                             }
                         }
+                    }
+                    // TODO: removing sockets in foreach causes exceptions, so removal done outside of loop
+                    foreach (Socket removeS in removal)
+                    {
+                        clientSockets.Remove(removeS);
                     }
                 }
             }
