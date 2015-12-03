@@ -219,11 +219,11 @@ namespace AgCubio
             // TODO: this method will not apply to moving teams of cubes, may need to make a method that will wrap around this method to move team cubes
             // TODO: handle cube collisions to team cubes
             // TODO: handle collisions to world edges
-            double h = Math.Sqrt(toX * toX + toY * toY);
+            double h = Math.Sqrt(Math.Pow(toX-c.X,2) + Math.Pow(toY-c.Y,2));
             double speed = TopSpeed - c.Mass / 600;
             if (speed < LowSpeed) speed = LowSpeed;
-            c.X = (toX - c.X) / h * speed * 20;
-            c.Y = (toY - c.Y) / h * speed *20;
+            c.X = (toX - c.X) / h * speed + c.X;
+            c.Y = (toY - c.Y) / h * speed + c.Y;
         }
 
         /// <summary>
