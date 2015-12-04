@@ -57,7 +57,7 @@ namespace AgCubio
         /// The mass of the cube.
         /// </summary>
         [JsonProperty]
-        public double Mass;
+        public int Mass;
 
         /// <summary>
         /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.
@@ -96,7 +96,7 @@ namespace AgCubio
         /// <param name="Name">The name given to the cube.</param>
         /// <param name="Mass">The size of the cube.</param>
         [JsonConstructorAttribute]
-        public Cube(double loc_x, double loc_y, int argb_color, int uid, int team_id, bool food, string Name, double Mass)
+        public Cube(double loc_x, double loc_y, int argb_color, int uid, int team_id, bool food, string Name, int Mass)
         {
             this.X = loc_x;
             this.Y = loc_y;

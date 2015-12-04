@@ -42,12 +42,12 @@ namespace AgCubio
         /// <summary>
         /// The default mass of food.
         /// </summary>
-        public double FoodValue { get; private set; }
+        public int FoodValue { get; private set; }
 
         /// <summary>
         /// The initial mass of players.
         /// </summary>
-        public double PlayerStartMass { get; private set; }
+        public int PlayerStartMass { get; private set; }
 
         /// <summary>
         /// The maximum amount of food for the world. When world has less food, 1 food should be added per heartbeat.
@@ -122,8 +122,8 @@ namespace AgCubio
             this.TopSpeed = double.Parse(p.Element("top_speed").Value);
             this.LowSpeed = double.Parse(p.Element("low_speed").Value);
             this.AttritionRate = double.Parse(p.Element("attrition_rate").Value);
-            this.FoodValue = double.Parse(p.Element("food_value").Value);
-            this.PlayerStartMass = double.Parse(p.Element("player_start_mass").Value);
+            this.FoodValue = int.Parse(p.Element("food_value").Value);
+            this.PlayerStartMass = int.Parse(p.Element("player_start_mass").Value);
             this.MaxFood = int.Parse(p.Element("max_food").Value);
             this.MinimumSplitMass = double.Parse(p.Element("min_split_mass").Value);
             this.MaximumSplitDistance = double.Parse(p.Element("max_split_dist").Value);
@@ -266,6 +266,8 @@ namespace AgCubio
                     {
                         output.Add(f);
                         // consumption involves removing the food and adding to the cube's mass, then setting food to 0 mass to kill it
+
+                        Console.WriteLine(c.Mass + ", " + f.Mass);                        // debug
                         c.Mass += f.Mass;
                         f.Mass = 0;
                     }
@@ -292,7 +294,8 @@ namespace AgCubio
             sorted.Sort(Comparer);
             // TODO: iteration style will affect game behavior; a special case of large can absorb medium, medium can absorb small, large can absorb small, but in what order can they absorb?
             Cube a, b;
-            double tempX, tempY, tempMass;
+            double tempX, tempY;
+            int tempMass;
             // iterate from second to smallest cube to largest cube
             for (int i = 1; i < sorted.Count; i++)
             {
@@ -438,12 +441,12 @@ namespace AgCubio
             {
                 // calculate the amount of mass to remove in relation to a minimum mass (PlayerStartMass for now), then remove that mass
                 // if the cube is under minimum mass, do nothing to it
-                if (c.Mass < PlayerStartMass)
+                if (c.Mass <= PlayerStartMass)
                 {
                     continue;
                 }
                 // remove mass based on AttritionRate and ratio of player mass to PlayerStartMass
-                c.Mass = c.Mass - AttritionRate * (c.Mass / PlayerStartMass);
+                c.Mass = (int)(c.Mass - Math.Sqrt(c.Mass) / AttritionRate); //AttritionRate * (c.Mass / PlayerStartMass));
             }
         }
     }
