@@ -136,9 +136,19 @@ namespace AgCubio
             return "Food: " + food + ", Name: " + Name + ", ID: " + uId + ", Team: " + teamId;
         }
 
-        internal void ApplyMomentum()
+        // Applies the momentum
+        public void ApplyMomentum()
         {
-            throw new NotImplementedException();
+            if(!(mSteps < 0))
+            {
+                mSteps -= 1;
+                X += mx;
+                Y += my;
+            }
         }
+
+        private int mSteps;     // momentum steps
+        private int mx, my;     // momentum in x and y         
+            
     }
 }
