@@ -113,16 +113,16 @@ namespace AgCubio
             this.Width = int.Parse(p.Element("width").Value);
             this.Height = int.Parse(p.Element("height").Value);
             this.HeartbeatsPerSecond = int.Parse(p.Element("heartbeats_per_second").Value);
-            this.TopSpeed = int.Parse(p.Element("top_speed").Value);
-            this.LowSpeed = int.Parse(p.Element("low_speed").Value);
-            this.AttritionRate = int.Parse(p.Element("attrition_rate").Value);
-            this.FoodValue = int.Parse(p.Element("food_value").Value);
-            this.PlayerStartMass = int.Parse(p.Element("player_start_mass").Value);
+            this.TopSpeed = double.Parse(p.Element("top_speed").Value);
+            this.LowSpeed = double.Parse(p.Element("low_speed").Value);
+            this.AttritionRate = double.Parse(p.Element("attrition_rate").Value);
+            this.FoodValue = double.Parse(p.Element("food_value").Value);
+            this.PlayerStartMass = double.Parse(p.Element("player_start_mass").Value);
             this.MaxFood = int.Parse(p.Element("max_food").Value);
-            int.Parse(p.Element("min_split_mass").Value);
-            int.Parse(p.Element("max_split_dist").Value);
-            int.Parse(p.Element("max_splits").Value);
-            double.Parse(p.Element("absorb_constant").Value);
+            this.MinimumSplitMass = double.Parse(p.Element("min_split_mass").Value);
+            this.MaximumSplitDistance = double.Parse(p.Element("max_split_dist").Value);
+            this.MaximumSplits = int.Parse(p.Element("max_splits").Value);
+            this.AbsorbDistanceDelta = double.Parse(p.Element("absorb_constant").Value);
 
             this.r = new Random();
             this.foodCubes = new Dictionary<int, Cube>(this.MaxFood); // initializing capacity will cut down on times the object will have to resize
@@ -221,7 +221,7 @@ namespace AgCubio
             // TODO: handle cube collisions to team cubes
             // TODO: handle collisions to world edges
             double h = Math.Sqrt(Math.Pow(toX-c.X,2) + Math.Pow(toY-c.Y,2));
-            double speed = TopSpeed - c.Mass / 600;
+            double speed = TopSpeed - c.Mass / PlayerStartMass - 1; // when at minimum mass, TopSpeed applies; larger mass decreases speed
             if (speed < LowSpeed) speed = LowSpeed;
             c.X = (toX - c.X) / h * speed + c.X;
             c.Y = (toY - c.Y) / h * speed + c.Y;
@@ -372,7 +372,6 @@ namespace AgCubio
                 // if the cube is under minimum mass, do nothing to it
                 if (c.Mass < PlayerStartMass)
                 {
-                    if (c.Mass != PlayerStartMass) c.Mass = PlayerStartMass; // a way to better gaurantee the cube will be the same mass as the player start mass after this attrition check
                     continue;
                 }
                 // remove mass based on AttritionRate and ratio of player mass to PlayerStartMass
