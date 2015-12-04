@@ -136,7 +136,10 @@ namespace AgCubio
             return "Food: " + food + ", Name: " + Name + ", ID: " + uId + ", Team: " + teamId;
         }
 
-        // Applies the momentum
+
+        /// <summary>
+        /// Applies the momentum to this cube
+        /// </summary>
         public void ApplyMomentum()
         {
             if(!(mSteps < 0))
@@ -146,9 +149,18 @@ namespace AgCubio
                 Y += my;
             }
         }
-
         private int mSteps;     // momentum steps
-        private int mx, my;     // momentum in x and y         
-            
+        private int mx, my;     // momentum in x and y   
+
+        /// <summary>
+        /// Sets the momentum in x and y direction with given steps to apply
+        /// </summary>
+        public void SetMomentum(int mmx, int mmy, int steps)
+        {
+            this.mx = mmx;
+            this.my = mmy;
+            this.mSteps = steps;
+        }
+
     }
 }
