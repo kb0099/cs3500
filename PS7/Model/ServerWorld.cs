@@ -255,7 +255,6 @@ namespace AgCubio
         {
             // initialize the output
             List<Cube> output = new List<Cube>();
-            List<int> removal = new List<int>();
             // iterate through players
             foreach (Cube c in playerCubes.Values)
             {
@@ -267,17 +266,15 @@ namespace AgCubio
                     {
                         output.Add(f);
                         // consumption involves removing the food and adding to the cube's mass, then setting food to 0 mass to kill it
-                        removal.Add(f.uId);
                         c.Mass += f.Mass;
                         f.Mass = 0;
                     }
                 }
                 // removal of cubes must be done here to avoid foreach exception of changing IEnumerable
-                foreach (int removeId in removal)
+                foreach (Cube dead in output)
                 {
-                    foodCubes.Remove(removeId);
+                    foodCubes.Remove(dead.uId);
                 }
-                removal.Clear();
             }
             return output;
         }
