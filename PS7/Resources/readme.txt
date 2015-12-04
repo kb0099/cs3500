@@ -1,4 +1,25 @@
-﻿Mitchell Terry and Kedar Bastakoti 11/17/2015
+﻿PS8
+Kedar Bastakoti 
+Mitchell Terry
+
+Notes for TA:
+Please, sync/pull this repo after Friday, December 4th, 2015 11:59PM.
+
+We talked with Jim regarding extension. He agreed on one 1 extra day to work on this assignment for our team.
+He asked to put this notes so that TAs can see it.
+
+According to Jim, TAs can talk with Jim if TA's have any questions.
+
+Implementation Notes:
+Most of the implementations directly adhere to or follow the assignment specifications.
+
+
+
+
+
+
+PS7
+Mitchell Terry and Kedar Bastakoti 11/17/2015
 Using an extention called Json.NET
 
 The client starts with  controls to take in a player name and server IP. 
