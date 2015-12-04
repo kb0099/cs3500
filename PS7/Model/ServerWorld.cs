@@ -254,7 +254,27 @@ namespace AgCubio
         /// <param name="toY">Towards Y co-oprdinate</param>
         public void MoveTeam(int tid, int toX, int toY)
         {
+            LinkedList<Cube> team;
+            if (teamCubes.TryGetValue(tid, out team))
+            {
+                foreach (Cube current in team)
+                {
+                    current.ApplyMomentum();
+                    MoveCube(current.uId, toX, toY);
+                }
+                HandleTeamOverlap(team);
+                return;
+            }
+            Cube single;
+            if (playerCubes.TryGetValue(tid, out single))
+            {
+                MoveCube(single.uId, toX, toY);
+            }
+        }
 
+        private void HandleTeamOverlap(LinkedList<Cube> team)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

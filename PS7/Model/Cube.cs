@@ -135,5 +135,10 @@ namespace AgCubio
         {
             return "Food: " + food + ", Name: " + Name + ", ID: " + uId + ", Team: " + teamId;
         }
+
+        internal void ApplyMomentum()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
