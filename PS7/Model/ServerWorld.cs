@@ -34,7 +34,8 @@ namespace AgCubio
 
         // TODO: figure out units
         /// <summary>
-        /// The rate at which cubes lose mass.
+        /// The rate at which cubes lose mass. Units are the amount of mass lost per heartbeat. This applies to
+        /// smaller cubes, and scales up for larger cubes.
         /// </summary>
         public double AttritionRate { get; private set; }
 
@@ -364,24 +365,19 @@ namespace AgCubio
         /// </summary>
         public void ApplyAttrition()
         {
-            // TODO: 
-            // While it was an excellent idea of throwing exception if it is called by client.
-            // It should not be our concern, since, placing this check in every single call is going to
-            // negatively impact the performance.
-            // So, I would recommend removing these extra checks, because it adds no extra benefit
-            // Reason: 1) It's the failure of the  assignment specification itself.
-            //         2) Exceptions will be automatically thrown when world is not properly initialized.
-            //         3) Since, we had most variables like playerCubes from PS7 -- client-centric, I had to use
-            //            new variables to represent playerCubes, foodCubes, and teamCubes the server has.
-            //            This ensures that NullReferenceException is automatically thrown if unauthorized calls are made.
-            //            So, manual checking and throwing should not be required.
-            // 
-            // One better way would probably have one World class independent of client and world.
-            // Then, ClientWorld class and ServerWorld class can deerive from parent World class.
-            // It should not be a big concern, now, since client was already completed.
-
-
-            // TODO: implement
+            // iterate through player cubes
+            foreach (Cube c in playerCubes.Values)
+            {
+                // calculate the amount of mass to remove in relation to a minimum mass (PlayerStartMass for now), then remove that mass
+                // if the cube is under minimum mass, do nothing to it
+                if (c.Mass < PlayerStartMass)
+                {
+                    if (c.Mass != PlayerStartMass) c.Mass = PlayerStartMass; // a way to better gaurantee the cube will be the same mass as the player start mass after this attrition check
+                    continue;
+                }
+                // remove mass based on AttritionRate and ratio of player mass to PlayerStartMass
+                c.Mass = c.Mass - AttritionRate * (c.Mass / PlayerStartMass);
+            }
         }
     }
 }
