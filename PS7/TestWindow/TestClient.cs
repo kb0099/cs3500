@@ -187,7 +187,7 @@ namespace AgCubio
         {
             Console.WriteLine("Starting TestCube()");
             // create a cube
-            Cube c = new Cube(20, 30, -2987746, 5318, 5318, false, "bill", 1026.3458);
+            Cube c = new Cube(20, 30, -2987746, 5318, 5318, false, "bill", 10001);
             Console.Write("Original cube: ");
             PrintCubeData(c);
             Console.WriteLine();
