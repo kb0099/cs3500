@@ -247,6 +247,17 @@ namespace AgCubio
         }
 
         /// <summary>
+        /// Moves the splitted cubes towards the given point and not to that point.
+        /// </summary>
+        /// <param name="tid">The common team id</param>
+        /// <param name="toX">Towards X co-ordinate</param>
+        /// <param name="toY">Towards Y co-oprdinate</param>
+        public void MoveTeam(int tid, int toX, int toY)
+        {
+
+        }
+
+        /// <summary>
         /// Handles eating of food cubes by the world player cubes.
         /// Side effect: Removes the food cubes which have been eaten from the world.
         /// </summary>

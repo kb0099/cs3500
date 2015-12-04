@@ -165,7 +165,7 @@ namespace AgCubio
                     switch (tokens[0])
                     {
                         case "move":
-                            world.MoveCube(clientSockets[ps.socket], x, y);
+                            world.MoveTeam(clientSockets[ps.socket], x, y);
                             break;
 
                         case "split":
