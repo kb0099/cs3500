@@ -99,6 +99,12 @@ namespace AgCubio
         public Dictionary<int, LinkedList<Cube>> teamCubes;
 
         /// <summary>
+        /// A dictionary that represents momentums of cubes. Used during splitting. It acts as a multiplier for the
+        /// speed of a cube.
+        /// </summary>
+        //private Dictionary<int, int> cubeMomentum;
+
+        /// <summary>
         /// Initializes a world from a config file.
         /// Exceptions are not caught in the constructor and need to be handeled by the caller.
         /// </summary>
@@ -212,19 +218,32 @@ namespace AgCubio
         /// Moves the cube towards the given point and not to that point.
         /// The cube could be either player or food or virus.
         /// </summary>
-        /// <param name="c">The cube</param>
+        /// <param name="cId">The cube id</param>
         /// <param name="toX">Towards X co-ordinate</param>
         /// <param name="toY">Towards Y co-oprdinate</param>
-        public void MoveCube(Cube c, int toX, int toY)
+        public void MoveCube(int cId, int toX, int toY)
         {
-            // TODO: this method will not apply to moving teams of cubes, may need to make a method that will wrap around this method to move team cubes
-            // TODO: handle cube collisions to team cubes
-            // TODO: handle collisions to world edges
-            double h = Math.Sqrt(Math.Pow(toX-c.X,2) + Math.Pow(toY-c.Y,2));
-            double speed = TopSpeed - c.Mass / PlayerStartMass - 1; // when at minimum mass, TopSpeed applies; larger mass decreases speed
-            if (speed < LowSpeed) speed = LowSpeed;
-            c.X = (toX - c.X) / h * speed + c.X;
-            c.Y = (toY - c.Y) / h * speed + c.Y;
+            // iterate through cubes with a team id or cube id like the input
+            double h, speed, finalX, finalY;
+            foreach (Cube c in playerCubes.Values)
+            {
+                if (c.teamId == cId || c.uId == cId)
+                {
+                    // calculate length of vector from cube point to destination point
+                    h = Math.Sqrt(Math.Pow(toX-c.X,2) + Math.Pow(toY-c.Y,2));
+                    // calculate speed for cube
+                    speed = TopSpeed - c.Mass / PlayerStartMass - 1; // when at minimum mass, TopSpeed applies; larger mass decreases speed
+                    if (speed < LowSpeed) speed = LowSpeed;
+                    // calculate final point, which overall has unit vector dimensions multiply with the speed, then add to the current location
+                    finalX = (toX - c.X) / h * speed + c.X;
+                    finalY = (toY - c.Y) / h * speed + c.Y;
+                    // do checks that the cube will not violate movement restrictions
+                    // TODO: construct checks, then have checks do their own calculation of final position; checks include passing world boundaries and crossing over cubes of same team
+                    // if no checks have issues, set cube position to calculated final positions
+                    c.X = finalX;
+                    c.Y = finalY;
+                }
+            }
         }
 
         /// <summary>
@@ -266,7 +285,7 @@ namespace AgCubio
         /// <summary>
         /// Handles players eating other players. Also, removes dead players from world.
         /// </summary>
-        /// <returns>All the players those have been eaten.</returns>
+        /// <returns>All the players those have been eaten. If a cube heading a team is eaten, it will be in here too.</returns>
         public IEnumerable<Cube> EatPlayers()
         {
             // initialize the output
@@ -276,6 +295,7 @@ namespace AgCubio
             sorted.Sort(Comparer);
             // TODO: iteration style will affect game behavior; a special case of large can absorb medium, medium can absorb small, large can absorb small, but in what order can they absorb?
             Cube a, b;
+            double tempX, tempY, tempMass;
             // iterate from second to smallest cube to largest cube
             for (int i = 1; i < sorted.Count; i++)
             {
@@ -287,6 +307,29 @@ namespace AgCubio
                     // if IsAbsorbable() is true, add smaller cube to output and manage consumtion
                     if (IsAbsorbable(a, b))
                     {
+                        // if the consumed cube was head of a team, find another team cube to swap the cube roles
+                        if (b.uId == b.teamId)
+                        {
+                            foreach (Cube swap in playerCubes.Values)
+                            {
+                                if (swap.teamId == b.teamId && swap.uId != b.uId) // if there is no other cube of the same team, then nothing special is done
+                                {
+                                    // swap cubes by changing coordinates and mass between the cubes, adding head cube to output, and changing b to point to the swapped cube
+                                    tempX = b.X;
+                                    tempY = b.Y;
+                                    tempMass = b.Mass;
+                                    b.X = swap.X;
+                                    b.Y = swap.Y;
+                                    b.Mass = swap.Mass;
+                                    swap.X = tempX;
+                                    swap.Y = tempY;
+                                    swap.Mass = tempMass;
+                                    output.Add(b);
+                                    b = swap;
+                                    break;
+                                }
+                            }
+                        }
                         output.Add(b);
                         // consumption involves removing the smaller cube (from dictionary and list) and adding to the larger cube's mass, then setting player to 0 mass to kill it
                         playerCubes.Remove(b.uId);
@@ -320,9 +363,9 @@ namespace AgCubio
         {
             // the cube sizes must be determined
             Cube large, small;
-            if (c1.Mass == c2.Mass)
+            if (c1.Mass == c2.Mass || (c1.teamId == c2.teamId && c1.teamId != 0))
             {
-                return false; // masses are too close to be absorbable
+                return false; // masses are too close to be absorbable, or they are of the same team
             }
             else if (c1.Mass > c2.Mass)
             {
@@ -348,13 +391,41 @@ namespace AgCubio
         /// Splits the cube honoring the requirements.
         /// Side effect: Should add the splitted cubes to the  teamCubes.
         /// </summary>
-        /// <param name="c">Cube to split</param>
+        /// <param name="cId">Cube id to split</param>
         /// <param name="toX">Split towards X</param>
         /// <param name="toY">Split towards Y</param>
-        public void SplitCube(Cube c, int toX, int toY)
+        public void SplitCube(int cId, int toX, int toY)
         {
-            // TODO: implement
-            throw new NotImplementedException();
+            Cube newC;
+            double h, newX, newY;
+            List<Cube> team = new List<Cube>();
+            int splitted = 0;
+            // retrieve cubes belonging to the team
+            foreach (Cube c in playerCubes.Values)
+            {
+                if (c.teamId == cId || c.uId == cId) team.Add(c);
+            }
+            // operate on all cubes of the team
+            foreach (Cube c in team)
+            {
+                if (team.Count + splitted < MaximumSplits) // can't split if the maximum team size is being reached
+                {
+                    // if the cube hasn't been on a team yet, set it to a team
+                    if (c.teamId == 0) c.teamId = c.uId;
+                    // set cube to be half its mass
+                    c.Mass = c.Mass / 2;
+                    // calculate where new cube should be located
+                    h = Math.Sqrt(Math.Pow(toX-c.X,2) + Math.Pow(toY-c.Y,2));
+                    newX = c.X + (toX - c.X) / h * MaximumSplitDistance; // TODO: having cube directly jump to point with this implementation
+                    newY = c.Y + (toY - c.Y) / h * MaximumSplitDistance;
+                    // create a new cube of the same mass, moving towards the destination point; add it to playerCubes & increment splitted
+                    newC = new Cube(newX, newY, c.argb_color, NextUID(), c.uId, false, c.Name, c.Mass);
+                    playerCubes.Add(newC.uId, newC);
+                    splitted++;
+                    // track new cube's momentum, which will affect the move command of the cube later
+                    // TODO: not implemented yet
+                }
+            }
         }
 
         /// <summary>

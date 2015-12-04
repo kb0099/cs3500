@@ -165,12 +165,12 @@ namespace AgCubio
                     switch (tokens[0])
                     {
                         case "move":
-                            world.MoveCube(world.playerCubes[clientSockets[ps.socket]], x, y);
+                            world.MoveCube(clientSockets[ps.socket], x, y);
                             break;
 
                         case "split":
                             //Console.WriteLine("ToDo: Splits!");
-                            world.SplitCube(world.playerCubes[clientSockets[ps.socket]], x, y);
+                            world.SplitCube(clientSockets[ps.socket], x, y);
                             break;
                     }
                 }
