@@ -572,7 +572,7 @@ namespace AgCubio
                         0,
                         false,
                         "",
-                        r.Next(20, 500));
+                        r.Next(100, 500));
                     }
                 }
             }
