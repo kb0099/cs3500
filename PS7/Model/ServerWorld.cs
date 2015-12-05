@@ -106,7 +106,7 @@ namespace AgCubio
         /// <summary>
         /// Represents the minimum # of seconds the cube needs to wait before it can merge.
         /// </summary>
-        public int MinTimeToMerge { get { return 2; } }
+        public int MinTimeToMerge { get { return 4; } }
 
         /// <summary>
         /// A dictionary that represents momentums of cubes. Used during splitting. It acts as a multiplier for the
@@ -469,8 +469,16 @@ namespace AgCubio
             {
                 if (!teamCubes.TryGetValue(cId, out currentTeam))
                 {
-                    playerCubes[cId].teamId = cId;
-                    currentTeam = new List<Cube> { playerCubes[cId] };
+                    int tid = playerCubes[cId].teamId;
+                    if (!teamCubes.TryGetValue(tid, out currentTeam))
+                    {
+                        playerCubes[cId].teamId = cId;
+                        currentTeam = new List<Cube> { playerCubes[cId] };
+                    }
+                    else
+                    {
+                        cId = tid;  // cId will work as team id going forward
+                    }
                 }
                 foreach (Cube c in currentTeam)
                 {
@@ -494,12 +502,17 @@ namespace AgCubio
                 {
                     teamCubes[cId] = newTeam;
                 }
-                Task.Run(async () =>
-                {
-                    await Task.Delay(MinTimeToMerge * 1000);
-                    MergeTeam(cId);
-                });
+                TryMerge(cId);
             }
+        }
+
+        private void TryMerge(int cId)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(MinTimeToMerge * 1000);
+                MergeTeam(cId);
+            });
         }
 
         /// <summary>
@@ -525,7 +538,8 @@ namespace AgCubio
                         mergedCubes.Add(s);
                     }
                 }
-                if (teamCubes[tid].Count == 0) teamCubes.Remove(tid);
+                if (teamCubes[tid].Count == 1) teamCubes.Remove(tid);
+                else TryMerge(tid);
             }
         }
 
@@ -558,33 +572,39 @@ namespace AgCubio
         /// </summary>
         public void HandleViruses()
         {
-            if (viruses.Count < MAX_VIRUS_COUNT)
+            lock (viruses)
             {
-                if (r.Next(20) > 12)
+                if (viruses.Count < MAX_VIRUS_COUNT)
                 {
-                    Cube c;
-                    lock (this)
+                    if (r.Next(20) > 12)
                     {
-                        c = new Cube(r.Next(Width),
-                        r.Next(Height),
-                        VIRUS_COLOR.ToArgb(),
-                        NextUID(),
-                        0,
-                        false,
-                        "",
-                        r.Next(100, 500));
+                        Cube c;
+                        lock (this)
+                        {
+                            c = new Cube(r.Next(Width),
+                            r.Next(Height),
+                            VIRUS_COLOR.ToArgb(),
+                            NextUID(),
+                            0,
+                            false,
+                            "",
+                            r.Next(100, 500));
+                            // add the virus
+                            viruses.Add(c);
+                        }
                     }
                 }
+
             }
 
             List<Cube> temp = new List<Cube>();
             lock (this)
             {
-                foreach(Cube v in viruses)
+                foreach (Cube v in viruses)
                 {
-                    foreach(Cube p in playerCubes.Values)
+                    foreach (Cube p in playerCubes.Values.ToList())
                     {
-                        if(p.Mass > 600)
+                        if (p.Mass > 600)
                         {
                             if (IsAbsorbable(p, v))
                             {
@@ -595,7 +615,11 @@ namespace AgCubio
                     }
                 }
                 foreach (Cube v in temp)
+                {
+                    v.Mass = 0;
                     viruses.Remove(v);
+                    mergedCubes.Add(v);
+                }
             }
         }
 
