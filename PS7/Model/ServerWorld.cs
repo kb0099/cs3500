@@ -24,13 +24,13 @@ namespace AgCubio
         /// <summary>
         /// The rate at which cubes can move at their smallest mass.
         /// </summary>
-        public double TopSpeed { get; private set; }
+        public int TopSpeed { get; private set; }
 
         // TODO: figure out units
         /// <summary>
         /// The rate at which cubes can move at their largest mass.
         /// </summary>
-        public double LowSpeed { get; private set; }
+        public int LowSpeed { get; private set; }
 
         // TODO: figure out units
         /// <summary>
@@ -57,12 +57,12 @@ namespace AgCubio
         /// <summary>
         /// The mass that should not allow splitting when below this value.
         /// </summary>
-        public double MinimumSplitMass { get; private set; }
+        public int MinimumSplitMass { get; private set; }
 
         /// <summary>
         /// The distance a cube can be "thrown" when split.
         /// </summary>
-        public double MaximumSplitDistance { get; private set; }
+        public int MaximumSplitDistance { get; private set; }
 
         /// <summary>
         /// The amount of cubes a player can split to at most.
@@ -129,14 +129,14 @@ namespace AgCubio
             this.Width = int.Parse(p.Element("width").Value);
             this.Height = int.Parse(p.Element("height").Value);
             this.HeartbeatsPerSecond = int.Parse(p.Element("heartbeats_per_second").Value);
-            this.TopSpeed = double.Parse(p.Element("top_speed").Value);
-            this.LowSpeed = double.Parse(p.Element("low_speed").Value);
+            this.TopSpeed = int.Parse(p.Element("top_speed").Value);
+            this.LowSpeed = int.Parse(p.Element("low_speed").Value);
             this.AttritionRate = double.Parse(p.Element("attrition_rate").Value);
             this.FoodValue = int.Parse(p.Element("food_value").Value);
             this.PlayerStartMass = int.Parse(p.Element("player_start_mass").Value);
             this.MaxFood = int.Parse(p.Element("max_food").Value);
-            this.MinimumSplitMass = double.Parse(p.Element("min_split_mass").Value);
-            this.MaximumSplitDistance = double.Parse(p.Element("max_split_dist").Value);
+            this.MinimumSplitMass = int.Parse(p.Element("min_split_mass").Value);
+            this.MaximumSplitDistance = int.Parse(p.Element("max_split_dist").Value);
             this.MaximumSplits = int.Parse(p.Element("max_splits").Value);
             this.AbsorbDistanceDelta = double.Parse(p.Element("absorb_constant").Value);
 
@@ -250,13 +250,26 @@ namespace AgCubio
                     // calculate final point, which overall has unit vector dimensions multiply with the speed, then add to the current location
                     finalX = (toX - c.X) / h * speed + c.X;
                     finalY = (toY - c.Y) / h * speed + c.Y;
-                    // do checks that the cube will not violate movement restrictions
-                    // TODO: construct checks, then have checks do their own calculation of final position; checks include passing world boundaries and crossing over cubes of same team
-                    // if no checks have issues, set cube position to calculated final positions
                     c.X = finalX;
                     c.Y = finalY;
+                    // handle world edges
+                    HandleWorldEdges(cId);
                 }
             }
+        }
+
+        /// <summary>
+        /// Restricts the cubes to move outside the world boundary.
+        /// </summary>
+        /// <param name="cId">The id of the cube</param>
+        private void HandleWorldEdges(int cId)
+        {
+            Cube c = playerCubes[cId];
+            int delta = (int)c.Size/2 - r.Next(10, 20);
+            if (c.RightEdge > Width + delta) c.X = Width - delta;
+            if (c.LeftEdge < -delta) c.X = delta;
+            if (c.BottomEdge > Height + delta) c.Y = Height - delta;
+            if (c.TopEdge < -delta) c.Y = delta;
         }
 
         /// <summary>
@@ -523,8 +536,8 @@ namespace AgCubio
         {
             List<Cube> splits;
             teamCubes.TryGetValue(tid, out splits);
+            if (splits == null) return;
             splits = new List<Cube>(splits);    // new enumeration
-            if (splits?.Count < 2) return;
             lock (this)
             {
                 foreach (Cube s in splits)
