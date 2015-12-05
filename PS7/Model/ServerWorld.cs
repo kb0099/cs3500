@@ -560,7 +560,7 @@ namespace AgCubio
         {
             if (viruses.Count < MAX_VIRUS_COUNT)
             {
-                if (r.Next(10) > 8)
+                if (r.Next(20) > 12)
                 {
                     Cube c;
                     lock (this)
@@ -577,23 +577,26 @@ namespace AgCubio
                 }
             }
 
+            List<Cube> temp = new List<Cube>();
             lock (this)
             {
                 foreach(Cube v in viruses)
                 {
                     foreach(Cube p in playerCubes.Values)
                     {
-                        if(p.Mass > 800)
+                        if(p.Mass > 600)
                         {
                             if (IsAbsorbable(p, v))
                             {
-                                SplitCube(p.uId, r.Next(Width), r.Next(Height));
+                                SplitCube(p.uId, r.Next(Width), r.Next(Height));    // cube gets exploded
+                                temp.Add(v);        // virus gets destroyed
                             }
                         }
                     }
                 }
+                foreach (Cube v in temp)
+                    viruses.Remove(v);
             }
-
         }
 
     }

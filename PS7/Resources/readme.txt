@@ -12,6 +12,8 @@ According to Jim, TAs can talk with Jim if TA's have any questions.
 
 Implementation Notes:
 Most of the implementations directly adhere to or follow the assignment specifications.
+Viruses are randomly spawn and a player with a certain mass gets exploded after getting into a virus.
+Smaller masses have no effect due to virus.
 
 
 
