@@ -1,0 +1,272 @@
+<div id="region-main">
+                        <div class="region-content" id="yui_3_9_1_2_1441759031247_352">
+                            <div role="main" id="yui_3_9_1_2_1441759031247_351"><span id="maincontent"></span><h2 class="main">PS1 - Infix Calculator</h2><div id="intro" class="box generalbox boxaligncenter"><div class="no-overflow" id="yui_3_9_1_2_1441759031247_350"><div id="topics_header">
+<h1>Problem Set One</h1>
+<p class="synopsis">Your task is to write a method that evaluates arithmetic expressions written using standard infix notation. It should respect the usual precedence rules.</p>
+<h2 id="yui_3_9_1_2_1441759031247_349">Learning Objectives</h2>
+<ol>
+<li>
+<p>Learning Objective 1: To become familiar with the Visual Studio IDE, to refresh/translate all the <b>generic</b> knowledge that you learned about Java and Eclipse into the "world" of Visual Studio (VS) and C#.</p>
+</li>
+<li>
+<p>Learning Objective 2: To understand the power and use of C# delegates.</p>
+</li>
+<li>
+<p>Learning Objective 3: Learn to use and create DLLs (i.e., code libraries) which is a fundamental skill for large software projects.</p>
+</li>
+</ol></div>
+<div id="topics_body">
+<h2>Overview and Solution Structure</h2>
+<p>Please read and follow these directions carefully!</p>
+<p>Using Visual Studio, create a new local repository. This repository will contain all of your assignments for the semester, so call it something meaningful. I'll refer to it here, and in the future, as your assignment repository. Sync your new repository with https://github.com/uofu-cs3500-fall15/00000000, (Links to an external site.) but replace 00000000 with your 8 digit (no Us) University ID number.</p>
+<p>Note: A few of you either gave me no information about your GitHub account, or you information was inaccurate. If your GitHub repository does not work post an issue on the issue tracker.</p>
+<p>If you haven't done so already, clone the repository https://github.com/uofu-cs3500-fall15/Course_Examples. This is where we will put code examples that we go over in lecture, and it is where we will put code for you to incorporate into assignments.</p>
+<h2>Set up your PS1 Solution</h2>
+<p>Please read and follow directions carefully! The names of files/folders/etc. and setup must be followed <em>to the letter</em>. Failure will result in a lower grade or worse, making your grader's life harder....</p>
+<p>Using Visual Studio, create a project with the following specifications:</p>
+<ul>
+<li>C# is the language</li>
+<li>The project should be named FormulaEvaluator.</li>
+<li>The solution should be called PS1</li>
+<li>The type of project is a <em> class library </em></li>
+<li>The project should contain a public static class called Evaluator</li>
+<li>This class should be defined inside the namespace FormulaEvaluator</li>
+<li>The class (like everyone you write) should be fully documented with a header comment and a comment for every class variable and function.</li>
+</ul>
+<p class="hint">Warning: the assembly that results when a class library is built is a DLL, which is not an executable. To test your DLL, you'll need to create a console application that references your FormulaEvaluator project.</p>
+<p clas="hint">Note: In the future, you will learn how to test a Library using a Unit Test</p>
+<p>Be sure that you set up your FormulaEvaluator project so that your class and method comments are parsed and made available to Intellisense.</p>
+<hr>
+<h2>Learning and Ethics</h2>
+<p>Please make sure to do your own work on this assignment. You may find old solutions or similar projects on the web, but you are not to use them. You should write all of your code from scratch. If you are having a problem doing so, please speak with a TA or the professor.</p>
+<p>Remember, cheating not only hurts you (you won't be prepared for the next class nor for an internship or future job) but also your friends (e.g., it may affect the grading curve and worse, the reputation of the University of Utah's School of Computing).</p>
+<hr>
+<h2>Infix Expression Evaluation</h2>
+<p>Your task is to write a method that evaluates arithmetic expressions written using standard infix notation. It should respect the usual precedence rules.</p>
+<p>For example, if the input is "(2 + 3) * 5 + 2", the result should be 27. If the input is "(2 + X6) * 5 + 2", the result of course depends on the value of the variable X6. If X6 is 7, for example, the result should be 47.</p>
+<p>Here is an algorithm for evaluating an infix expression. We'll assume that the expression has been broken into a sequence of tokens. The only legal tokens are the four operator symbols (+ - * /), left parentheses, right parentheses, non-negative integers, whitespace, and variables consisting of one or more letters followed by one or more digits.</p>
+<p class="hint">You should ignore white space.</p>
+<p>Begin with two empty stacks: a value stack and an operator stack. Process the tokens from left to right. For each token t:</p>
+<table style="border: 1px solid black;" border="2" cellpadding="10">
+<tbody>
+<tr>
+<td style="border: 1px solid black;"><strong> Condition </strong></td>
+<td style="border: 1px solid black;"><strong> Action </strong></td>
+<td style="border: 1px solid black;"><strong> Possible Errors </strong></td>
+</tr>
+<tr>
+<td style="border: 1px solid black;">t is an integer</td>
+<td style="border: 1px solid black;">
+<p>If * or / is at the top of the operator stack, pop the value stack, pop the operator stack, and apply the popped operator to t and the popped number. Push the result onto the value stack.</p>
+<p>Otherwise, push t onto the value stack.</p>
+</td>
+<td style="border: 1px solid black;">The value stack is empty → A division by zero results</td>
+</tr>
+<tr>
+<td style="border: 1px solid black;">
+<p>t is a variable</p>
+</td>
+<td style="border: 1px solid black;">Proceed as above, using the looked-up value of t instead of t</td>
+<td style="border: 1px solid black;">
+<p>If looking up t reveals it has no value or if the value stack is empty, a division by zero results.</p>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black;">t is + or -</td>
+<td style="border: 1px solid black;">
+<p>If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack. Next, push t onto the operator stack</p>
+</td>
+<td style="border: 1px solid black;">The value stack contains fewer than 2 values</td>
+</tr>
+<tr>
+<td style="border: 1px solid black;">t is * or /</td>
+<td style="border: 1px solid black;">Push t onto the operator stack</td>
+<td style="border: 1px solid black;"></td>
+</tr>
+<tr>
+<td>t is a left parenthesis "("</td>
+<td style="border: 1px solid black;">Push t onto the operator stack</td>
+<td style="border: 1px solid black;"></td>
+</tr>
+<tr>
+<td style="border: 1px solid black;">t is a right parenthesis ")"</td>
+<td style="border: 1px solid black;">
+<p>If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.</p>
+<p>Next, the top of the operator stack should be a (. Pop it.</p>
+<p>Finally, if * or / is at the top of the operator stack, pop the value stack twice and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.</p>
+</td>
+<td style="border: 1px solid black;">
+<p>The value stack contains fewer than 2 values during the first step</p>
+<p>A ( isn't found where expected</p>
+<p>The value stack contains fewer than 2 values during the second step</p>
+<p>A division by zero results</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>When the last token has been processed:</p>
+<table style="border: 1px solid black;" border="2" cellpadding="10">
+<tbody>
+<tr>
+<td style="border: 1px solid black;"><strong> Condition </strong></td>
+<td style="border: 1px solid black;"><strong> Action </strong></td>
+<td style="border: 1px solid black;"><strong> Possible errors </strong></td>
+</tr>
+<tr>
+<td style="border: 1px solid black;">Operator stack is empty</td>
+<td style="border: 1px solid black;">
+<p>Value stack should contain a single number</p>
+<p>Pop it and report as the value of the expression</p>
+</td>
+<td style="border: 1px solid black;">There isn't exactly one value on the value stack</td>
+</tr>
+<tr>
+<td style="border: 1px solid black;">Operator stack is not empty</td>
+<td style="border: 1px solid black;">There should be exactly one operator on the operator stack, and it should be either + or -. There should be exactly two values on the value stack. Apply the operator to the two values and report the result as the value of the expression.</td>
+<td style="border: 1px solid black;">There isn't exactly one operator on the operator stack or exactly two numbers on the value stack</td>
+</tr>
+</tbody>
+</table>
+<h2>Begin Writing Your Library</h2>
+<p>The first thing you should do is put the following delegate declaration and method into your class:</p>
+<pre class="code">    <code class="csharp">
+      public delegate int Lookup(String v);
+      
+      public static int Evaluate(String exp, Lookup variableEvaluator)
+      {
+             ...;
+      }
+    </code>
+  </pre>
+<p>Evaluate takes two parameters. The first is the expression to be evaluated, and the second is a delegate that you can use to look up the value of a variable. Given a variable as its parameter, the delegate will either return an int (the value of the variable) or throw an ArgumentException (if the variable has no value).</p>
+<p>The method should evaluate the expression, using the algorithm above. It should return the value of the expression (if it has a value) or throw an ArgumentException (if one of the possible errors from the algorithm occurs).</p>
+<p>To make your life easier, here is a line of code that will split a string into tokens, which you can then analyze using the algorithm above:</p>
+<pre class="code">    <code class="csharp">
+    string[] substrings = Regex.Split(s, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+    </code>
+  </pre>
+<p>For example, if s is the string "(2+35)*A7", it will return the array</p>
+<p>["(", "2", "+", "35", ")", "*", "A7"]</p>
+<p>There will probably be some empty strings mixed in. You should ignore those. In a legal expression, the only possible tokens are (, ), +, -, *, /, non-negative integers, and strings that begin with one or more letters and end with one or more digits. If your method detects any other kind of token (other than an empty string), it should throw an ArgumentException.</p>
+<hr>
+<h2>Individual and Original Work</h2>
+<p>This is an individual assignment. You can work in proximity to your peers and talk through the pluses and minuses of various implementations, but when working on the computer the work should be your own. You can also discuss broad testing strategies and ways to achieve better and more comprehensive testing. Ideas discussed with others should be implemented on your own. Feel free to utilize the class discussion forum as well (just don't post solution code).</p>
+<p>I know that old solutions or testing suites may exist "out there". Regardless, you are required to create new solutions and new tests via your own mental power. <b>Use of old solutions (even as "study guides") not only violates course policy, but reduces your own ability to learn.</b> When you are having problems, talk to the TAs, bring questions to class, and discuss high level solutions with your peers.</p>
+<hr>
+<h2>Personal Software Process</h2>
+<p>Part of becoming a good developer is forming the ability to estimate and track the time it takes to complete a project. For every project in this course you will be asked to:</p>
+<ol>
+<li>
+<p>Estimate how much time you think the project will take. This estimate should be in hours and be made after you have fully read the description/documentation of the assignment.</p>
+</li>
+<li>
+<p>Track the time spent. It would also be useful to try and distinguish between time spent effectively (making progress toward completion), time spent debugging (fixing errors introduced in code), and time spent learning tools and techniques (hopefully a one time cost).</p>
+</li>
+<li>
+<p>Report your time estimates. During lecture, you will be asked to report on your estimates and tracked time.</p>
+</li>
+</ol>
+<p><b>Please track this information in your notebook for easy access. </b> Make it a point to write down your "hours" after every work session. Note: hours spent talking about the U's football game or the latest video game do not count toward hours worked on the project.</p>
+<p>As you proceed in this class, you should use these numbers to improve your estimation abilities.</p>
+<p>Note: in the "real world" developers work until the "project is done". In the academic world, sometimes you will "punt" an assignment because you were unable to accomplish it in the amount of time you made available. Please attempt to make your estimates based on "required time", not "available time".</p>
+<p>One last note: working efficiently to quickly solve a problem is a distinct skill from accurately estimating the amount of time you will take. In general, both skills will get better over time.</p>
+<hr>
+<h2>Submitting</h2>
+<p>You should commit the final version of your solution to your GitHub repository before the due date. We will retrieve it from the repository sometime in the next day, so don't sweat being 30 minutes late... you might sweat being 3 days late.</p>
+<hr>
+<h2>Hints and Tricks</h2>
+<ul>
+<li>
+<p>VS has auto-error fixing just like Eclipse!</p>
+</li>
+<li>
+<p>Typing /// after you have prototyped your function causes VS to put all the XML tags you need into your comment!</p>
+</li>
+<li>
+<p>You will need to create your own tester program, but <b>we don't want it</b>! We only need your library.</p>
+</li>
+<li>
+<p>Make sure that your testing program is the startup project (so it runs, not your library, which won't run....).</p>
+</li>
+<li>
+<p>Make sure your testing program "references" your library.</p>
+</li>
+<li>
+<p>Edit Menu → Advanced → Format Document is really cool. That being said, VS will usually format correctly for you, as long as your code is syntactically correct.</p>
+</li>
+<li>
+<p>Dictionaries are strongly typed versions of hash tables.... (ala generics in Java)</p>
+</li>
+<li>
+<p>A quick search of "remove whitespace c#" should be useful when parsing your formulas. (Note: tabs are whitespace too)</p>
+</li>
+<li>
+<p>The out keyword is required when using a function that can only return a value. This ensures the programmer knows what they are doing.</p>
+</li>
+<li>
+<p>The Debug menu contains a Windows option where you can show the variables (locals).</p>
+</li>
+<li>
+<p>The Double class has a nice "try parse" function...</p>
+</li>
+<li>
+<p>Delegates are just functions that "remember" their surroundings (thus the variables they originally had access to).</p>
+</li>
+<li>
+<p>The main coding should only take about 2-4 hours if you have a strong understanding of: <b> Analogy/Encapsulation/Abstraction</b></p>
+<p>You will use many of the ideas you should have learned extremely well in CS 2420, only in a slightly different context (C# vs Java).</p>
+<ul>
+<li>
+<p>How to Use an IDE. Eclipse should prepare you well for VS. Give yourself a couple extra hours for the first project to get use to the differences, but in general, if you can do it with Eclipse, the functionality should be somewhere in VS.</p>
+</li>
+<li>
+<p>How to use a debugger, including the variable display window and the activation stack window.</p>
+</li>
+<li>
+<p>Generics - We will be using several data structures that "do something" regardless of the data, e.g., a stack. One of our stacks will contain numbers, one will contain operators.</p>
+</li>
+<li>
+<p>Stacks - You should know how to get information into and out of a stack.</p>
+</li>
+<li>
+<p>Hash Table (i.e., Dictionary) - You should know how to set up a mapping between strings and integers. Note: you will need to do this for your testing, but you won't know what our testing will do or how we will store variables and their values (and you don't need to know)....</p>
+</li>
+<li>
+<p>String operations, e.g., Splitting and Replacing.</p>
+</li>
+<li>
+<p>Classes/Loops/Function/If statements/etc. - all of the basics of programming should now be coming easily to you.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Remember, your job is to learn. Please make sure you are very comfortable with your program before you hand it in.</p>
+</li>
+</ul>
+</div></div></div><div class="submissionstatustable"><h3 class="main">Submission status</h3><div class="box boxaligncenter submissionsummarytable"><table class="generaltable">
+<tbody><tr class="r0">
+<td class="cell c0" style="">Submission status</td>
+<td class="cell c1 lastcol" style="">This assignment does not require you to submit anything online</td>
+</tr>
+<tr class="r1">
+<td class="cell c0" style="">Grading status</td>
+<td class="submissionnotgraded cell c1 lastcol" style="">Not graded</td>
+</tr>
+<tr class="r0">
+<td class="cell c0" style="">Due date</td>
+<td class="cell c1 lastcol" style="">Thursday, 10 September 2015, 11:55 PM</td>
+</tr>
+<tr class="r1">
+<td class="cell c0" style="">Time remaining</td>
+<td class="cell c1 lastcol" style="">2 days 5 hours</td>
+</tr>
+<tr class="r0 lastrow">
+<td class="cell c0" style="">Grading criteria</td>
+<td class="cell c1 lastcol" style=""><div class="box gradingform_guide-description"><p>For all except the last category, the only possible grades are 6 (did the task as specified) and 0 (didn't do the task as specified).&nbsp; It's either right or wrong.&nbsp; No partial credit.</p>
+<p>The score in the last category is the number of test cases passed, out of a maximum of 28 points.</p>
+<p>The grader will repair problems discovered in the first 12 categories (after making deductions) so that the test cases will compile.</p></div><div id="guide-guide" class="clearfix gradingform_guide editor preview"><table class="criteria" id="guide-criteria"><tbody><tr class="criterion first even" id="guide-criteria-169"><td class="description" id="guide-criteria-169-shortname"><label for="guide[criteria][169][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][169][shortname]">Repository</div><div class="criteriondescription" name="guide[criteria][169][descriptionmarkers]">The student has an SVN repository accessible under the specified URL, username, and password.</div></td></tr><tr class="criterion odd" id="guide-criteria-170"><td class="description" id="guide-criteria-170-shortname"><label for="guide[criteria][170][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][170][shortname]">Solution</div><div class="criteriondescription" name="guide[criteria][170][descriptionmarkers]">The student has a solution called PS1 in the repository.</div></td></tr><tr class="criterion even" id="guide-criteria-171"><td class="description" id="guide-criteria-171-shortname"><label for="guide[criteria][171][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][171][shortname]">Repository Nesting</div><div class="criteriondescription" name="guide[criteria][171][descriptionmarkers]">The solution is organized properly</div></td></tr><tr class="criterion odd" id="guide-criteria-172"><td class="description" id="guide-criteria-172-shortname"><label for="guide[criteria][172][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][172][shortname]">Project</div><div class="criteriondescription" name="guide[criteria][172][descriptionmarkers]">The solution contains a project called FormulaEvaulator.</div></td></tr><tr class="criterion even" id="guide-criteria-173"><td class="description" id="guide-criteria-173-shortname"><label for="guide[criteria][173][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][173][shortname]">Project Type</div><div class="criteriondescription" name="guide[criteria][173][descriptionmarkers]">The project is a class library project.</div></td></tr><tr class="criterion odd" id="guide-criteria-174"><td class="description" id="guide-criteria-174-shortname"><label for="guide[criteria][174][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][174][shortname]">Comment generation</div><div class="criteriondescription" name="guide[criteria][174][descriptionmarkers]">The class is set up so that XML comments will be generated along with the DLL.</div></td></tr><tr class="criterion even" id="guide-criteria-175"><td class="description" id="guide-criteria-175-shortname"><label for="guide[criteria][175][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][175][shortname]">Class</div><div class="criteriondescription" name="guide[criteria][175][descriptionmarkers]">FormulaEvaluator contains a class file that defines a class called Evaluator.</div></td></tr><tr class="criterion odd" id="guide-criteria-176"><td class="description" id="guide-criteria-176-shortname"><label for="guide[criteria][176][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][176][shortname]">Namespace</div><div class="criteriondescription" name="guide[criteria][176][descriptionmarkers]">The class is defined inside namespace FormulaEvaluator.</div></td></tr><tr class="criterion even" id="guide-criteria-177"><td class="description" id="guide-criteria-177-shortname"><label for="guide[criteria][177][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][177][shortname]">Static</div><div class="criteriondescription" name="guide[criteria][177][descriptionmarkers]">The Evaulator class is static.</div></td></tr><tr class="criterion odd" id="guide-criteria-178"><td class="description" id="guide-criteria-178-shortname"><label for="guide[criteria][178][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][178][shortname]">Delegate</div><div class="criteriondescription" name="guide[criteria][178][descriptionmarkers]">The Evaluator class contains the declaration of a delegate type that takes a string as its parameter and returns an int as its result.</div></td></tr><tr class="criterion even" id="guide-criteria-179"><td class="description" id="guide-criteria-179-shortname"><label for="guide[criteria][179][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][179][shortname]">Method</div><div class="criteriondescription" name="guide[criteria][179][descriptionmarkers]">The Evaluator class contains the declaration of a static method Evaluate that takes a string and a delegate (described above) and returns an int.</div></td></tr><tr class="criterion odd" id="guide-criteria-180"><td class="description" id="guide-criteria-180-shortname"><label for="guide[criteria][180][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][180][shortname]">Comments</div><div class="criteriondescription" name="guide[criteria][180][descriptionmarkers]">XML (///) comments are provided for the class and the method.</div></td></tr><tr class="criterion last even" id="guide-criteria-181"><td class="description" id="guide-criteria-181-shortname"><label for="guide[criteria][181][shortname]" class="criterionnamelabel">Criterion</label><div class="criterionshortname" name="guide[criteria][181][shortname]">Test Cases</div><div class="criteriondescription" name="guide[criteria][181][descriptionmarkers]">The Evaluate method passes staff unit tests.</div></td></tr></tbody></table></div></td>
+</tr>
+</tbody>
+</table>
+</div></div></div>                        </div>
+                    </div>

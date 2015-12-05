@@ -13,6 +13,8 @@
   <absorb_constant>1.25</absorb_constant>
   <max_view_range>10000</max_view_range>
   <heartbeats_per_second>25</heartbeats_per_second>
+  <max_split_dist>200</max_split_dist>
+  <max_splits>12</max_splits>
 </parameters>  
   
  
