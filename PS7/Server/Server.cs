@@ -135,7 +135,8 @@ namespace AgCubio
             ps.receivedData.Clear();
 
             // send the initial world only to this socket
-            List<Cube> sendFood = new List<Cube>(world.foodCubes.Values); // TODO: SendCubes() is able to have exception if food cubes are removed while it is trying to send them; this is temp way to try separating the collections while food is sent over, would be better to set up locks for foodCubes
+            List<Cube> sendFood = new List<Cube>(world.foodCubes.Values); 
+            // TODO: SendCubes() is able to have exception if food cubes are removed while it is trying to send them; this is temp way to try separating the collections while food is sent over, would be better to set up locks for foodCubes
             SendCubes(sendFood, ps.socket);
 
             // Ready to receive commands
@@ -223,6 +224,7 @@ namespace AgCubio
         /// <param name="cubes">The updated cubes to send to all clients.</param>
         private static void SendCubes(IEnumerable<Cube> cubes)
         {
+            //if (cubes == null || cubes.Count() == 0) return;
             lock (world)
             {
                 lock (clientSockets)
