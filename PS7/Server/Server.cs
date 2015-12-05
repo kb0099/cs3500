@@ -212,6 +212,10 @@ namespace AgCubio
             IEnumerable<Cube> eatenPlayers = world.EatPlayers();
             SendCubes(eatenPlayers);
 
+            // handle viruses
+            world.HandleViruses();
+            SendCubes(world.viruses);
+
             // Finally, send remaining player cubes.
             SendCubes(world.playerCubes.Values);
 

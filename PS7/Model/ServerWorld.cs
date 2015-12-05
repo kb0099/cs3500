@@ -404,18 +404,18 @@ namespace AgCubio
                     }
 
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
                 // add merged players as eaten players
-                if(mergedCubes.Count > 0)
+                if (mergedCubes.Count > 0)
                 {
                     output.AddRange(mergedCubes);
                     mergedCubes.Clear();
                 }
-            }            
-             return output;
+            }
+            return output;
         }
 
         /// <summary>
@@ -550,5 +550,51 @@ namespace AgCubio
                 c.Mass = (int)(c.Mass - Math.Sqrt(c.Mass) / AttritionRate); //AttritionRate * (c.Mass / PlayerStartMass));
             }
         }
+
+        private const int MAX_VIRUS_COUNT = 4;
+        public List<Cube> viruses = new List<Cube>();
+        /// <summary>
+        /// Adds the virus feature
+        /// </summary>
+        public void HandleViruses()
+        {
+            if (viruses.Count < MAX_VIRUS_COUNT)
+            {
+                if (r.Next(10) > 8)
+                {
+                    Cube c;
+                    lock (this)
+                    {
+                        c = new Cube(r.Next(Width),
+                        r.Next(Height),
+                        VIRUS_COLOR.ToArgb(),
+                        NextUID(),
+                        0,
+                        false,
+                        "",
+                        r.Next(20, 500));
+                    }
+                }
+            }
+
+            lock (this)
+            {
+                foreach(Cube v in viruses)
+                {
+                    foreach(Cube p in playerCubes.Values)
+                    {
+                        if(p.Mass > 800)
+                        {
+                            if (IsAbsorbable(p, v))
+                            {
+                                SplitCube(p.uId, r.Next(Width), r.Next(Height));
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
     }
 }
