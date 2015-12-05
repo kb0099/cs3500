@@ -238,24 +238,21 @@ namespace AgCubio
         {
             // iterate through cubes with a team id or cube id like the input
             double h, speed, finalX, finalY;
-            foreach (Cube c in playerCubes.Values)
-            {
-                if (c.teamId == cId || c.uId == cId)
-                {
-                    // calculate length of vector from cube point to destination point
-                    h = Math.Sqrt(Math.Pow(toX - c.X, 2) + Math.Pow(toY - c.Y, 2));
-                    // calculate speed for cube
-                    speed = TopSpeed - c.Mass / PlayerStartMass - 1; // when at minimum mass, TopSpeed applies; larger mass decreases speed
-                    if (speed < LowSpeed) speed = LowSpeed;
-                    // calculate final point, which overall has unit vector dimensions multiply with the speed, then add to the current location
-                    finalX = (toX - c.X) / h * speed + c.X;
-                    finalY = (toY - c.Y) / h * speed + c.Y;
-                    c.X = finalX;
-                    c.Y = finalY;
-                    // handle world edges
-                    HandleWorldEdges(cId);
-                }
-            }
+            Cube c;
+            if (!playerCubes.TryGetValue(cId, out c)) return;
+
+            // calculate length of vector from cube point to destination point
+            h = Math.Sqrt(Math.Pow(toX - c.X, 2) + Math.Pow(toY - c.Y, 2));
+            // calculate speed for cube
+            speed = TopSpeed - c.Mass / PlayerStartMass - 1; // when at minimum mass, TopSpeed applies; larger mass decreases speed
+            if (speed < LowSpeed) speed = LowSpeed;
+            // calculate final point, which overall has unit vector dimensions multiply with the speed, then add to the current location
+            finalX = (toX - c.X) / h * speed + c.X;
+            finalY = (toY - c.Y) / h * speed + c.Y;
+            c.X = finalX;
+            c.Y = finalY;
+            // handle world edges
+            HandleWorldEdges(cId);
         }
 
         /// <summary>
@@ -265,7 +262,7 @@ namespace AgCubio
         private void HandleWorldEdges(int cId)
         {
             Cube c = playerCubes[cId];
-            int delta = (int)c.Size/2 - r.Next(10, 20);
+            int delta = (int)c.Size / 2 - r.Next(10, 20);
             if (c.RightEdge > Width + delta) c.X = Width - delta;
             if (c.LeftEdge < -delta) c.X = delta;
             if (c.BottomEdge > Height + delta) c.Y = Height - delta;
