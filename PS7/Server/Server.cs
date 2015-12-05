@@ -47,7 +47,7 @@ namespace AgCubio
         public static bool InitWorld()
         {
             // if file is not present in current director get from user
-            string path = System.IO.Path.Combine(cwd, configFilePath);
+            string path = System.IO.Path.Combine(cwd + "..\\..\\..\\Resources\\", configFilePath);
             if (!System.IO.File.Exists(path))
                 path = GetFileFromUser();
             try
