@@ -261,7 +261,9 @@ namespace AgCubio
         /// <param name="cId">The id of the cube</param>
         private void HandleWorldEdges(int cId)
         {
-            Cube c = playerCubes[cId];
+            Cube c;
+            if (!playerCubes.TryGetValue(cId, out c)) return;
+
             int delta = (int)c.Size / 2 - r.Next(10, 20);
             if (c.RightEdge > Width + delta) c.X = Width - delta;
             if (c.LeftEdge < -delta) c.X = delta;
