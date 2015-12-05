@@ -59,6 +59,11 @@ namespace AgCubio
         [JsonProperty]
         public int Mass;
 
+        private int mSteps;     // momentum steps
+        private int mx, my;     // momentum in x and y
+        public DateTime mergeAfter;    // time to merge  
+
+
         /// <summary>
         /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.
         /// </summary>
@@ -149,8 +154,6 @@ namespace AgCubio
                 Y += my;
             }
         }
-        private int mSteps;     // momentum steps
-        private int mx, my;     // momentum in x and y   
 
         /// <summary>
         /// Sets the momentum in x and y direction with given steps to apply
