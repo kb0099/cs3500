@@ -300,8 +300,37 @@ namespace AgCubio
             }
         }
 
+        /// <summary>
+        /// This method prevents a team cubes from overlapping each other.
+        /// </summary>
+        /// <param name="team">The team/splitted cubes to handle</param>
         private void HandleTeamOverlap(List<Cube> team)
         {
+            // distances between cube (centers) and min allowed distance between them
+            int dx, dy, min;
+            lock (this)
+            {
+                foreach (Cube c in team)
+                {
+                    foreach (Cube other in team)
+                    {
+                        if (c != other)
+                        {
+                            dx = (int)Math.Abs(c.X - other.X);
+                            dy = (int)Math.Abs(c.Y - other.Y);
+                            min = (int)(c.Size + other.Size) / 2;
+                            if (dx < min && dy < min)
+                            {
+                                if (c.X + min > Width) c.X -= min;
+                                else c.X += min;
+                                if (c.Y + min > Height) c.Y -= min;
+                                else c.Y += min;
+                            }
+                            Console.WriteLine($"({c.X}, {c.Y})"); //debug
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
