@@ -282,7 +282,7 @@ namespace AgCubio
             List<Cube> team;
             if (teamCubes.TryGetValue(tid, out team))
             {
-                foreach (Cube current in team)
+                foreach (Cube current in team.ToList())
                 {
                     current.ApplyMomentum();
                     MoveCube(current.uId, toX, toY);
@@ -308,12 +308,15 @@ namespace AgCubio
         {
             // distances between cube (centers) and min allowed distance between them
             int dx, dy, min;
+            int row = -1, col = -1;        // represents a row and col # of splitted cube
             lock (this)
             {
                 foreach (Cube c in team)
                 {
+                    row++;
                     foreach (Cube other in team)
                     {
+                        col++;
                         if (c != other)
                         {
                             dx = (int)Math.Abs(c.X - other.X);
@@ -321,12 +324,20 @@ namespace AgCubio
                             min = (int)(c.Size + other.Size) / 2;
                             if (dx < min && dy < min)
                             {
-                                if (c.X + min > Width) c.X -= min;
-                                else c.X += min;
-                                if (c.Y + min > Height) c.Y -= min;
-                                else c.Y += min;
+                                if ((col + 1) % 3 == 0)    // every third column
+                                {
+                                    c.Y += min - dy;
+                                }
+                                else
+                                {
+                                    c.X += min - dx;
+                                }
+                                //if (c.X + min > Width) c.X -= min-20;
+                                //else c.X += min-20;
+                                //if (c.Y + min > Height) c.Y -= min;
+                                //else c.Y += min;
+                                //c.X++; c.Y++;
                             }
-                            Console.WriteLine($"({c.X}, {c.Y})"); //debug
                         }
                     }
                 }
@@ -351,12 +362,12 @@ namespace AgCubio
                     foreach (Cube f in foodCubes.Values)
                     {
                         // if IsAbsorbable() is true, add food cube to output and manage consumption
-                        if (IsAbsorbable(c, f))
+                        if (CanAbsorb(c, f))
                         {
                             output.Add(f);
                             // consumption involves removing the food and adding to the cube's mass, then setting food to 0 mass to kill it
 
-                            Console.WriteLine(c.Mass + ", " + f.Mass);                        // debug
+                            //Console.WriteLine(c.Mass + ", " + f.Mass);                        // debug
                             c.Mass += f.Mass;
                             f.Mass = 0;
                         }
@@ -399,7 +410,7 @@ namespace AgCubio
                         {
                             b = sorted[j];
                             // if IsAbsorbable() is true, add smaller cube to output and manage consumtion
-                            if (IsAbsorbable(a, b))
+                            if (CanAbsorb(a, b))
                             {
                                 // if the consumed cube was head of a team, find another team cube to swap the cube roles
                                 if (b.uId == b.teamId)
@@ -463,40 +474,36 @@ namespace AgCubio
         /// A helper method to determine if the smaller cube can be absorbed by the larger cube due to proximity to
         /// each other.
         /// </summary>
-        /// <param name="c1">The first cube.</param>
-        /// <param name="c2">The second cube.</param>
+        /// <param name="c1">The larger cube.</param>
+        /// <param name="c2">The smaller cube.</param>
         /// <returns></returns>
-        private bool IsAbsorbable(Cube c1, Cube c2)
+        private bool CanAbsorb(Cube c1, Cube c2)
         {
-            // the cube sizes must be determined
-            Cube large, small;
             if (c1.Mass == c2.Mass || (c1.teamId == c2.teamId && c1.teamId != 0))
             {
                 return false; // masses are too close to be absorbable, or they are of the same team
             }
-            else if (c1.Mass > c2.Mass)
-            {
-                large = c1;
-                small = c2;
-            }
-            else
-            {
-                large = c2;
-                small = c1;
-            }
-            // determine max difference for absorbtion
-            double maxD = 0.5 * large.Size + small.Size * (0.5 - AbsorbDistanceDelta); // max diffference = 1/2 * large size - small size * absorb percentage + 1/2 * small size
-            // determine differences in axes
-            double dx = Math.Abs(large.X - small.X);
-            double dy = Math.Abs(large.Y - small.Y);
-            // if the differences are in range, they are absorbable
-            if (maxD >= dx && maxD >= dy) return true;
-            else return false;
+
+            if (c1.Mass < AbsorbDistanceDelta * c2.Mass)
+                return false;
+
+            return c1.Contains(c2);
+            ////if(c1.Mass > c2.Mass)
+
+            //// determine max difference for absorbtion
+            //double maxD = 0.5 * c1.Size + c2.Size * (0.5 - AbsorbDistanceDelta); // max diffference = 1/2 * large size - small size * absorb percentage + 1/2 * small size
+            //// determine differences in axes
+            //double dx = Math.Abs(c1.X - c2.X);
+            //double dy = Math.Abs(c1.Y - c2.Y);
+            //// if the differences are in range, they are absorbable
+            //if (maxD >= dx && maxD >= dy) return true;
+            //else return false;
         }
 
         /// <summary>
         /// Splits the cube honoring the requirements.
         /// Side effect: Should add the splitted cubes to the  teamCubes.
+        /// (also splits any cubes that are part of the same team)
         /// </summary>
         /// <param name="cId">Cube id to split</param>
         /// <param name="toX">Split towards X</param>
@@ -523,8 +530,8 @@ namespace AgCubio
                 }
                 foreach (Cube c in currentTeam)
                 {
+                    if (c.Mass < MinimumSplitMass || currentTeam.Count >= MaximumSplits) return;
                     newTeam.Add(c);
-                    if (c.Mass < MinimumSplitMass || currentTeam.Count > MaximumSplits) return;
 
                     // set cube to be half its mass
                     c.Mass = c.Mass / 2;
@@ -537,7 +544,7 @@ namespace AgCubio
                     playerCubes[split.uId] = split;
                 }
             }
-            if (newTeam.Count > 1)
+            if (newTeam.Count > 0)
             {
                 lock (this)
                 {
@@ -547,6 +554,10 @@ namespace AgCubio
             }
         }
 
+        /// <summary>
+        /// Helper to TryMerge cubes honoring the time constraints.
+        /// </summary>
+        /// <param name="cId"></param>
         private void TryMerge(int cId)
         {
             Task.Run(async () =>
@@ -563,11 +574,11 @@ namespace AgCubio
         private void MergeTeam(int tid)
         {
             List<Cube> splits;
-            teamCubes.TryGetValue(tid, out splits);
-            if (splits == null) return;
-            splits = new List<Cube>(splits);    // new enumeration
             lock (this)
             {
+                teamCubes.TryGetValue(tid, out splits);
+                if (splits == null) return;
+                splits = new List<Cube>(splits);    // new enumeration
                 foreach (Cube s in splits)
                 {
                     if (s.mergeAfter < DateTime.Now && s.uId != tid) // exclude the main cube
@@ -579,7 +590,8 @@ namespace AgCubio
                         mergedCubes.Add(s);
                     }
                 }
-                if (teamCubes[tid].Count == 1) teamCubes.Remove(tid);
+                if (teamCubes[tid].Count == 1)
+                    teamCubes.Remove(tid);
                 else TryMerge(tid);
             }
         }
@@ -647,7 +659,7 @@ namespace AgCubio
                     {
                         if (p.Mass > 600)
                         {
-                            if (IsAbsorbable(p, v))
+                            if (CanAbsorb(p, v))
                             {
                                 SplitCube(p.uId, r.Next(Width), r.Next(Height));    // cube gets exploded
                                 temp.Add(v);        // virus gets destroyed

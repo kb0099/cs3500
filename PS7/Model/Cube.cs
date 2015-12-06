@@ -165,5 +165,13 @@ namespace AgCubio
             this.mSteps = steps;
         }
 
+        /// <summary>
+        /// Returns true if this cube contains <paramref name="c"/> inside it.
+        /// </summary>
+        public bool Contains(Cube c)
+        {
+            return LeftEdge < c.LeftEdge && RightEdge > c.RightEdge && TopEdge < c.TopEdge && BottomEdge > c.BottomEdge; 
+        }
+
     }
 }

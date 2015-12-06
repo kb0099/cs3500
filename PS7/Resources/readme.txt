@@ -1,4 +1,15 @@
-﻿PS8
+﻿
+Notes:
+MinTimeToMerge: is a game world variable set to 4 seconds as default, which can be used to control 
+how fast or slow players can merge.
+
+Viruses have a very low chance of getting into world. They are green cubes with asterisk(*) in them.
+If a sufficiently big cube bumps into the virus it will get exploded.
+
+
+Previous Notes ============================================================================================
+
+PS8
 Kedar Bastakoti 
 Mitchell Terry
 
