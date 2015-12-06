@@ -619,6 +619,7 @@ namespace AgCubio
         }
 
         private const int MAX_VIRUS_COUNT = 4;
+        private const int INFESTATION_RATE = 1;     // Rate per 1000 updates or iteration
         public List<Cube> viruses = new List<Cube>();
         /// <summary>
         /// Adds the virus feature
@@ -629,7 +630,7 @@ namespace AgCubio
             {
                 if (viruses.Count < MAX_VIRUS_COUNT)
                 {
-                    if (r.Next(20) > 12)
+                    if (r.Next(1001) > (1000 - INFESTATION_RATE))
                     {
                         Cube c;
                         lock (this)
