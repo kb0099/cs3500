@@ -28,7 +28,6 @@ Notes on Testing:
 A thorough testing of Networking was performed using TestClient project.
 Which basically created a client application to run with or without user intervention
 and allowed to manually specify commands to send and retrieve data.
-
 Some of the tests for Cube and World were also performed using TestClient.
 Complete testing of World was done with ModelTests project.
 
