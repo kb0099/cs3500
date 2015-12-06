@@ -24,6 +24,13 @@ splitted cubes to be eaten by other cubes!
 The world_parameters.xml is located at Resources directory by default, if it is not found the progrm will ask the user
 to locate the file by opening a file open dialogue.
 
+Notes on Testing:
+A thorough testing of Networking was performed using TestClient project.
+Which basically created a client application to run with or without user intervention
+and allowed to manually specify commands to send and retrieve data.
+
+Some of the tests for Cube and World were also performed using TestClient.
+Complete testing of World was done with ModelTests project.
 
 Previous Notes ============================================================================================
 

@@ -67,7 +67,7 @@ namespace AgCubio
         /// <summary>
         /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.
         /// </summary>
-        public double Size { get { return Math.Pow(Mass,0.65); } } //math.sqrt(mass)
+        public double Size { get { return Math.Pow(Mass, 0.5); } } //math.sqrt(mass)
 
         /// <summary>
         /// The x coordinate location of the left edge of the cube.

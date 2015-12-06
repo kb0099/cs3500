@@ -79,24 +79,54 @@ namespace AgCubio.Tests
         }
 
         /// <summary>
-        /// Any player in the team should change its position
+        /// Any player in the team should change its position.
         /// </summary>
         [TestMethod()]
         public void MoveTeamTest()
         {
-            Assert.Fail();
+            World w = CreateWorld();
+            Cube c = w.NextPlayer("a");
+            c.Mass = 4000;
+            w.SplitCube(c.uId, 0, 0);
+            foreach(Cube p in w.teamCubes[c.uId])
+            {
+                double oldX = p.X, oldY = p.Y;
+                w.MoveCube(p.uId, -10, -10);
+                Assert.AreNotEqual<double>(oldX, p.X);
+                Assert.AreNotEqual<double>(oldY, p.Y);
+            }
         }
 
+        /// <summary>
+        /// Cube should consume food honoring the requirements
+        /// </summary>
         [TestMethod()]
         public void EatFoodsTest()
         {
-            Assert.Fail();
+            World w = CreateWorld();
+            Cube c = w.NextPlayer("a");
+            c.Mass = 4000;
+            Cube f;
+            w.AddFood(out f);
+            f.X = c.X; f.Y = c.Y;
+            w.EatFoods();
+            Assert.AreEqual(0, w.foodCubes.Count);
+            Assert.AreEqual(4001, c.Mass);
         }
 
         [TestMethod()]
         public void EatPlayersTest()
         {
-            Assert.Fail();
+            World w = CreateWorld();
+            Cube c = w.NextPlayer("a");
+            c.Mass = 4000;
+            Cube d = w.NextPlayer("b");
+            d.Mass = 1000;
+            d.X = c.X;
+            d.Y = c.Y;
+            w.EatPlayers();
+            Assert.AreEqual(1, w.playerCubes.Count);
+            Assert.AreEqual(5000, c.Mass);
         }
 
         [TestMethod()]
