@@ -35,6 +35,10 @@ namespace AgCubio
             Console.WriteLine("========== Server ============");
             Console.WriteLine("Type quit and press return/enter to stop the server.");
             Start();
+
+            // On exit
+            ExitHelper eh = new ExitHelper(() => {
+                MessageBox.Show("Disposing resources please wait ... \n\nIt will automatically close whithin 5 seconds."); });
             while (Console.ReadLine() != "quit") ;
         }
 

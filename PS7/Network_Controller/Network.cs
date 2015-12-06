@@ -20,6 +20,9 @@ namespace AgCubio
         // Hence, the state of this serverPS object is well maintained between calls.
         private static PreservedState serverPS = new PreservedState();
 
+        // Preserved State for WebServer
+        private static PreservedState wsPS = new PreservedState();
+
         /// <summary>
         /// This function should attempt to connect to the server via a provided hostname. 
         /// It should save the callback function (in a state object) for use when data arrives.
