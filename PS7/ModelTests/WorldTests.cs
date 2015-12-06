@@ -132,19 +132,47 @@ namespace AgCubio.Tests
         [TestMethod()]
         public void SplitCubeTest()
         {
-            Assert.Fail();
+            World w = CreateWorld();
+            Cube c = w.NextPlayer("a");
+            w.SplitCube(c.uId, 0, 0);
+            Assert.IsTrue(w.teamCubes.Count > 0);
         }
 
         [TestMethod()]
         public void ApplyAttritionTest()
         {
-            Assert.Fail();
+            World w = CreateWorld();
+            Cube c = w.NextPlayer("a");
+            c.Mass = 5000;
+            int oldMass = c.Mass;
+            for (int i = 0; i < 10; i++)
+                w.ApplyAttrition();
+            Assert.IsTrue(c.Mass < oldMass);
         }
 
+        /// <summary>
+        /// Rates of spawn are low, so, try to get at least 1 virus.
+        /// Which verifies that they can come randomly in the world.
+        /// </summary>
         [TestMethod()]
         public void HandleVirusesTest()
         {
-            Assert.Fail();
+            World w = CreateWorld();
+            Cube c = w.NextPlayer("a");
+
+            while(w.viruses.Count < 1)
+            {
+                w.HandleViruses();
+            }
+
+            // split the cube
+            c.Mass = 5000;
+            c.X = w.viruses[0].X;
+            c.Y = w.viruses[0].Y;
+            w.HandleViruses();
+
+            Assert.AreEqual(2500, c.Mass);
+            Assert.IsTrue(w.teamCubes.Count > 0);
         }
     }
 }
