@@ -13,10 +13,16 @@ If a sufficiently big cube bumps into the virus it will get exploded. They can b
 A cube with mass higher than the specified mass will be splitted to a random location by the virus.
 It will take a while for those splitted cubes to merge back, as controlled by MinTimeToMerge.
 
+Aside:
+A cube can only eat another cube if that another cube is completely contained inside first cube.
+
 Some extra features:
 A player cube could randomly get stuck for a while if they consistently try to go outside the world while splitted.
 If a player tries to repeatedly split the cube above the MaxSplit limit, it would randomly loose some of its
 splitted cubes to be eaten by other cubes!
+
+The world_parameters.xml is located at Resources directory by default, if it is not found the progrm will ask the user
+to locate the file by opening a file open dialogue.
 
 
 Previous Notes ============================================================================================

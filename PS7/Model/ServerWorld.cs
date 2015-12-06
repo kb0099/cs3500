@@ -12,7 +12,7 @@ namespace AgCubio
     /// This is another part of partial Wrold definition.
     /// Most of the functionality of the server are represented by this partial class.
     /// </summary>
-    partial class World
+    public partial class World
     {
         // TODO: define units in seconds to help in determining use in equations
         /// <summary>
