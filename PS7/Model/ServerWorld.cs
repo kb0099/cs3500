@@ -108,11 +108,31 @@ namespace AgCubio
         /// </summary>
         public int MinTimeToMerge { get { return 4; } }
 
+
         /// <summary>
-        /// A dictionary that represents momentums of cubes. Used during splitting. It acts as a multiplier for the
-        /// speed of a cube.
+        /// A constant array of colors that are used to set player cube colors.
         /// </summary>
-        //private Dictionary<int, int> cubeMomentum;
+        private static readonly Color[] PLAYER_COLORS = {
+            Color.Red, Color.Blue, Color.Black, Color.Violet, Color.LightPink, Color.Yellow, Color.Orange, Color.Pink
+        };
+
+        /// <summary>
+        /// A counter to help iterate through colors available when setting player cube color.
+        /// </summary>
+        private static int nextColor = 0;
+
+        /// <summary>
+        /// A counter to help track available unique id's.
+        /// </summary>
+        private static int nextUID = -1;
+        
+
+        // For virus feature
+        private const int MAX_VIRUS_COUNT = 4;              // Max. viruses at a given instance
+        private const int INFESTATION_RATE = 1;             // Rate per 1000 updates or iteration
+        private const int MIN_INFESTATION_MASS = 600;		// Represents the minimum mass of a cube to explode.
+        private static readonly Color VIRUS_COLOR = Color.Green;        // A constant to set the color of virus cubes.
+        public List<Cube> viruses = new List<Cube>();                   // All viruses at a given time
 
         /// <summary>
         /// Initializes a world from a config file.
@@ -145,28 +165,6 @@ namespace AgCubio
             this.playerCubes = new Dictionary<int, Cube>(10); // assuming an initial capacity of 10 will work here
             this.teamCubes = new Dictionary<int, List<Cube>>(10); // assuming an initial capacity of 10 will work here
         }
-
-        /// <summary>
-        /// A constant array of colors that are used to set player cube colors.
-        /// </summary>
-        private static readonly Color[] PLAYER_COLORS = {
-            Color.Red, Color.Blue, Color.Black, Color.Violet, Color.LightPink, Color.Yellow, Color.Orange, Color.Pink
-        };
-
-        /// <summary>
-        /// A counter to help iterate through colors available when setting player cube color.
-        /// </summary>
-        private static int nextColor = 0;
-
-        /// <summary>
-        /// A counter to help track available unique id's.
-        /// </summary>
-        private static int nextUID = -1;
-
-        /// <summary>
-        /// A constant to set the color of virus cubes.
-        /// </summary>
-        private static readonly Color VIRUS_COLOR = Color.Green;
 
         /// <summary>
         /// Returns next player color.
@@ -264,11 +262,11 @@ namespace AgCubio
             Cube c;
             if (!playerCubes.TryGetValue(cId, out c)) return;
 
-            int delta = (int)c.Size / 2 - r.Next(10, 20);
-            if (c.RightEdge > Width + delta) c.X = Width - delta;
-            if (c.LeftEdge < -delta) c.X = delta;
-            if (c.BottomEdge > Height + delta) c.Y = Height - delta;
-            if (c.TopEdge < -delta) c.Y = delta;
+            int delta = (int)c.Size / 2;
+            if (c.RightEdge > Width) c.X = Width - delta;
+            if (c.LeftEdge < 0) c.X = delta;
+            if (c.BottomEdge > Height ) c.Y = Height - delta;
+            if (c.TopEdge < 0) c.Y = delta;
         }
 
         /// <summary>
@@ -324,13 +322,23 @@ namespace AgCubio
                             min = (int)(c.Size + other.Size) / 2;
                             if (dx < min && dy < min)
                             {
-                                if ((col + 1) % 3 == 0)    // every third column
+                                if ( (row +1)%2 == 0)    // every third column
                                 {
                                     c.Y += min - dy;
+                                    if (c.Y > Height)
+                                    {
+                                        c.X += min - dx;
+                                        c.Y = Height - c.Size / 2;
+                                    }
                                 }
                                 else
                                 {
                                     c.X += min - dx;
+                                    if (c.X > Width)
+                                    {
+                                        c.Y += min - dy;
+                                        c.X = Width - c.Size / 2;
+                                    }
                                 }
                                 //if (c.X + min > Width) c.X -= min-20;
                                 //else c.X += min-20;
@@ -409,7 +417,7 @@ namespace AgCubio
                         for (int j = 0; j < i; j++)
                         {
                             b = sorted[j];
-                            // if IsAbsorbable() is true, add smaller cube to output and manage consumtion
+                            // if IsAbsorbable() is true, add smaller cube to output and manage consumption
                             if (CanAbsorb(a, b))
                             {
                                 // if the consumed cube was head of a team, find another team cube to swap the cube roles
@@ -488,6 +496,7 @@ namespace AgCubio
                 return false;
 
             return c1.Contains(c2);
+            // Alternative logic: (retained as a reference)
             ////if(c1.Mass > c2.Mass)
 
             //// determine max difference for absorbtion
@@ -618,8 +627,6 @@ namespace AgCubio
             }
         }
 
-        private const int MAX_VIRUS_COUNT = 4;
-        public List<Cube> viruses = new List<Cube>();
         /// <summary>
         /// Adds the virus feature
         /// </summary>
@@ -629,7 +636,7 @@ namespace AgCubio
             {
                 if (viruses.Count < MAX_VIRUS_COUNT)
                 {
-                    if (r.Next(20) > 12)
+                    if (r.Next(1001) > (1000 - INFESTATION_RATE))
                     {
                         Cube c;
                         lock (this)
@@ -657,7 +664,7 @@ namespace AgCubio
                 {
                     foreach (Cube p in playerCubes.Values.ToList())
                     {
-                        if (p.Mass > 600)
+                        if (p.Mass > MIN_INFESTATION_MASS)
                         {
                             if (CanAbsorb(p, v))
                             {

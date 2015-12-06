@@ -1,10 +1,22 @@
-﻿
+﻿PS8 : Kedar Bastakoti
+
 Notes:
 MinTimeToMerge: is a game world variable set to 4 seconds as default, which can be used to control 
 how fast or slow players can merge.
 
 Viruses have a very low chance of getting into world. They are green cubes with asterisk(*) in them.
-If a sufficiently big cube bumps into the virus it will get exploded.
+If a sufficiently big cube bumps into the virus it will get exploded. They can be controlled by following parameters:
+  private const int MAX_VIRUS_COUNT = 4;       // Maximum allowed at a given instance of time
+  private const int INFESTATION_RATE = 1;     // Rate per 1000 updates or iteration
+  private const int MIN_INFESTATION_MASS = 600;		// Represents the minimum mass of a cube to explode.
+
+A cube with mass higher than the specified mass will be splitted to a random location by the virus.
+It will take a while for those splitted cubes to merge back, as controlled by MinTimeToMerge.
+
+Some extra features:
+A player cube could randomly get stuck for a while if they consistently try to go outside the world while splitted.
+If a player tries to repeatedly split the cube above the MaxSplit limit, it would randomly loose some of its
+splitted cubes to be eaten by other cubes!
 
 
 Previous Notes ============================================================================================
