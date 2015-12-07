@@ -52,6 +52,7 @@ namespace AgCubio
             {
                 case "scores":
                     sb.Append("<h1>You will get default page</h1>");
+                    sb.Append(Db.GetScoresTable());
                     return sb.ToString();
                 case "games":
                     sb.Append($"You will get games => {m.Groups["param"]} = {m.Groups["value"]}");
