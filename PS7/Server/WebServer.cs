@@ -10,7 +10,13 @@ namespace AgCubio
     public partial class Server
     {
         private const string ResponseHeader = "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-        
+        private const string HtmlHeader = @"< !doctype html><head><title>AgCubio | Game Play Results</title></head>
+            <style>
+                body{ max-width: 800px;background: darkslategrey;}
+                table, th, td { border: 1px solid black; padding: .2em;}
+                *{color: cornsilk; text-align: center;  margin: auto; }
+                caption {padding: .5em; font-size:  1.2em; font-weight: bold;}
+            </style>";
         private static void StartWebServer()
         {
             Network.ServerAwaitingClientLoop(NewHttpRequest, 11100, true);
@@ -40,7 +46,7 @@ namespace AgCubio
         private static String HandleRequest(String requestHeader)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("<!doctype html><head><title>HI</title></head><style>table, th, td { border: 1px solid black; }</style>");
+            sb.Append(HtmlHeader);
             sb.Append($"<body><h1>GrandOpening</h1><pre>{requestHeader}</pre>");
 
             // format: /request[?param=value]

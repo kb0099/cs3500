@@ -41,7 +41,8 @@ namespace AgCubio
                             new String[] { "Name", "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" },
                             "Name",
                             "/games?player=",
-                            "Name"                            
+                            "Name",
+                            caption: $"List of All Game Plays and Scores"
                             ));
                     }
                 }
@@ -54,42 +55,7 @@ namespace AgCubio
             return sb.ToString();
         }
         
-        /// <summary>
-        /// Helper to create HTML Table.
-        /// </summary>
-        /// <param name="mysqldr">Data Reader.</param>
-        /// <param name="colNames">Column Names to show in table.</param>
-        /// <param name="linkerCol">A column field that has anchor tag.</param>
-        /// <param name="query">Query part of URI including upto the =. (example: "/pathname/index.htm?=")</param>
-        /// <param name="linkedCol">This is used to extract value and join to <paramref name="query"/>.</param>
-        /// <returns></returns>
-        private static String GenerateHTMLTable(MySqlDataReader mysqldr, string[] colNames,
-            string linkerCol = null, string query = null, string linkedCol = null)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("<table>");
-            sb.AppendLine("<tr>");
-            foreach (string col in colNames)
-            {
-                sb.AppendLine($"<th>{col}</th>");
-            }
-            sb.AppendLine("</tr>");
-            while (mysqldr.Read())
-            {
-                sb.AppendLine("<tr>");
-
-                foreach (string col in colNames)
-                {
-                    if (col == linkerCol)
-                        sb.AppendLine($"<td><a href='{query}{mysqldr[linkedCol]}'>{mysqldr[col]}</a></td>");
-                    else
-                        sb.AppendLine($"<td>{mysqldr[col]}</td>");
-                }
-            }
-            sb.AppendLine("</table>");
-            return sb.ToString();
-        }
-
+      
         /// <summary>
         /// Gets all games by a particular player for: /games?player=name
         /// </summary>
@@ -117,7 +83,8 @@ namespace AgCubio
                             new String[] { "SessionID", "Name",  "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" },
                             "CubesEaten",
                             "/eaten?id=",
-                            "SessionID"
+                            "SessionID", 
+                            caption: $"List of All Games by Player: {playerName}"
                             ));
                     }
                 }
@@ -158,7 +125,8 @@ namespace AgCubio
                             new String[] { "SessionID", "Name", "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" },
                             "Name",
                             "/highscores?player=",
-                            "Name"
+                            "Name",
+                            caption: $"List of Eaten Cubes in Game Session: {sid}"
                             ));
                     }
                 }
@@ -195,7 +163,7 @@ namespace AgCubio
                     using (MySqlDataReader session = command.ExecuteReader())
                     {
                         sb.Append(GenerateHTMLTable(session,
-                            new String[] { "SessionID", "HighestRank"}
+                            new String[] { "SessionID", "TimeAlive", "HighestMass", "HighestRank"}, caption:$"High Scores for Player: {name}"
                             ));
                     }
                 }
@@ -205,6 +173,46 @@ namespace AgCubio
                     return $"<h3>{e.Message}<br/>Unable to get data from server.</h3>";
                 }
             }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Helper to create HTML Table.
+        /// </summary>
+        /// <param name="mysqldr">Data Reader.</param>
+        /// <param name="colNames">Column Names to show in table.</param>
+        /// <param name="linkerCol">A column field that has anchor tag.</param>
+        /// <param name="query">Query part of URI including upto the =. (example: "/pathname/index.htm?=")</param>
+        /// <param name="linkedCol">This is used to extract value and join to <paramref name="query"/>.</param>
+        /// <returns></returns>
+        private static String GenerateHTMLTable(MySqlDataReader mysqldr, string[] colNames,
+            string linkerCol = null, string query = null, string linkedCol = null, string caption = null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("<table>");
+            if(caption != null)
+            {
+                sb.AppendLine($"<caption>{caption}</caption>");
+            }
+            sb.AppendLine("<tr>");
+            foreach (string col in colNames)
+            {
+                sb.AppendLine($"<th>{col}</th>");
+            }
+            sb.AppendLine("</tr>");
+            while (mysqldr.Read())
+            {
+                sb.AppendLine("<tr>");
+
+                foreach (string col in colNames)
+                {
+                    if (col == linkerCol)
+                        sb.AppendLine($"<td><a href='{query}{mysqldr[linkedCol]}'>{mysqldr[col]}</a></td>");
+                    else
+                        sb.AppendLine($"<td>{mysqldr[col]}</td>");
+                }
+            }
+            sb.AppendLine("</table>");
             return sb.ToString();
         }
 
