@@ -40,7 +40,7 @@ namespace AgCubio
         private static String HandleRequest(String requestHeader)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("<!doctype html><head><title>HI</title></head>");
+            sb.Append("<!doctype html><head><title>HI</title></head><style>table, th, td { border: 1px solid black; }</style>");
             sb.Append($"<body><h1>GrandOpening</h1><pre>{requestHeader}</pre>");
 
             // format: /request[?param=value]
@@ -57,6 +57,9 @@ namespace AgCubio
                     sb.Append(Db.GetGamesTable(m.Groups["value"].Value));
                     return sb.ToString();
                 case "eaten":
+                    sb.Append(Db.GetEatensTable(m.Groups["value"].Value));
+                    return sb.ToString();
+                case "highscores":
                     sb.Append(Db.GetHighScoresTable(m.Groups["value"].Value));
                     return sb.ToString();
             }

@@ -81,7 +81,7 @@ namespace AgCubio
                 foreach (string col in colNames)
                 {
                     if (col == linkerCol)
-                        sb.AppendLine($"<td><a href='{query}{mysqldr[linkedCol]}'>{mysqldr["Name"]}</a></td>");
+                        sb.AppendLine($"<td><a href='{query}{mysqldr[linkedCol]}'>{mysqldr[col]}</a></td>");
                     else
                         sb.AppendLine($"<td>{mysqldr[col]}</td>");
                 }
@@ -116,7 +116,7 @@ namespace AgCubio
                         sb.Append(GenerateHTMLTable(session,
                             new String[] { "SessionID", "Name",  "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" },
                             "CubesEaten",
-                            "/eaten?id=?",
+                            "/eaten?id=",
                             "SessionID"
                             ));
                     }
@@ -124,7 +124,7 @@ namespace AgCubio
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    return $"<h3>e.Message<br/>Unable to get data from server.</h3>";
+                    return $"<h3>{e.Message}<br/>Unable to get data from server.</h3>";
                 }
             }
             return sb.ToString();
@@ -149,9 +149,7 @@ namespace AgCubio
                                             FROM Session as S                                        
                                             INNER JOIN Player as P
                                             ON S.PlayerID = P.ID
-                                            INNER JOIN Eaten as E
-                                            ON E.EaterSID = '{sid}'
-                                            WHERE S.ID = '{sid}' AND ";                  // 3. Set Command Text
+                                            WHERE S.ID IN (SELECT EatenSID FROM Eaten Where EaterSID = '{sid}')"; // 3. Set Command Text
 
                     // Execute the command and cycle through the DataReader object
                     using (MySqlDataReader session = command.ExecuteReader())
@@ -167,7 +165,7 @@ namespace AgCubio
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    return $"<h3>e.Message<br/>Unable to get data from server.</h3>";
+                    return $"<h3>{e.Message}<br/>Unable to get data from server.</h3>";
                 }
             }
             return sb.ToString();
@@ -177,7 +175,7 @@ namespace AgCubio
         /// Gets data from database for: /highscores?player=name
         /// </summary>
         /// <returns>Formats the data and returns as HTML Table.</returns>
-        public static string GetHighScoresTable(string sid)
+        public static string GetHighScoresTable(string name)
         {
             StringBuilder sb = new StringBuilder();
             // Template adapted from the lab/class resources.
@@ -187,23 +185,24 @@ namespace AgCubio
                 {
                     conn.Open();                                                    // 1. Open connection.
                     MySqlCommand command = conn.CreateCommand();                    // 2. Create a command
-                    command.CommandText = @"SELECT S.ID as SessionID, S.EndedAt-S.StartedAt as TimeAlive, S.HighestMass, S.HighestRank, S.FoodsEaten, S.CubesEaten, S.EndedAt
+                    command.CommandText = $@"SELECT S.ID as SessionID, S.EndedAt-S.StartedAt as TimeAlive, S.HighestMass, S.HighestRank, S.FoodsEaten, S.CubesEaten, S.EndedAt
                                             FROM Session as S                                        
                                             INNER JOIN Player as P
-                                            ON S.PlayerID = P.ID";                  // 3. Set Command Text
+                                            ON P.ID = S.PlayerID
+                                            WHERE S.PlayerID = (SELECT ID FROM Player WHERE Name = '{name}');";                  // 3. Set Command Text
 
                     // Execute the command and cycle through the DataReader object
                     using (MySqlDataReader session = command.ExecuteReader())
                     {
                         sb.Append(GenerateHTMLTable(session,
-                            new String[] { "SessionID", "Name", "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" }
+                            new String[] { "SessionID", "HighestRank"}
                             ));
                     }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    return $"<h3>e.Message<br/>Unable to get data from server.</h3>";
+                    return $"<h3>{e.Message}<br/>Unable to get data from server.</h3>";
                 }
             }
             return sb.ToString();
