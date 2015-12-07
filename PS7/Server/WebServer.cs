@@ -41,13 +41,12 @@ namespace AgCubio
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<!doctype html><head><title>HI</title></head>");
-            sb.Append($"<body><h1>GrandOpening</h1><pre>{requestHeader}</pre><h1>");
+            sb.Append($"<body><h1>GrandOpening</h1><pre>{requestHeader}</pre>");
 
             // format: /request[?param=value]
             String pattern = @"GET /(?<request>\w*?)(\?(?<param>.+?)=(?<value>.+?))* HTTP/1.1";
             Regex rx = new Regex(pattern);
             Match m = rx.Match(requestHeader);
-            sb.Append(m.Groups["request"].Value);
             switch (m.Groups["request"].Value)
             {
                 case "scores":
@@ -55,10 +54,10 @@ namespace AgCubio
                     sb.Append(Db.GetScoresTable());
                     return sb.ToString();
                 case "games":
-                    sb.Append($"You will get games => {m.Groups["param"]} = {m.Groups["value"]}");
+                    sb.Append(Db.GetGamesTable(m.Groups["value"].Value));
                     return sb.ToString();
                 case "eaten":
-                    sb.Append($"Will get eaten => {m.Groups["param"]} = {m.Groups["value"]}");
+                    sb.Append(Db.GetHighScoresTable(m.Groups["value"].Value));
                     return sb.ToString();
             }
             return sb.Append("404 : Error").ToString();
