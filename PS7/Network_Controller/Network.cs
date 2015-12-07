@@ -133,16 +133,17 @@ namespace AgCubio
         /// program to send data over a socket. This function needs to convert 
         /// the data into bytes and then send them using socket.
         /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="data"></param>
-        public static bool Send(Socket socket, String data)
+        /// <param name="socket">Socket to send through.</param>
+        /// <param name="data">Data to send.</param>
+        /// <param name="close">Indicates whether to close socket after sending is done.</param>
+        public static bool Send(Socket socket, String data, bool close = false)
         {
             // Convert the string data to byte data using UTF8 encoding.
             byte[] byteData = Encoding.UTF8.GetBytes(data);
             try
             {
                 // Begin sending the data to the remote device.
-                socket.BeginSend(byteData, 0, byteData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), socket);
+                socket.BeginSend(byteData, 0, byteData.Length, SocketFlags.None, new AsyncCallback(SendCallBack), new { socket = socket, close = close });
                 return true;
                         
             }
@@ -150,7 +151,7 @@ namespace AgCubio
             {
                 if (socket != null)
                 {
-                    socket.Shutdown(SocketShutdown.Both);
+                    //socket.Shutdown(SocketShutdown.Both);
                     socket.Close();
                 }
                 return false;
@@ -168,11 +169,14 @@ namespace AgCubio
             // TODO: might need to arrange if more data
             try
             {
-                ((Socket)ar.AsyncState).EndSend(ar);
+                dynamic obj = ar.AsyncState;
+                obj.socket.EndSend(ar);
+                if (obj.close)
+                    obj.socket.Close();
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -198,7 +202,7 @@ namespace AgCubio
                 PreservedState ps = isWebServer ? wsPS : serverPS;
                 ps.callback = onNewClient;
                 ps.socket = sock;
-                sock.BeginAccept(AcceptANewClient, null);
+                sock.BeginAccept(AcceptANewClient, ps);
             }
             catch (Exception e)
             {
@@ -213,12 +217,13 @@ namespace AgCubio
         /// <param name="ar"></param>
         public static void AcceptANewClient(IAsyncResult ar)
         {
+            PreservedState ps = (PreservedState)ar.AsyncState;  // server ps
             Console.WriteLine("Accepted a new Client in thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-            PreservedState clientPS = new PreservedState { socket = serverPS.socket.EndAccept(ar) };
-            serverPS.callback(clientPS);
+            PreservedState clientPS = new PreservedState { socket = ps.socket.EndAccept(ar) };
+            ps.callback(clientPS);
 
             // wait for another client
-            serverPS.socket.BeginAccept(new AsyncCallback(AcceptANewClient), null);
+            ps.socket.BeginAccept(new AsyncCallback(AcceptANewClient), ps);
         }
     }
 }

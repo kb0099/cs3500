@@ -12,7 +12,7 @@ using System.Drawing;
 
 namespace AgCubio
 {
-    class Server
+    public partial class Server
     {
         // this is the server world!
         private static World world;
@@ -41,11 +41,6 @@ namespace AgCubio
             ExitHelper eh = new ExitHelper(() => {
                 MessageBox.Show("Disposing resources please wait ... \n\nIt will automatically close whithin 5 seconds."); });
             while (Console.ReadLine() != "quit") ;
-        }
-
-        private static void StartWebServer()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
