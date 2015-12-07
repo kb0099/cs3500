@@ -181,10 +181,10 @@ namespace AgCubio
         /// Upon a connection request, the OS should invoke AcceptANewClient().
         /// </summary>
         /// <param name="onNewClient">This callback will be called after a new client is connected.</param>
-        public static void ServerAwaitingClientLoop(Action<PreservedState> onNewClient)
+        public static void ServerAwaitingClientLoop(Action<PreservedState> onNewClient, int port=11000, bool isWebServer=false)
         {
             // create and bind the listening socket to the port
-            IPEndPoint iep = new IPEndPoint(IPAddress.IPv6Any, 11000);
+            IPEndPoint iep = new IPEndPoint(IPAddress.IPv6Any, port);
 
             // create the server socket
             Socket sock = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
@@ -193,10 +193,11 @@ namespace AgCubio
             try
             {
                 sock.Bind(iep);
-                sock.Listen(2);       // start listening: max pending connections 20
-                Console.WriteLine("Waiting for a connection...");
-                serverPS.callback = onNewClient;
-                serverPS.socket = sock;
+                sock.Listen(20);       // start listening: max pending connections 20
+                Console.WriteLine($"Waiting for a connection at port: {port}");
+                PreservedState ps = isWebServer ? wsPS : serverPS;
+                ps.callback = onNewClient;
+                ps.socket = sock;
                 sock.BeginAccept(AcceptANewClient, null);
             }
             catch (Exception e)

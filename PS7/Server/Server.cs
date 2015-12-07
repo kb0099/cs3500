@@ -34,12 +34,18 @@ namespace AgCubio
 
             Console.WriteLine("========== Server ============");
             Console.WriteLine("Type quit and press return/enter to stop the server.");
-            Start();
+            StartGame();
+            StartWebServer();
 
             // On exit
             ExitHelper eh = new ExitHelper(() => {
                 MessageBox.Show("Disposing resources please wait ... \n\nIt will automatically close whithin 5 seconds."); });
             while (Console.ReadLine() != "quit") ;
+        }
+
+        private static void StartWebServer()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -90,7 +96,7 @@ namespace AgCubio
         /// This method should populate the initial world with food, set the heartbeat of the program, and await
         /// network client connections.
         /// </summary>
-        private static void Start()
+        private static void StartGame()
         {
             System.Timers.Timer timer = new System.Timers.Timer();
             timer.Interval = 1.0/world.HeartbeatsPerSecond * 1000;
