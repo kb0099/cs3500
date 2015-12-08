@@ -21,7 +21,8 @@ namespace AgCubio
 
         public static void DbTests()
         {
-            Console.WriteLine(Db.AddGame());
+            Db.AddSession(9, "Matthew", 2000);
+            //Console.WriteLine(Db.AddGame());
         }
 
         public static void ListTest2()

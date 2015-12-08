@@ -49,6 +49,63 @@ namespace AgCubio
         }
 
         /// <summary>
+        /// Adds a new Session entry for the given playerName.
+        /// If the player doesn't exist an entry exist with the playerName.
+        /// Player Name is treated as unique so no 2 player's can be same name.
+        /// Means that two same names map to a single player.
+        /// </summary>
+        /// <param name="gameID">Represents a server Game.ID</param>
+        /// <param name="playerName">The player name.</param>
+        /// <returns>New Session ID or -1.</returns>
+        public static int AddSession(int gameID, string playerName, int startMass)
+        {
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    MySqlCommand cmd = conn.CreateCommand();
+
+                    // First get the player ID
+                    cmd.CommandText = $@"select ID from Player where Player.Name = '{playerName}'";
+                    conn.Open();
+                    var playerID = cmd.ExecuteScalar();
+
+                    // if player doesn't exist create one
+                    if (playerID == null) 
+                    {
+                        cmd.CommandText = $@"INSERT INTO Player
+                                            (Name)
+                                            VALUES
+                                            ('{playerName}');";
+                        int numRows = cmd.ExecuteNonQuery();
+                        if (numRows == 1)
+                        {
+                            cmd.CommandText = @"SELECT LAST_INSERT_ID();";
+                            playerID = int.Parse(cmd.ExecuteScalar().ToString());
+                        }
+                    }
+
+                    // now create the Session entry
+                    cmd.CommandText = $@"INSERT INTO Session
+                                        (GameID, StartedAt, PlayerID, HighestMass)
+                                        VALUES
+                                        ({gameID}, unix_timestamp(), {playerID}, {startMass});
+                                        ";
+                    if(cmd.ExecuteNonQuery() == 1)
+                    {
+                        cmd.CommandText = @"SELECT LAST_INSERT_ID();";
+                        return int.Parse(cmd.ExecuteScalar().ToString());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
         /// Gets data from database.
         /// </summary>
         /// <returns>Formats the data and returns as HTML Table.</returns>
@@ -87,7 +144,12 @@ namespace AgCubio
                 }
             }
             return sb.ToString();
-        }        
+        }    
+        
+        public static void UpdateSession()
+        {
+
+        }    
       
         /// <summary>
         /// Gets all games by a particular player for: /games?player=name
