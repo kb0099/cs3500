@@ -31,16 +31,17 @@ namespace AgCubio
                                         (
                                         unix_timestamp()
                                         );
-                                        ";                    
+                                        ";
                     conn.Open();
                     int numRows = cmd.ExecuteNonQuery();
-                    if(numRows == 1)
+                    if (numRows == 1)
                     {
                         cmd.CommandText = @"SELECT LAST_INSERT_ID();";
                         return int.Parse(cmd.ExecuteScalar().ToString());
                     }
 
-                }catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
@@ -71,7 +72,7 @@ namespace AgCubio
                     var playerID = cmd.ExecuteScalar();
 
                     // if player doesn't exist create one
-                    if (playerID == null) 
+                    if (playerID == null)
                     {
                         cmd.CommandText = $@"INSERT INTO Player
                                             (Name)
@@ -91,7 +92,7 @@ namespace AgCubio
                                         VALUES
                                         ({gameID}, unix_timestamp(), {playerID}, {startMass});
                                         ";
-                    if(cmd.ExecuteNonQuery() == 1)
+                    if (cmd.ExecuteNonQuery() == 1)
                     {
                         cmd.CommandText = @"SELECT LAST_INSERT_ID();";
                         return int.Parse(cmd.ExecuteScalar().ToString());
@@ -144,13 +145,59 @@ namespace AgCubio
                 }
             }
             return sb.ToString();
-        }    
-        
-        public static void UpdateSession()
-        {
+        }
 
-        }    
-      
+        /// <summary>
+        /// Updates the Session using the provided inputs.
+        /// </summary>
+        /// <param name="sid">The Session.ID</param>
+        /// <param name="fields">Key-Value pair of column names to field values.</param>
+        /// <param name="end">Indicates whether to end the session.</param>
+        public static bool UpdateSession(int sid, Dictionary<string, string> fields, bool end = false)
+        {
+            if (fields.Count < 1 && end == false) return true;      // Nothing to update!
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    MySqlCommand cmd = conn.CreateCommand();
+
+                    // Build the command
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append($@"UPDATE Session SET ");
+
+                    var itr = fields.GetEnumerator();
+                    if (end)
+                    {
+                        sb.Append("EndedAt = unix_timestamp()");
+                    }
+                    else if (itr.MoveNext())        // this is to fix the extra ", " 
+                    {
+                        sb.Append($"{itr.Current.Key} = {itr.Current.Value}");
+                    }
+
+                    while (itr.MoveNext())
+                    {
+                        sb.Append($", {itr.Current.Key} = {itr.Current.Value}");
+                    }
+
+                    sb.Append($" WHERE ID = {sid}");
+
+                    // set commandText
+                    cmd.CommandText = sb.ToString();
+
+                    // open connection and execute
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() == 1;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Gets all games by a particular player for: /games?player=name
         /// </summary>
@@ -175,10 +222,10 @@ namespace AgCubio
                     using (MySqlDataReader session = command.ExecuteReader())
                     {
                         sb.Append(GenerateHTMLTable(session,
-                            new String[] { "SessionID", "Name",  "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" },
+                            new String[] { "SessionID", "Name", "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" },
                             "CubesEaten",
                             "/eaten?id=",
-                            "SessionID", 
+                            "SessionID",
                             caption: $"List of All Games by Player: {playerName}"
                             ));
                     }
@@ -258,7 +305,7 @@ namespace AgCubio
                     using (MySqlDataReader session = command.ExecuteReader())
                     {
                         sb.Append(GenerateHTMLTable(session,
-                            new String[] { "SessionID", "TimeAlive", "HighestMass", "HighestRank"}, caption:$"High Scores for Player: {name}"
+                            new String[] { "SessionID", "TimeAlive", "HighestMass", "HighestRank" }, caption: $"High Scores for Player: {name}"
                             ));
                     }
                 }
@@ -285,7 +332,7 @@ namespace AgCubio
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<table>");
-            if(caption != null)
+            if (caption != null)
             {
                 sb.AppendLine($"<caption>{caption}</caption>");
             }

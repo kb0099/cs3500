@@ -14,14 +14,45 @@ namespace AgCubio
             //JsonTesting();
             // SocketTesting();
             //ListTest2();
-            DbTests();
-
+           DbTests();
+           // Dict();
             Console.ReadLine();
         }
 
+        public static void Dict()
+        {
+            Dictionary<string, string> d = new Dictionary<string, string>();
+            d.Add("name", "Paul");
+            d.Add("country", "america");
+            d.Add("age","20");
+            d.Add("id", "33");
+
+            var itr = d.GetEnumerator();
+            itr.MoveNext();
+            Console.WriteLine(itr.Current);
+            while (itr.MoveNext())
+            {
+                Console.WriteLine(itr.Current);
+            }
+            Console.WriteLine("done!");
+            Console.WriteLine(itr.MoveNext());
+            Console.WriteLine(itr.MoveNext());
+            Console.WriteLine(itr.MoveNext());
+
+        }
         public static void DbTests()
         {
-            Db.AddSession(9, "Matthew", 2000);
+            //Db.UpdateSession(5, new Dictionary<string, string>
+            //{
+            //    ["HighestMass"] = "5555",
+            //    ["HighestRank"] = "5",
+            //    ["FoodsEaten"] = "55",
+            //    ["CubesEaten"] = "5"
+            //});
+            //Db.UpdateSession(5, new Dictionary<string, string>(), true);
+            int sid = Db.AddSession(9, "Smith", 2000);
+            Db.UpdateSession(sid, new Dictionary<string, string> {["HighestMass"] = "1212" });
+
             //Console.WriteLine(Db.AddGame());
         }
 
