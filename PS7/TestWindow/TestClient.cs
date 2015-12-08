@@ -12,10 +12,17 @@ namespace AgCubio
         public static void Main()
         {
             //JsonTesting();
-            SocketTesting();
+            // SocketTesting();
             //ListTest2();
+            DbTests();
+
+            Console.ReadLine();
         }
 
+        public static void DbTests()
+        {
+            Console.WriteLine(Db.AddGame());
+        }
 
         public static void ListTest2()
         {

@@ -15,6 +15,40 @@ namespace AgCubio
         private const string connectionString = "server=atr.eng.utah.edu;database=cs3500_bastakot;uid=cs3500_bastakot;password=ps9c#jim";
 
         /// <summary>
+        /// Adds a new Game to the server with current time set automatically as StartedAt.
+        /// Returns the Game.ID on success else, returns -1.
+        /// </summary>
+        public static int AddGame()
+        {
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    MySqlCommand cmd = conn.CreateCommand();
+                    cmd.CommandText = @"
+                                        INSERT INTO Game(StartedAt)
+                                        VALUES
+                                        (
+                                        unix_timestamp()
+                                        );
+                                        ";                    
+                    conn.Open();
+                    int numRows = cmd.ExecuteNonQuery();
+                    if(numRows == 1)
+                    {
+                        cmd.CommandText = @"SELECT LAST_INSERT_ID();";
+                        return int.Parse(cmd.ExecuteScalar().ToString());
+                    }
+
+                }catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
         /// Gets data from database.
         /// </summary>
         /// <returns>Formats the data and returns as HTML Table.</returns>
@@ -53,8 +87,7 @@ namespace AgCubio
                 }
             }
             return sb.ToString();
-        }
-        
+        }        
       
         /// <summary>
         /// Gets all games by a particular player for: /games?player=name
