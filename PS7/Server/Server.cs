@@ -18,6 +18,7 @@ namespace AgCubio
         private static World world;
         private static string configFilePath = "world_parameters.xml";      // default location
         private static Dictionary<Socket, int> clientSockets = new Dictionary<Socket, int>();   // socket to player uid mapping
+        private static int gameID;      // A Game represents a Server Game Session.
 
         // current working directory
         private static string cwd = AppDomain.CurrentDomain.BaseDirectory;
@@ -37,9 +38,14 @@ namespace AgCubio
             StartGame();
             StartWebServer();
 
+            // Database part
+            gameID = Db.AddGame();
+
             // On exit
-            ExitHelper eh = new ExitHelper(() => {
-                MessageBox.Show("Disposing resources please wait ... \n\nIt will automatically close whithin 5 seconds."); });
+            ExitHelper eh = new ExitHelper(() =>
+            {
+                MessageBox.Show("Disposing resources please wait ... \n\nIt will automatically close whithin 5 seconds.");
+            });
             while (Console.ReadLine() != "quit") ;
         }
 
@@ -94,7 +100,7 @@ namespace AgCubio
         private static void StartGame()
         {
             System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 1.0/world.HeartbeatsPerSecond * 1000;
+            timer.Interval = 1.0 / world.HeartbeatsPerSecond * 1000;
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
             // grow/populate some food to the max_food
@@ -134,13 +140,17 @@ namespace AgCubio
 
             // add to update queue after receiving name
             lock (clientSockets)
+            {
                 clientSockets[ps.socket] = player.uId;
+                playerSession[player.uId] = new Dictionary<string, string>();
+                playerSession[player.uId]["ID"] = Db.AddSession(gameID, player.Name, player.Mass).ToString();
+            }
 
             // should clear the received data
             ps.receivedData.Clear();
 
             // send the initial world only to this socket
-            List<Cube> sendFood = new List<Cube>(world.foodCubes.Values); 
+            List<Cube> sendFood = new List<Cube>(world.foodCubes.Values);
             // TODO: SendCubes() is able to have exception if food cubes are removed while it is trying to send them; this is temp way to try separating the collections while food is sent over, would be better to set up locks for foodCubes
             SendCubes(sendFood, ps.socket);
 
@@ -203,7 +213,7 @@ namespace AgCubio
             Cube fd;
             world.AddFood(out fd);
             // try sending that food to all clients
-            if(fd != null)
+            if (fd != null)
             {
                 SendCubes(new Cube[] { fd });
             }
@@ -246,19 +256,45 @@ namespace AgCubio
                             // the connection is dead, safe to remove the socket, but the cube remains in the world
                             if (!Network.Send(s, JsonConvert.SerializeObject(c) + "\n"))
                             {
-                                //clientSockets.Remove(s);
+                                // clientSockets.Remove(s);
                                 removal.Add(s);
                             }
                         }
                     }
-                    // TODO: removing sockets in foreach causes exceptions, so removal done outside of loop
-                    foreach (Socket removeS in removal)
-                    {
-                        clientSockets.Remove(removeS);
-                    }
+                    HandleDeadSocket(removal);
                 }
             }
 
+        }
+
+        /// <summary>
+        /// This handles a dead socket connection. Dead connection also implies player death.
+        /// It removes the dead socket and also updates the dead player info on the database.
+        /// </summary>
+        /// <param name="removal"></param>
+        private static void HandleDeadSocket(List<Socket> removal)
+        {
+            // Removing sockets in foreach causes exceptions, so removal done outside of loop
+            foreach (Socket removeS in removal)
+            {
+                // If a player is disconnected end its GameSession
+                int playerID = clientSockets[removeS];
+                HandlePlayerDeath(playerID);
+                clientSockets.Remove(removeS);
+            }
+        }
+
+        /// <summary>
+        /// Updates the database to reflect the player's death.
+        /// </summary>
+        /// <param name="playerID"></param>
+        private static void HandlePlayerDeath(int playerID)
+        {
+            var fields = playerSession[playerID];
+            int sid = int.Parse(fields["ID"]);
+            fields.Remove("ID");
+
+            Db.UpdateSession(sid, fields, true);
         }
 
         /// <summary>
@@ -272,16 +308,22 @@ namespace AgCubio
             {
                 lock (clientSockets)
                 {
-                        foreach (Cube c in cubes)
+                    foreach (Cube c in cubes)
+                    {
+                        if (!Network.Send(s, JsonConvert.SerializeObject(c) + "\n"))
                         {
-                            if (!Network.Send(s, JsonConvert.SerializeObject(c) +"\n"))
-                            {
-                                clientSockets.Remove(s);
-                            }
+                            HandleDeadSocket(new List<Socket> { s });
+                            return; // can return because this is a single socket s.
                         }
+                    }
                 }
 
             }
         }
+
+        /// <summary>
+        /// Represents a mapping from player id to player data fields  to interact with database.
+        /// </summary>
+        private static Dictionary<int, Dictionary<string, string>> playerSession = new Dictionary<int, Dictionary<string, string>>();
     }
 }
