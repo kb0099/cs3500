@@ -105,48 +105,7 @@ namespace AgCubio
             }
             return -1;
         }
-
-        /// <summary>
-        /// Gets data from database.
-        /// </summary>
-        /// <returns>Formats the data and returns as HTML Table.</returns>
-        public static string GetScoresTable()
-        {
-            StringBuilder sb = new StringBuilder();
-            // Template adapted from the lab/class resources.
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
-            {
-                try
-                {
-                    conn.Open();                                                    // 1. Open connection.
-                    MySqlCommand command = conn.CreateCommand();                    // 2. Create a command
-                    command.CommandText = @"SELECT P.Name, S.EndedAt-S.StartedAt as TimeAlive, S.HighestMass, S.HighestRank, S.FoodsEaten, S.CubesEaten, S.EndedAt
-                                            FROM Session as S                                        
-                                            INNER JOIN Player as P
-                                            ON S.PlayerID = P.ID;
-                                          ";    // 3. Set CommandText
-
-                    // Execute the command and cycle through the DataReader object
-                    using (MySqlDataReader session = command.ExecuteReader())
-                    {
-                        sb.Append(GenerateHTMLTable(session,
-                            new String[] { "Name", "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "EndedAt" },
-                            "Name",
-                            "/games?player=",
-                            "Name",
-                            caption: $"List of All Game Plays and Scores"
-                            ));
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    return $"<h3>e.Message<br/>Unable to get data from server.</h3>";
-                }
-            }
-            return sb.ToString();
-        }
-
+        
         /// <summary>
         /// Updates the Session using the provided inputs.
         /// </summary>
@@ -199,9 +158,50 @@ namespace AgCubio
         }
 
         /// <summary>
+        /// Gets data from database.
+        /// </summary>
+        /// <returns>Formats the data and returns as HTML Table, else null.</returns>
+        public static string GetScoresTable()
+        {
+            StringBuilder sb = new StringBuilder();
+            // Template adapted from the lab/class resources.
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    conn.Open();                                                    // 1. Open connection.
+                    MySqlCommand command = conn.CreateCommand();                    // 2. Create a command
+                    command.CommandText = @"SELECT P.Name, S.EndedAt-S.StartedAt as TimeAlive, S.HighestMass, S.HighestRank, S.FoodsEaten, S.CubesEaten, S.StartedAt, S.EndedAt
+                                            FROM Session as S                                        
+                                            INNER JOIN Player as P
+                                            ON S.PlayerID = P.ID;
+                                          ";    // 3. Set CommandText
+
+                    // Execute the command and cycle through the DataReader object
+                    using (MySqlDataReader session = command.ExecuteReader())
+                    {
+                        sb.Append(GenerateHTMLTable(session,
+                            new String[] { "Name", "TimeAlive", "HighestMass", "HighestRank", "FoodsEaten", "CubesEaten", "StartedAt", "EndedAt" },
+                            "Name",
+                            "/games?player=",
+                            "Name",
+                            caption: $"List of All Game Plays and Scores"
+                            ));
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    return null;
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Gets all games by a particular player for: /games?player=name
         /// </summary>
-        /// <returns>Formats the data and returns as HTML Table.</returns>
+        /// <returns>Formats the data and returns as HTML Table, else null.</returns>
         public static string GetGamesTable(string playerName)
         {
             StringBuilder sb = new StringBuilder();
@@ -233,7 +233,7 @@ namespace AgCubio
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    return $"<h3>{e.Message}<br/>Unable to get data from server.</h3>";
+                    return null;
                 }
             }
             return sb.ToString();
@@ -243,7 +243,7 @@ namespace AgCubio
         /// Returns table with list of all eaten cubes for a particular game session <paramref name="sid"/>.
         /// </summary>
         /// <param name="sid">The session id.</param>
-        /// <returns></returns>
+        /// <returns>Returns the HTML table else null.</returns>
         public static string GetEatensTable(string sid)
         {
             StringBuilder sb = new StringBuilder();
@@ -275,7 +275,7 @@ namespace AgCubio
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    return $"<h3>{e.Message}<br/>Unable to get data from server.</h3>";
+                    return null;
                 }
             }
             return sb.ToString();
@@ -284,7 +284,7 @@ namespace AgCubio
         /// <summary>
         /// Gets data from database for: /highscores?player=name
         /// </summary>
-        /// <returns>Formats the data and returns as HTML Table.</returns>
+        /// <returns>Formats the data and returns as HTML Table, else null.</returns>
         public static string GetHighScoresTable(string name)
         {
             StringBuilder sb = new StringBuilder();
@@ -312,7 +312,7 @@ namespace AgCubio
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    return $"<h3>{e.Message}<br/>Unable to get data from server.</h3>";
+                    return null;
                 }
             }
             return sb.ToString();
@@ -342,16 +342,25 @@ namespace AgCubio
                 sb.AppendLine($"<th>{col}</th>");
             }
             sb.AppendLine("</tr>");
+            string field;
+            int t;
             while (mysqldr.Read())
             {
                 sb.AppendLine("<tr>");
-
                 foreach (string col in colNames)
                 {
+                    field = mysqldr[col].ToString().Trim();
+                    if(!String.IsNullOrEmpty(field) && int.TryParse(field, out t))      // process time in seconds
+                    {
+                        if (col.StartsWith("Time"))          // Represent as time
+                            field = TimeSpan.FromSeconds(t).ToString();
+                        else if (col.EndsWith("At"))
+                            field = DateTimeOffset.FromUnixTimeSeconds(t).DateTime.ToLocalTime().ToString();
+                    }
                     if (col == linkerCol)
-                        sb.AppendLine($"<td><a href='{query}{mysqldr[linkedCol]}'>{mysqldr[col]}</a></td>");
+                        sb.AppendLine($"<td><a href='{query}{mysqldr[linkedCol]}'>{field}</a></td>");
                     else
-                        sb.AppendLine($"<td>{mysqldr[col]}</td>");
+                        sb.AppendLine($"<td>{field}</td>");
                 }
             }
             sb.AppendLine("</table>");

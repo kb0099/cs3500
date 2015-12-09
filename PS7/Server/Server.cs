@@ -220,7 +220,7 @@ namespace AgCubio
 
             // handle eat food, then, send to clients
             IEnumerable<Cube> eatenFood = world.EatFoods();
-            SendCubes(eatenFood);
+            SendCubes(eatenFood);        
 
             world.ApplyAttrition();
             // handle eat players, then, send dead cubes

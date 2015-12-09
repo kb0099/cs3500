@@ -374,7 +374,6 @@ namespace AgCubio
                         {
                             output.Add(f);
                             // consumption involves removing the food and adding to the cube's mass, then setting food to 0 mass to kill it
-
                             //Console.WriteLine(c.Mass + ", " + f.Mass);                        // debug
                             c.Mass += f.Mass;
                             f.Mass = 0;
@@ -583,16 +582,17 @@ namespace AgCubio
         private void MergeTeam(int tid)
         {
             List<Cube> splits;
+            Cube pc;        // the main player cube of the team
             lock (this)
             {
                 teamCubes.TryGetValue(tid, out splits);
-                if (splits == null) return;
+                if (splits == null || !playerCubes.TryGetValue(tid, out pc)) return;
                 splits = new List<Cube>(splits);    // new enumeration
                 foreach (Cube s in splits)
                 {
                     if (s.mergeAfter < DateTime.Now && s.uId != tid) // exclude the main cube
                     {
-                        playerCubes[tid].Mass += s.Mass;
+                        pc.Mass += s.Mass;
                         playerCubes.Remove(s.uId);
                         teamCubes[tid].Remove(s);      // changes the enumeration using another instance
                         s.Mass = 0;

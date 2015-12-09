@@ -10,7 +10,7 @@ namespace AgCubio
     public partial class Server
     {
         private const string ResponseHeader = "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-        private const string HtmlHeader = @"< !doctype html><head><title>AgCubio | Game Play Results</title></head>
+        private const string HtmlHeader = @"<!doctype html><head><title>AgCubio | Game Play Results</title></head>
             <style>
                 body{ max-width: 800px;background: darkslategrey;}
                 table, th, td { border: 1px solid black; padding: .2em;}
@@ -27,15 +27,10 @@ namespace AgCubio
             ps.callback = (s) =>
             {
                 StringBuilder sb = new StringBuilder(ResponseHeader);
-                sb.Append(HandleRequest(ps.receivedData.ToString()));
+                sb.Append(HandleRequest(ps.receivedData.ToString())); 
                 Network.Send(ps.socket, sb.ToString(), true);
             };
             Network.WantMoreData(ps);
-
-            // parse the HTTP header method (GET)
-            // if valid send data and close connection
-            // else invalid show error page
-            //ps.socket.send
         }
 
         /// <summary>
@@ -47,29 +42,55 @@ namespace AgCubio
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(HtmlHeader);
-            sb.Append($"<body><h1>GrandOpening</h1><pre>{requestHeader}</pre>");
+            sb.Append($"<body><div style='padding: 1em'><h1>AgCubio Game Play Info</h1></div><div><hr/></div>");
 
             // format: /request[?param=value]
             String pattern = @"GET /(?<request>\w*?)(\?(?<param>.+?)=(?<value>.+?))* HTTP/1.1";
             Regex rx = new Regex(pattern);
             Match m = rx.Match(requestHeader);
+            
+            string table = null;
             switch (m.Groups["request"].Value)
             {
                 case "scores":
-                    sb.Append("<h1>You will get default page</h1>");
-                    sb.Append(Db.GetScoresTable());
-                    return sb.ToString();
+                    table = Db.GetScoresTable();
+                    break;
                 case "games":
-                    sb.Append(Db.GetGamesTable(m.Groups["value"].Value));
-                    return sb.ToString();
+                    if(m.Groups["param"].Value == "player")
+                        table = Db.GetGamesTable(m.Groups["value"].Value);
+                    break;
                 case "eaten":
-                    sb.Append(Db.GetEatensTable(m.Groups["value"].Value));
-                    return sb.ToString();
+                    if(m.Groups["param"].Value == "id")
+                        table = Db.GetEatensTable(m.Groups["value"].Value);
+                    break;
                 case "highscores":
-                    sb.Append(Db.GetHighScoresTable(m.Groups["value"].Value));
-                    return sb.ToString();
+                    if (m.Groups["param"].Value == "player")
+                        table = Db.GetHighScoresTable(m.Groups["value"].Value);
+                    break;
             }
-            return sb.Append("404 : Error").ToString();
+            if (table == null)
+                return sb.Append(errorPage).ToString();
+            else
+                return sb.Append(table).ToString();
         }
+
+        private const string errorPage = @"
+<div><style>p, ul, h2, h3 {margin: 2em; } ul, li, p, h3 {text-align: left; }</style><h2>throw new AgCubioException(""Invalid Web Request"")</h2><h3>Here is what it means: The page you requested does not exist. Please check your requested url and query parameters.</h3>
+<p>
+Here are the list of valid url formats:
+<ul>
+    <li><a href='/scores'>Scores Table: 'localhost:11100/scores'</a></li>
+    <li>All Game Sessions by a Player: 'localhost:11100/games?player=playerName'</li>
+    <li>All Cubes Eaten in a Game Session: 'localhost:11100/eaten?id=sessionID'</li>
+    <li>List of High Scores by a Player: 'localhost:11100/highscores?player=playerName'</li>
+</ul>
+</p>
+<h2>Possible Solutions for You</h2>
+<p>
+First, make sure your url is in one of the valid forms provided above.
+Second, make sure the playerName or sessionID query parameters that you provide belong to a valid entity or a game session. Also note: all query parameters and player names are case sensitive. Jim and JIM are treated as different names.
+</p>
+</div>
+";
     }
 }
