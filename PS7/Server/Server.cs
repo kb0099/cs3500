@@ -42,11 +42,12 @@ namespace AgCubio
             gameID = Db.AddGame();
 
             // On exit
-            ExitHelper eh = new ExitHelper(() =>
-            {
-                MessageBox.Show("Disposing resources please wait ... \n\nIt will automatically close whithin 5 seconds.");
-            });
-            while (Console.ReadLine() != "quit") ;
+            ExitHelper eh = new ExitHelper(OnServerExit);
+            while (Console.ReadLine() != "quit");
+            
+            // if user closes from command "quit"
+            OnServerExit();
+            Console.ReadLine();
         }
 
         /// <summary>
@@ -143,7 +144,7 @@ namespace AgCubio
             {
                 clientSockets[ps.socket] = player.uId;
                 playerSession[player.uId] = new Dictionary<string, string>();
-                
+
                 // "ID" is the Session.ID from Session table.
                 playerSession[player.uId]["ID"] = Db.AddSession(gameID, player.Name, player.Mass).ToString();
             }
@@ -250,6 +251,17 @@ namespace AgCubio
             (o as System.Timers.Timer).Start();
         }
 
+        private static void OnServerExit()
+        {
+            // End all player sessions.
+            foreach (var kvp in playerSession)
+            {
+                HandlePlayerDeathDB(world.playerCubes[kvp.Key]);
+            }
+
+            // End the server game
+            Db.EndGame(gameID);
+        }
         /// <summary>
         /// This method figures out which players completely eaten.
         /// Splitted cubes being eaten is not considered as eaten cube.
@@ -257,14 +269,12 @@ namespace AgCubio
         /// <param name="eatenPlayers">Any eaten player list (splitted or non-splitted)</param>
         private static void HandlePayersDeathDB(IEnumerable<Cube> eatenPlayers)
         {
-            foreach(Cube p in eatenPlayers)
+            foreach (Cube p in eatenPlayers)
             {
                 // only update db if main cube died split cubes being eaten are not considered.
-                if(p.EatenBy != 0)      // if it was eaten by another cube
+                if (p.EatenBy != 0)      // if it was eaten by another cube
                 {
-                    // upate eaten 
-                    if (p.teamId != 0) p.uId = p.teamId;
-                    int eatenSID = int.Parse(playerSession[p.uId]["ID"]);
+                    int eatenSID = int.Parse(playerSession[p.teamId]["ID"]);
                     int eaterSID = int.Parse(playerSession[p.EatenBy]["ID"]);
                     Db.UpdateEaten(eaterSID, eatenSID);
 
@@ -326,17 +336,20 @@ namespace AgCubio
         /// <param name="cubeID"></param>
         private static void HandlePlayerDeathDB(Cube c)
         {
-            var fields = playerSession[c.uId];
-            int sid = int.Parse(fields["ID"]);
-            fields.Remove("ID");
-            fields["FoodsEaten"] = c.FoodsEaten.ToString();
-            fields["CubesEaten"] = c.CubesEaten.ToString();
-            fields["HighestMass"] = c.HighestMass.ToString();
-            if(c.HighestRank < 6)
-                fields["HighestRank"] = c.HighestRank.ToString();
+            lock (world)
+            {
+                var fields = playerSession[c.teamId];
+                int sid = int.Parse(fields["ID"]);
+                fields.Remove("ID");
+                fields["FoodsEaten"] = c.FoodsEaten.ToString();
+                fields["CubesEaten"] = c.CubesEaten.ToString();
+                fields["HighestMass"] = c.HighestMass.ToString();
+                if (c.HighestRank < 6)
+                    fields["HighestRank"] = c.HighestRank.ToString();
 
-            Db.UpdateSession(sid, fields, true);
-            playerSession.Remove(c.uId);
+                Db.UpdateSession(sid, fields, true);
+                playerSession.Remove(c.uId);
+            }
         }
 
         /// <summary>

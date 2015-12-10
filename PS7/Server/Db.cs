@@ -105,7 +105,7 @@ namespace AgCubio
             }
             return -1;
         }
-        
+
         /// <summary>
         /// Updates the Session using the provided inputs.
         /// </summary>
@@ -176,8 +176,8 @@ namespace AgCubio
                     Console.WriteLine(ex.Message);
                 }
             }
-            
-            return true;
+
+            return false;
         }
         /// <summary>
         /// Gets data from database.
@@ -259,6 +259,33 @@ namespace AgCubio
                 }
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Indicates end of game to the DB.
+        /// </summary>
+        /// <param name="gameID">Game.ID to end.</param>
+        /// <returns></returns>
+        public static bool EndGame(int gameID)
+        {
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    MySqlCommand cmd = conn.CreateCommand();
+                    cmd.CommandText = $@"UPDATE Game 
+                                        SET EndedAt = unix_timestamp()
+                                        WHERE ID = {gameID};";
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() == 1;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -372,7 +399,7 @@ namespace AgCubio
                 foreach (string col in colNames)
                 {
                     field = mysqldr[col].ToString().Trim();
-                    if(!String.IsNullOrEmpty(field) && int.TryParse(field, out t))      // process time in seconds
+                    if (!String.IsNullOrEmpty(field) && int.TryParse(field, out t))      // process time in seconds
                     {
                         if (col.StartsWith("Time"))          // Represent as time
                             field = TimeSpan.FromSeconds(t).ToString();

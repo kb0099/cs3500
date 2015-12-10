@@ -65,10 +65,11 @@ namespace AgCubio
 
         // for database
         public int HighestMass;
-        public int HighestRank;
+        public int HighestRank  = int.MaxValue;
         public int FoodsEaten;
         public int CubesEaten;
         public int EatenBy;         // represents the Cube that ate this cube
+        public int TeamMass;       // Current TeamMass
 
         /// <summary>
         /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.

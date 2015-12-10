@@ -197,8 +197,8 @@ namespace AgCubio
             {
                 c = new Cube(r.Next(Width),
                 r.Next(Height),
-                NextPlayerColor(), 
-                uid, 
+                NextPlayerColor(),
+                uid,
                 uid,        // Initially both uid and team_id are same
                 false,
                 name,
@@ -381,6 +381,7 @@ namespace AgCubio
 
                             // for database
                             c.FoodsEaten++;
+                            UpdateCubeInfoForDB(c);
                         }
                     }
                     // removal of cubes must be done here to avoid foreach exception of changing IEnumerable
@@ -391,6 +392,40 @@ namespace AgCubio
                 }
             }
             return output;
+        }
+
+        /// <summary>
+        /// Updates mass and rank.
+        /// </summary>
+        /// <param name="c">The player cube.</param>
+        private void UpdateCubeInfoForDB(Cube c)
+        {
+            // This must be first call as it updates masses.
+            int rank = GetCurrentPlayerRank(c);
+            if (c.TeamMass > c.HighestMass)
+                c.HighestMass = c.TeamMass;
+
+            if (rank < c.HighestRank)
+                c.HighestRank = rank;
+        }
+
+        /// <summary>
+        /// Returns the current rank based upon mass of the player 1 is the highest rank.
+        /// Side effect: Updates all team masses.
+        /// </summary>
+        /// <param name="c">The cube.</param>
+        /// <returns></returns>
+        private int GetCurrentPlayerRank(Cube c)
+        {            
+            List<Cube> list = new List<Cube>(playerCubes.Values);
+            // remove cubes that are not head of team
+            list.RemoveAll(x => x.teamId != x.uId);
+
+            list.Sort((c1, c2) => GetTeamMass(c1.teamId).CompareTo(GetTeamMass(c2.teamId)));
+            list.Reverse();
+
+            // index belongs to the head of the cube, so, need to get the rank from there
+            return list.IndexOf(playerCubes[c.teamId])+ 1;      
         }
 
         /// <summary>
@@ -427,12 +462,22 @@ namespace AgCubio
                                 if (teamCubes.TryGetValue(b.teamId, out members))
                                 {
                                     members.Remove(b);
-                                    if(members.Count > 0)
+                                    if (members.Count > 0)
                                     {
                                         if (b.uId == b.teamId)
                                         {
-                                            b.uId = members.First().uId;                    // change b's id to 2nd player's id
-                                            members.First().uId = b.teamId;                 // the 2nd player gets main teamid as its id
+                                            Cube next = members.First();
+                                            int nextId = next.uId;
+                                            // swap for playerCubes
+                                            playerCubes[nextId].uId = b.teamId;
+                                            playerCubes[b.teamId] = playerCubes[nextId];
+                                            playerCubes[nextId] = b;
+
+                                            // swap for team
+                                            next.uId = next.teamId;
+
+                                            // set b to point to old nextId
+                                            b.uId = nextId;
                                         }
                                         // if more than 0 split are there not dead yet!
                                         isTeamDeath = false;
@@ -448,9 +493,12 @@ namespace AgCubio
                                 // consumption involves removing the smaller cube (from dictionary and list) and a
                                 // adding to the larger cube's mass, then setting player to 0 mass to kill it
                                 playerCubes.Remove(b.uId);
-                                allPlayers.RemoveAt(j);--j;
+                                allPlayers.RemoveAt(j); --j;
                                 a.Mass += b.Mass;
                                 b.Mass = 0;
+
+                                // update info
+                                UpdateCubeInfoForDB(a);
                             }
                         }
                     }
@@ -509,7 +557,7 @@ namespace AgCubio
         /// <param name="toY">Split towards Y</param>
         public void SplitCube(int cId, int toX, int toY)
         {
-            if (playerCubes[cId].Mass < MinimumSplitMass) return;
+            if (!playerCubes.ContainsKey(cId) || playerCubes[cId].Mass < MinimumSplitMass) return;
 
             double h;
             List<Cube> currentTeam = null;
@@ -528,7 +576,7 @@ namespace AgCubio
                     // set cube to be half its mass
                     c.Mass = c.Mass / 2;
                     h = Math.Sqrt(Math.Pow(toX - c.X, 2) + Math.Pow(toY - c.Y, 2));
-                    Cube split = new Cube(c.X, c.Y, c.argb_color, NextUID(), cId, false, c.Name, c.Mass);
+                    Cube split = new Cube(c.X, c.Y, c.argb_color, NextUID(), c.teamId, false, c.Name, c.Mass);
                     split.mergeAfter = DateTime.Now.AddSeconds(MinTimeToMerge);
                     split.SetMomentum((int)((toX - c.X) / h * split.Mass / 100), (int)((toY - c.Y) / h * split.Mass / 100), HeartbeatsPerSecond);
 
@@ -665,6 +713,40 @@ namespace AgCubio
                     mergedCubes.Add(v);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the mass oof the whole team members.
+        /// Side effect: updates all player masses.
+        /// </summary>
+        /// <param name="teamID">Team id.</param>
+        /// <returns></returns>
+        private int GetTeamMass(int teamID)
+        {
+            List<Cube> team;
+            Cube p;
+            int mass = 0;
+            lock (this)
+            {
+                if (teamCubes.TryGetValue(teamID, out team) && team.Count > 0)
+                {
+                    foreach (Cube c in team)
+                    {
+                        mass += c.Mass;
+                    }
+                    foreach(Cube c in team)
+                    {
+                        c.TeamMass = mass;
+                    }
+                }
+                else if (playerCubes.TryGetValue(teamID, out p))
+                {
+                    mass = p.Mass;
+                    p.TeamMass = mass;
+                }
+            }
+
+            return mass;
         }
 
     }
