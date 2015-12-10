@@ -1,4 +1,24 @@
-﻿PS8 : Kedar Bastakoti
+﻿PS9: Kedar Bastakoti
+
+Note: All the features that are being asked for a Superior Solution are perfectly implemented.
+
+The "Web Server" - Opens a port at 11100.
+
+Overall Server Stats:
+Upon receiving "GET /scores HTTP/1.1" the server will sends back an HTML web page with overall details.
+
+Games by a Particular Player:
+Upon receiving "GET /games?player=Joe HTTP/1.1" the server sends back the games by that player.
+
+Eaten Cubes:
+Upon receiving "GET /eaten?id=35 HTTP/1.1" the server sends back list of all Player cubes eaten at that session.
+
+Any Other Web Request:
+Any other requests are treated as error and properly formatted HTML error page is displayed with list of possible solutions.
+
+
+
+PS8 : Kedar Bastakoti
 
 Notes:
 MinTimeToMerge: is a game world variable set to 4 seconds as default, which can be used to control 
