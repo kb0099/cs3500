@@ -22,6 +22,7 @@ namespace AgCubio
 
         // current working directory
         private static string cwd = AppDomain.CurrentDomain.BaseDirectory;
+        private static System.Timers.Timer timer;
 
         /// <summary>
         /// When the program starts, this function is run first.
@@ -45,8 +46,8 @@ namespace AgCubio
 
             // On exit
             ExitHelper eh = new ExitHelper(OnServerExit);
-            while (Console.ReadLine() != "quit");
-            
+            while (Console.ReadLine() != "quit") ;
+
             // Please enter 'quit' to quit  and send changes to database
             OnServerExit();
             Console.ReadLine();
@@ -102,7 +103,7 @@ namespace AgCubio
         /// </summary>
         private static void StartGame()
         {
-            System.Timers.Timer timer = new System.Timers.Timer();
+            timer = new System.Timers.Timer();
             timer.Interval = 1.0 / world.HeartbeatsPerSecond * 1000;
             timer.Elapsed += new ElapsedEventHandler(Update);
             timer.Start();
@@ -258,13 +259,11 @@ namespace AgCubio
 
         private static void OnServerExit()
         {
-            // End all player sessions.
-            lock (playerSession)
+            timer.Stop();
+            Network.StopAll();
+            foreach (var key in playerSession.Keys.ToList())
             {
-                foreach (var kvp in playerSession)
-                {
-                    HandlePlayerDeathDB(world.playerCubes[kvp.Key]);
-                }
+                HandlePlayerDeathDB(world.playerCubes[key]);
             }
 
             // End the server game
@@ -280,15 +279,22 @@ namespace AgCubio
         {
             foreach (Cube p in eatenPlayers)
             {
-                // only update db if main cube died split cubes being eaten are not considered.
-                if (p.EatenBy != 0)      // if it was eaten by another cube
+                try
                 {
-                    int eatenSID = int.Parse(playerSession[p.teamId]["ID"]);
-                    int eaterSID = int.Parse(playerSession[p.EatenBy]["ID"]);
-                    Db.UpdateEaten(eaterSID, eatenSID);
+                    // only update db if main cube died split cubes being eaten are not considered.
+                    if (p.EatenBy != 0)      // if it was eaten by another cube
+                    {
+                        int eatenSID = int.Parse(playerSession[p.teamId]["ID"]);
+                        int eaterSID = int.Parse(playerSession[p.EatenBy]["ID"]);
+                        Db.UpdateEaten(eaterSID, eatenSID);
 
-                    // this will remove the player from 
-                    HandlePlayerDeathDB(p);
+                        // this will remove the player from 
+                        HandlePlayerDeathDB(p);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
             }
         }

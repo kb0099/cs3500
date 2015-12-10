@@ -1,5 +1,13 @@
 ﻿PS9: Kedar Bastakoti
 
+
+Attention: 
+	1] Set server project as the Start Up Project.
+	2] Please do not close server using the Windows Title Bar Close Button (X button).
+	3] Instead, end the server by typing "quit", without quotes, and press enter.
+	4] Doing that gives the console a chance to send all unsaved changes to MySQL database to Save.
+	5] Databases are updated when new players are created or destroyed, but, some info need to be saved when server exits.
+
 Most of the features pertaining to PS9 are stored in WebServer.cs and Db.cs.
 
 Note: All the features that are being asked for a Superior Solution are perfectly implemented.
@@ -17,6 +25,19 @@ Upon receiving "GET /eaten?id=35 HTTP/1.1" the server sends back list of all Pla
 
 Any Other Web Request:
 Any other requests are treated as error and properly formatted HTML error page is displayed with list of possible solutions.
+
+Possible Correct Formats:
+http://localhost:11100/players
+http://localhost:11100/games?player=Joe
+http://localhost:11100/eaten?id=35
+
+Database:
+Has 4 Main Tables: Game, Session, Player, Eaten
+
+Game: It is the server Game and not the player game. A server game starts when the server starts and ends when server exits.
+Session: This is a single instance of player game.
+Player: Maps Player ID to Name.
+Eaten: Maps Eaten Player to Eater Player.
 
 
 

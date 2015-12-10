@@ -229,5 +229,28 @@ namespace AgCubio
             // wait for another client
             ps.socket.BeginAccept(new AsyncCallback(AcceptANewClient), ps);
         }
+
+        /// <summary>
+        /// Stops all listeners.
+        /// </summary>
+        public static void StopAll()
+        {
+            try
+            {
+                serverPS.socket.Shutdown(SocketShutdown.Both);
+                serverPS.socket.Close();
+            }
+            catch(Exception ex) {
+                Console.WriteLine(ex.Message);
+            }
+            try
+            {
+                wsPS.socket.Shutdown(SocketShutdown.Both);
+                wsPS.socket.Close();
+            }
+            catch(Exception ex){
+                Console.WriteLine(ex.Message);
+            }
+        }
     }
 }

@@ -174,10 +174,12 @@ namespace AgCubio
 
         /// <summary>
         /// Returns true if this cube contains <paramref name="c"/> inside it.
+        /// Ignores delta for food particles by default
         /// <param name="delta">Represents the amount to consider within boundary.</param>
         /// </summary>
-        public bool Contains(Cube c, int delta = 20)
+        public bool Contains(Cube c, int delta = 20, bool ignoreFood = true)
         {
+            if (ignoreFood && c.food == true) delta = 0;
             return LeftEdge-delta < c.LeftEdge && RightEdge+delta > c.RightEdge && TopEdge-delta < c.TopEdge && BottomEdge+delta > c.BottomEdge; 
         }
 
