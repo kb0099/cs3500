@@ -106,7 +106,7 @@ namespace AgCubio
         /// <summary>
         /// Represents the minimum # of seconds the cube needs to wait before it can merge.
         /// </summary>
-        public int MinTimeToMerge { get { return 4; } }
+        public int MinTimeToMerge { get { return 20; } }
 
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace AgCubio
         /// A counter to help track available unique id's.
         /// </summary>
         private static int nextUID = -1;
-        
+
 
         // For virus feature
         private const int MAX_VIRUS_COUNT = 4;              // Max. viruses at a given instance
@@ -192,13 +192,14 @@ namespace AgCubio
         public Cube NextPlayer(string name)
         {
             Cube c;
+            int uid = NextUID();
             lock (this)
             {
                 c = new Cube(r.Next(Width),
                 r.Next(Height),
-                NextPlayerColor(),
-                NextUID(),
-                0,
+                NextPlayerColor(), 
+                uid, 
+                uid,        // Initially both uid and team_id are same
                 false,
                 name,
                 PlayerStartMass);
@@ -265,7 +266,7 @@ namespace AgCubio
             int delta = (int)c.Size / 2;
             if (c.RightEdge > Width) c.X = Width - delta;
             if (c.LeftEdge < 0) c.X = delta;
-            if (c.BottomEdge > Height ) c.Y = Height - delta;
+            if (c.BottomEdge > Height) c.Y = Height - delta;
             if (c.TopEdge < 0) c.Y = delta;
         }
 
@@ -322,7 +323,7 @@ namespace AgCubio
                             min = (int)(c.Size + other.Size) / 2;
                             if (dx < min && dy < min)
                             {
-                                if ( (row +1)%2 == 0)    // every third column
+                                if ((row + 1) % 2 == 0)    // every third column
                                 {
                                     c.Y += min - dy;
                                     if (c.Y > Height)
@@ -377,6 +378,9 @@ namespace AgCubio
                             //Console.WriteLine(c.Mass + ", " + f.Mass);                        // debug
                             c.Mass += f.Mass;
                             f.Mass = 0;
+
+                            // for database
+                            c.FoodsEaten++;
                         }
                     }
                     // removal of cubes must be done here to avoid foreach exception of changing IEnumerable
@@ -402,62 +406,51 @@ namespace AgCubio
                 try
                 {
                     // Format the player cubes into a sorted list by mass
-                    List<Cube> sorted = new List<Cube>(playerCubes.Values);
-                    sorted.Sort(Comparer);
-                    // TODO: iteration style will affect game behavior; a special case of large can absorb medium, medium can absorb small, large can absorb small, but in what order can they absorb?
+                    List<Cube> allPlayers = new List<Cube>(playerCubes.Values);
                     Cube a, b;
-                    double tempX, tempY;
-                    int tempMass;
                     // iterate from second to smallest cube to largest cube
-                    for (int i = 1; i < sorted.Count; i++)
+                    for (int i = 0; i < allPlayers.Count; i++)
                     {
-                        a = sorted[i];
+                        a = allPlayers[i];
                         // iterate through all cubes smaller than i, in order of smallest to largest
-                        for (int j = 0; j < i; j++)
+                        for (int j = 0; j < allPlayers.Count; j++)
                         {
-                            b = sorted[j];
+                            if (i == j) continue;
+                            b = allPlayers[j];
                             // if IsAbsorbable() is true, add smaller cube to output and manage consumption
                             if (CanAbsorb(a, b))
                             {
+                                // if team death : meaning complete death of that player
+                                bool isTeamDeath = true;
                                 // if the consumed cube was head of a team, find another team cube to swap the cube roles
-                                if (b.uId == b.teamId)
+                                List<Cube> members;
+                                if (teamCubes.TryGetValue(b.teamId, out members))
                                 {
-                                    foreach (Cube swap in playerCubes.Values)
+                                    members.Remove(b);
+                                    if(members.Count > 0)
                                     {
-                                        if (swap.teamId == b.teamId && swap.uId != b.uId) // if there is no other cube of the same team, then nothing special is done
+                                        if (b.uId == b.teamId)
                                         {
-                                            // swap cubes by changing coordinates and mass between the cubes, adding head cube to output, and changing b to point to the swapped cube
-                                            tempX = b.X;
-                                            tempY = b.Y;
-                                            tempMass = b.Mass;
-                                            b.X = swap.X;
-                                            b.Y = swap.Y;
-                                            b.Mass = swap.Mass;
-                                            swap.X = tempX;
-                                            swap.Y = tempY;
-                                            swap.Mass = tempMass;
-                                            output.Add(b);
-                                            b = swap;
-                                            break;
+                                            b.uId = members.First().uId;                    // change b's id to 2nd player's id
+                                            members.First().uId = b.teamId;                 // the 2nd player gets main teamid as its id
                                         }
+                                        // if more than 0 split are there not dead yet!
+                                        isTeamDeath = false;
                                     }
                                 }
+                                // if more than 0 split are there not dead yet!
+                                if (isTeamDeath)
+                                {
+                                    a.CubesEaten++;             // if there are no other splits it means, the whole cube is eaten.
+                                    b.EatenBy = a.teamId;       // set eater team ID
+                                }
                                 output.Add(b);
-                                // consumption involves removing the smaller cube (from dictionary and list) and adding to the larger cube's mass, then setting player to 0 mass to kill it
+                                // consumption involves removing the smaller cube (from dictionary and list) and a
+                                // adding to the larger cube's mass, then setting player to 0 mass to kill it
                                 playerCubes.Remove(b.uId);
-                                sorted.RemoveAt(j);
+                                allPlayers.RemoveAt(j);--j;
                                 a.Mass += b.Mass;
                                 b.Mass = 0;
-                                // The change in a's mass could ruin the sorting order of the list, so re-sort
-                                sorted.Sort(Comparer); // if the cube mass did ruin sorting, it will jump up higher on the list, so the order of cubes below it should not be affected
-                                                       // since the list was modified, i, j, and a need to be modified to have loop consistency
-                                                       // to fix it so the for loops are consistent:
-                                                       //      j is set to -1 (in case of re-sorting changing a) to have next loop start from beginning of list; a's increased size or changed cube could affect all smaller cubes, so need to start over
-                                                       //      i is decremented in relation to the removal in the list shifting cubes to the left
-                                                       //      a is re-obtained (in case of previous re-sorting changing a)
-                                j = -1;
-                                i--;
-                                a = sorted[i];
                             }
                         }
                     }
@@ -486,10 +479,8 @@ namespace AgCubio
         /// <returns></returns>
         private bool CanAbsorb(Cube c1, Cube c2)
         {
-            if (c1.Mass == c2.Mass || (c1.teamId == c2.teamId && c1.teamId != 0))
-            {
-                return false; // masses are too close to be absorbable, or they are of the same team
-            }
+            if (c1.teamId != 0 && c1.teamId == c2.teamId)
+                return false; // the are of the same team
 
             if (c1.Mass < AbsorbDistanceDelta * c2.Mass)
                 return false;
@@ -518,33 +509,26 @@ namespace AgCubio
         /// <param name="toY">Split towards Y</param>
         public void SplitCube(int cId, int toX, int toY)
         {
+            if (playerCubes[cId].Mass < MinimumSplitMass) return;
+
             double h;
             List<Cube> currentTeam = null;
             List<Cube> newTeam = new List<Cube>();
             lock (this)
             {
                 if (!teamCubes.TryGetValue(cId, out currentTeam))
-                {
-                    int tid = playerCubes[cId].teamId;
-                    if (!teamCubes.TryGetValue(tid, out currentTeam))
-                    {
-                        playerCubes[cId].teamId = cId;
-                        currentTeam = new List<Cube> { playerCubes[cId] };
-                    }
-                    else
-                    {
-                        cId = tid;  // cId will work as team id going forward
-                    }
-                }
+                    currentTeam = new List<Cube> { playerCubes[cId] };  // if there is no team initialize with current cube
+
                 foreach (Cube c in currentTeam)
                 {
-                    if (c.Mass < MinimumSplitMass || currentTeam.Count >= MaximumSplits) return;
+                    // if it reached limit don't split the rest just add to the new team.
                     newTeam.Add(c);
+                    if (c.Mass < MinimumSplitMass || currentTeam.Count >= MaximumSplits) continue;
 
                     // set cube to be half its mass
                     c.Mass = c.Mass / 2;
                     h = Math.Sqrt(Math.Pow(toX - c.X, 2) + Math.Pow(toY - c.Y, 2));
-                    Cube split = new Cube(c.X, c.Y, c.argb_color, NextUID(), c.teamId, false, c.Name, c.Mass);
+                    Cube split = new Cube(c.X, c.Y, c.argb_color, NextUID(), cId, false, c.Name, c.Mass);
                     split.mergeAfter = DateTime.Now.AddSeconds(MinTimeToMerge);
                     split.SetMomentum((int)((toX - c.X) / h * split.Mass / 100), (int)((toY - c.Y) / h * split.Mass / 100), HeartbeatsPerSecond);
 

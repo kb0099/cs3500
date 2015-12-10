@@ -143,6 +143,8 @@ namespace AgCubio
             {
                 clientSockets[ps.socket] = player.uId;
                 playerSession[player.uId] = new Dictionary<string, string>();
+                
+                // "ID" is the Session.ID from Session table.
                 playerSession[player.uId]["ID"] = Db.AddSession(gameID, player.Name, player.Mass).ToString();
             }
 
@@ -208,35 +210,70 @@ namespace AgCubio
         {
             // Stop raising further events until this call is done!
             (o as System.Timers.Timer).Stop();
-
-            // grow one food in each update according to the spec
-            Cube fd;
-            world.AddFood(out fd);
-            // try sending that food to all clients
-            if (fd != null)
+            try
             {
-                SendCubes(new Cube[] { fd });
+                // grow one food in each update according to the spec
+                Cube fd;
+                world.AddFood(out fd);
+                // try sending that food to all clients
+                if (fd != null)
+                {
+                    SendCubes(new Cube[] { fd });
+                }
+
+                // handle eat food, then, send to clients
+                IEnumerable<Cube> eatenFood = world.EatFoods();
+                SendCubes(eatenFood);
+
+                world.ApplyAttrition();
+                // handle eat players, then, send dead cubes
+                IEnumerable<Cube> eatenPlayers = world.EatPlayers();
+                SendCubes(eatenPlayers);
+
+                // after players are eaten update the server
+                HandlePayersDeathDB(eatenPlayers);
+
+                // handle viruses
+                world.HandleViruses();
+                SendCubes(world.viruses);
+
+                // Finally, send remaining player cubes.
+                SendCubes(world.playerCubes.Values);
+
             }
-
-            // handle eat food, then, send to clients
-            IEnumerable<Cube> eatenFood = world.EatFoods();
-            SendCubes(eatenFood);        
-
-            world.ApplyAttrition();
-            // handle eat players, then, send dead cubes
-            IEnumerable<Cube> eatenPlayers = world.EatPlayers();
-            SendCubes(eatenPlayers);
-
-            // handle viruses
-            world.HandleViruses();
-            SendCubes(world.viruses);
-
-            // Finally, send remaining player cubes.
-            SendCubes(world.playerCubes.Values);
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
             // okay to raise another event
             (o as System.Timers.Timer).Start();
         }
+
+        /// <summary>
+        /// This method figures out which players completely eaten.
+        /// Splitted cubes being eaten is not considered as eaten cube.
+        /// </summary>
+        /// <param name="eatenPlayers">Any eaten player list (splitted or non-splitted)</param>
+        private static void HandlePayersDeathDB(IEnumerable<Cube> eatenPlayers)
+        {
+            foreach(Cube p in eatenPlayers)
+            {
+                // only update db if main cube died split cubes being eaten are not considered.
+                if(p.EatenBy != 0)      // if it was eaten by another cube
+                {
+                    // upate eaten 
+                    if (p.teamId != 0) p.uId = p.teamId;
+                    int eatenSID = int.Parse(playerSession[p.uId]["ID"]);
+                    int eaterSID = int.Parse(playerSession[p.EatenBy]["ID"]);
+                    Db.UpdateEaten(eaterSID, eatenSID);
+
+                    // this will remove the player from 
+                    HandlePlayerDeathDB(p);
+                }
+            }
+        }
+
         /// <summary>
         /// Helper for Update function to send cubes to all clients.
         /// </summary>
@@ -277,24 +314,29 @@ namespace AgCubio
             // Removing sockets in foreach causes exceptions, so removal done outside of loop
             foreach (Socket removeS in removal)
             {
-                // If a player is disconnected end its GameSession
-                int playerID = clientSockets[removeS];
-                HandlePlayerDeath(playerID);
+                // If a player is disconnected end its GameSession : but apparently it is supposed to stay floating
                 clientSockets.Remove(removeS);
             }
         }
 
         /// <summary>
-        /// Updates the database to reflect the player's death.
+        /// Updates the database to reflect the player's death. 
+        /// Also removes the Session Data pertaining to this player.
         /// </summary>
-        /// <param name="playerID"></param>
-        private static void HandlePlayerDeath(int playerID)
+        /// <param name="cubeID"></param>
+        private static void HandlePlayerDeathDB(Cube c)
         {
-            var fields = playerSession[playerID];
+            var fields = playerSession[c.uId];
             int sid = int.Parse(fields["ID"]);
             fields.Remove("ID");
+            fields["FoodsEaten"] = c.FoodsEaten.ToString();
+            fields["CubesEaten"] = c.CubesEaten.ToString();
+            fields["HighestMass"] = c.HighestMass.ToString();
+            if(c.HighestRank < 6)
+                fields["HighestRank"] = c.HighestRank.ToString();
 
             Db.UpdateSession(sid, fields, true);
+            playerSession.Remove(c.uId);
         }
 
         /// <summary>
@@ -322,7 +364,7 @@ namespace AgCubio
         }
 
         /// <summary>
-        /// Represents a mapping from player id to player data fields  to interact with database.
+        /// Represents a mapping from cube id to player Session data fields  to interact with database.
         /// </summary>
         private static Dictionary<int, Dictionary<string, string>> playerSession = new Dictionary<int, Dictionary<string, string>>();
     }

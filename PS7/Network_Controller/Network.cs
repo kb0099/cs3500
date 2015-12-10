@@ -99,6 +99,8 @@ namespace AgCubio
         private static void ReceiveCallback(IAsyncResult ar)
         {
             PreservedState state = (PreservedState)ar.AsyncState;
+            bool? connected = state?.socket?.Connected;
+            if (false == connected) return;
             try
             {
                 int count = state.socket.EndReceive(ar); // this is supposed to throw if end user forcibly disconnects.
@@ -124,6 +126,7 @@ namespace AgCubio
         /// <param name="state"></param>
         public static void WantMoreData(PreservedState state)
         {
+            if(state?.socket?.Connected == true)
             state.socket.BeginReceive(state.buffer, 0, PreservedState.BUFFER_SIZE, SocketFlags.None, new AsyncCallback(ReceiveCallback), (object)state);
         }
 
@@ -170,7 +173,8 @@ namespace AgCubio
             try
             {
                 dynamic obj = ar.AsyncState;
-                obj.socket.EndSend(ar);
+                if(obj?.socket?.Connected == true)
+                    obj.socket.EndSend(ar);
                 if (obj.close)
                     obj.socket.Close();
             }

@@ -157,6 +157,28 @@ namespace AgCubio
             return false;
         }
 
+        public static bool UpdateEaten(int eaterSID, int eatenSID)
+        {
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    MySqlCommand cmd = conn.CreateCommand();
+                    cmd.CommandText = $@"INSERT INTO Eaten
+                                        (EaterSID, EatenSID)
+                                        VALUES
+                                        ({eaterSID}, {eatenSID});";
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() == 1;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            
+            return true;
+        }
         /// <summary>
         /// Gets data from database.
         /// </summary>

@@ -63,6 +63,12 @@ namespace AgCubio
         private int mx, my;     // momentum in x and y
         public DateTime mergeAfter;    // time to merge  
 
+        // for database
+        public int HighestMass;
+        public int HighestRank;
+        public int FoodsEaten;
+        public int CubesEaten;
+        public int EatenBy;         // represents the Cube that ate this cube
 
         /// <summary>
         /// A getter for the size of the cube. Size is the width and height of the square the cube can be drawn as.
@@ -167,10 +173,11 @@ namespace AgCubio
 
         /// <summary>
         /// Returns true if this cube contains <paramref name="c"/> inside it.
+        /// <param name="delta">Represents the amount to consider within boundary.</param>
         /// </summary>
-        public bool Contains(Cube c)
+        public bool Contains(Cube c, int delta = 20)
         {
-            return LeftEdge < c.LeftEdge && RightEdge > c.RightEdge && TopEdge < c.TopEdge && BottomEdge > c.BottomEdge; 
+            return LeftEdge-delta < c.LeftEdge && RightEdge+delta > c.RightEdge && TopEdge-delta < c.TopEdge && BottomEdge+delta > c.BottomEdge; 
         }
 
     }
