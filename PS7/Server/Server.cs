@@ -34,7 +34,9 @@ namespace AgCubio
             if (!InitWorld()) return;
 
             Console.WriteLine("========== Server ============");
+            Console.WriteLine("ATTENTION !! To make sure the data are saved properly please close by typing 'quit'");
             Console.WriteLine("Type quit and press return/enter to stop the server.");
+            Console.WriteLine("Clicking on the Red X close button doesn't guarantee data consistency.");
             StartGame();
             StartWebServer();
 
@@ -45,7 +47,7 @@ namespace AgCubio
             ExitHelper eh = new ExitHelper(OnServerExit);
             while (Console.ReadLine() != "quit");
             
-            // if user closes from command "quit"
+            // Please enter 'quit' to quit  and send changes to database
             OnServerExit();
             Console.ReadLine();
         }
@@ -143,10 +145,13 @@ namespace AgCubio
             lock (clientSockets)
             {
                 clientSockets[ps.socket] = player.uId;
-                playerSession[player.uId] = new Dictionary<string, string>();
+                lock (playerSession)
+                {
+                    playerSession[player.uId] = new Dictionary<string, string>();
 
-                // "ID" is the Session.ID from Session table.
-                playerSession[player.uId]["ID"] = Db.AddSession(gameID, player.Name, player.Mass).ToString();
+                    // "ID" is the Session.ID from Session table.
+                    playerSession[player.uId]["ID"] = Db.AddSession(gameID, player.Name, player.Mass).ToString();
+                }
             }
 
             // should clear the received data
@@ -254,13 +259,17 @@ namespace AgCubio
         private static void OnServerExit()
         {
             // End all player sessions.
-            foreach (var kvp in playerSession)
+            lock (playerSession)
             {
-                HandlePlayerDeathDB(world.playerCubes[kvp.Key]);
+                foreach (var kvp in playerSession)
+                {
+                    HandlePlayerDeathDB(world.playerCubes[kvp.Key]);
+                }
             }
 
             // End the server game
             Db.EndGame(gameID);
+            Console.WriteLine("Thank you for saving changes!");
         }
         /// <summary>
         /// This method figures out which players completely eaten.
@@ -336,7 +345,7 @@ namespace AgCubio
         /// <param name="cubeID"></param>
         private static void HandlePlayerDeathDB(Cube c)
         {
-            lock (world)
+            lock (playerSession)
             {
                 var fields = playerSession[c.teamId];
                 int sid = int.Parse(fields["ID"]);

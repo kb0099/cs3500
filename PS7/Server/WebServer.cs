@@ -27,7 +27,7 @@ namespace AgCubio
             ps.callback = (s) =>
             {
                 StringBuilder sb = new StringBuilder(ResponseHeader);
-                sb.Append(HandleRequest(ps.receivedData.ToString())); 
+                sb.Append(HandleRequest(ps.receivedData.ToString()));
                 Network.Send(ps.socket, sb.ToString(), true);
             };
             Network.WantMoreData(ps);
@@ -48,7 +48,7 @@ namespace AgCubio
             String pattern = @"GET /(?<request>\w*?)(\?(?<param>.+?)=(?<value>.+?))* HTTP/1.1";
             Regex rx = new Regex(pattern);
             Match m = rx.Match(requestHeader);
-            
+
             string table = null;
             switch (m.Groups["request"].Value)
             {
@@ -56,22 +56,33 @@ namespace AgCubio
                     table = Db.GetScoresTable();
                     break;
                 case "games":
-                    if(m.Groups["param"].Value == "player")
+                    if (m.Groups["param"].Value == "player")
+                    {
+                        // links to main score page
+                        sb.Append($@"<p style='margin: 1em'><a href='/scores'>[Go back to main table.</a>]</p>");
                         table = Db.GetGamesTable(m.Groups["value"].Value);
+                    }
                     break;
                 case "eaten":
-                    if(m.Groups["param"].Value == "id")
+                    if (m.Groups["param"].Value == "id")
+                    {
                         table = Db.GetEatensTable(m.Groups["value"].Value);
+
+                        sb.Append($@"<p style='margin: 1em'><a href='/scores'>[Go back to main table.</a>]</p>");
+                    }
                     break;
                 case "highscores":
                     if (m.Groups["param"].Value == "player")
+                    {
                         table = Db.GetHighScoresTable(m.Groups["value"].Value);
+                        sb.Append($@"<p style='margin: 1em'><a href='/scores'>[Go back to main table.</a>]</p>");
+                    }
                     break;
             }
             if (table == null)
                 return sb.Append(errorPage).ToString();
             else
-                return sb.Append(table).ToString();
+                return sb.Append(table).Append("</body></html>").ToString();
         }
 
         private const string errorPage = @"
@@ -90,7 +101,7 @@ Here are the list of valid url formats:
 First, make sure your url is in one of the valid forms provided above.
 Second, make sure the playerName or sessionID query parameters that you provide belong to a valid entity or a game session. Also note: all query parameters and player names are case sensitive. Jim and JIM are treated as different names.
 </p>
-</div>
+</div></body></html>
 ";
     }
 }
